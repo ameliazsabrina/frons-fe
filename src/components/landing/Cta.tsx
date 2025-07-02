@@ -1,0 +1,94 @@
+"use client";
+import React, { useEffect, useRef } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Separator } from "../ui/separator";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export function CTA() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const ctx = gsap.context(() => {
+      // Simple fade in animation for title
+      if (titleRef.current) {
+        gsap.fromTo(
+          titleRef.current,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: titleRef.current,
+              start: "top 80%",
+              end: "bottom 20%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+
+      // Simple fade in animation for content
+      if (contentRef.current) {
+        gsap.fromTo(
+          contentRef.current,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: 0.2,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: contentRef.current,
+              start: "top 80%",
+              end: "bottom 20%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
+  // Smooth scroll to top
+  const handleStartNow = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  return (
+    <section ref={sectionRef} className="bg-white">
+      <div className="container max-w-7xl mx-auto px-4 py-16">
+        <Separator className="mb-16" />
+        <div className="text-center space-y-8">
+          <h2
+            ref={titleRef}
+            className="font-anton uppercase text-primary word mb-[-0.1em] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
+          >
+            Shape the Future
+          </h2>
+          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto tracking-tight mt-[-0.5em]">
+            Join Fronsciers and be part of a new era in academic publishing,
+            where your research reaches the world, your reviews matter, and
+            innovation thrives in a transparent, global community.
+          </p>
+
+          <div ref={contentRef} className="flex justify-center mt-12">
+            <Button onClick={handleStartNow}>Start Now</Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
