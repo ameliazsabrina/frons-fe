@@ -6,12 +6,13 @@ interface SelectOption {
 }
 
 interface SelectProps {
-  options: SelectOption[];
+  options?: SelectOption[];
   value?: string;
   onValueChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  children?: React.ReactNode;
 }
 
 interface SelectTriggerProps {
@@ -29,6 +30,7 @@ interface SelectItemProps {
   value: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 interface SelectValueProps {
@@ -37,12 +39,13 @@ interface SelectValueProps {
 }
 
 export function Select({
-  options,
+  options = [],
   value,
   onValueChange,
   placeholder = "Select an option",
   className = "",
   disabled = false,
+  children,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value || "");
@@ -72,6 +75,27 @@ export function Select({
     setIsOpen(false);
   };
 
+  // If children are provided, render compound pattern
+  if (children) {
+    return (
+      <div ref={selectRef} className={`relative ${className}`}>
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child, {
+              isOpen,
+              setIsOpen,
+              selectedValue,
+              onValueChange,
+              disabled,
+            } as any);
+          }
+          return child;
+        })}
+      </div>
+    );
+  }
+
+  // Otherwise render options pattern
   return (
     <div ref={selectRef} className={`relative ${className}`}>
       <button
@@ -132,12 +156,24 @@ export function SelectTrigger({
   children,
   className = "",
   disabled = false,
-}: SelectTriggerProps) {
+  isOpen,
+  setIsOpen,
+  selectedValue,
+  onValueChange,
+}: SelectTriggerProps & {
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
+  selectedValue?: string;
+  onValueChange?: (value: string) => void;
+}) {
   return (
     <button
       type="button"
+      onClick={() => !disabled && setIsOpen?.(!isOpen)}
       disabled={disabled}
-      className={`w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${className}`}
+      className={`w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+        isOpen ? "ring-2 ring-blue-500 border-blue-500" : ""
+      } ${className}`}
     >
       {children}
       <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -162,7 +198,10 @@ export function SelectTrigger({
 export function SelectContent({
   children,
   className = "",
-}: SelectContentProps) {
+  isOpen,
+}: SelectContentProps & { isOpen?: boolean }) {
+  if (!isOpen) return null;
+
   return (
     <div
       className={`absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg ${className}`}
@@ -176,12 +215,29 @@ export function SelectItem({
   value,
   children,
   className = "",
-}: SelectItemProps) {
+  onClick,
+  selectedValue,
+  onValueChange,
+  setIsOpen,
+}: SelectItemProps & {
+  selectedValue?: string;
+  onValueChange?: (value: string) => void;
+  setIsOpen?: (open: boolean) => void;
+}) {
+  const handleClick = () => {
+    onValueChange?.(value);
+    setIsOpen?.(false);
+    onClick?.();
+  };
+
   return (
     <li>
       <button
         type="button"
-        className={`w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-gray-900 ${className}`}
+        onClick={handleClick}
+        className={`w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
+          value === selectedValue ? "bg-blue-50 text-blue-900" : "text-gray-900"
+        } ${className}`}
       >
         {children}
       </button>

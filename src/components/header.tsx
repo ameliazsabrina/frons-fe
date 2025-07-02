@@ -59,11 +59,7 @@ export function Header() {
             </Link>
 
             <div className="flex items-center">
-              <DynamicWidget
-                innerButtonComponent={
-                  <Button variant="outline">Get Started</Button>
-                }
-              />
+              <DynamicWidget innerButtonComponent={"Get Started"} />
             </div>
           </div>
         </div>

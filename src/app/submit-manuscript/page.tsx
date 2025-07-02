@@ -6,7 +6,6 @@ import {
   CardTitle,
   CardContent,
   CardFooter,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -146,9 +145,9 @@ export default function SubmitManuscriptPage() {
                     <CardTitle className="text-xl text-gray-900">
                       Manuscript Submission
                     </CardTitle>
-                    <CardDescription className="text-gray-600">
+                    <p className="text-gray-600 text-sm">
                       Fill in the details and upload your research manuscript
-                    </CardDescription>
+                    </p>
                   </div>
                 </div>
               </CardHeader>
