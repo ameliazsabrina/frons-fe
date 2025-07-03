@@ -74,7 +74,7 @@ export function CTA() {
         <div className="text-center space-y-8">
           <h2
             ref={titleRef}
-            className="font-anton uppercase text-primary word mb-[-0.1em] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
+            className="font-spectral font-semibold text-primary word mb-[-0.1em] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
           >
             Shape the Future
           </h2>

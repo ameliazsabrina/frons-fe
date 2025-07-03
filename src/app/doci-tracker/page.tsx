@@ -98,7 +98,7 @@ export default function DocisPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
                     <ScanIcon className="h-8 w-8 text-primary" />
                   </div>
-                  <h1 className="text-3xl sm:text-4xl text-primary font-anton uppercase tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl text-primary font-spectral tracking-tight">
                     DOCI Tracker
                   </h1>
                   <p className="text-primary/80 text-sm sm:text-md max-w-lg mx-auto">

@@ -562,7 +562,7 @@ export default function YourProfilePage() {
               </div>
               <div className="flex-1 p-4 sm:p-6">
                 <div className="mb-8 text-center">
-                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
                     Your Profile
                   </h1>
                   <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">
@@ -611,7 +611,7 @@ export default function YourProfilePage() {
               </div>
               <div className="flex-1 p-4 sm:p-6">
                 <div className="mb-8 text-center">
-                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
                     Your Profile
                   </h1>
                   <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">
@@ -644,7 +644,7 @@ export default function YourProfilePage() {
               </div>
               <div className="flex-1 p-4 sm:p-6">
                 <div className="mb-8 text-center">
-                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
                     Your Profile
                   </h1>
                   <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">
@@ -695,7 +695,7 @@ export default function YourProfilePage() {
 
             <div className="flex-1 p-4 sm:p-6">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
                   Your Profile
                 </h1>
                 <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">

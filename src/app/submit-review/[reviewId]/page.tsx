@@ -491,7 +491,7 @@ export default function SubmitReviewPage() {
 
             <div className="flex-1 p-4 sm:p-6 max-w-4xl mx-auto w-full">
               <div className="mb-8">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight text-center">
                   Submit Review
                 </h1>
                 <p className="text-primary/80 text-sm sm:text-md text-center">

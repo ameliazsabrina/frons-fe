@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Separator } from "../ui/separator";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,10 +15,11 @@ const splitTextIntoChars = (text: string) => {
   ));
 };
 
-export function Mission() {
+export function Vision() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -61,6 +63,28 @@ export function Mission() {
           },
         }
       );
+
+      // Image animation
+      gsap.fromTo(
+        imageRef.current,
+        {
+          opacity: 0,
+          y: 30,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          delay: 0.3,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: imageRef.current,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
     }, sectionRef);
 
     return () => ctx.revert();
@@ -70,17 +94,25 @@ export function Mission() {
     <section ref={sectionRef} className="bg-white">
       <div className="container max-w-7xl mx-auto px-4">
         <Separator className="mb-16" />
-        <div className="text-center space-y-4">
+        <div className="text-center ">
           <h2
             ref={titleRef}
-            className="font-anton uppercase text-primary word mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
+            className="font-spectral tracking-tight font-semibold text-primary word mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
           >
-            {splitTextIntoChars("Fronsciers's Mission")}
+            {splitTextIntoChars("Fronsciers's Vision")}
           </h2>
-          <p className=" text-lg lg:text-2xl text-gray-600 max-w-3xl mx-auto tracking-tight">
-            To democratize academic publishing and ensure research integrity
-            through blockchain technology, making knowledge accessible to
-            everyone.
+          <div ref={imageRef} className="flex justify-center">
+            <Image
+              src="/vision.svg"
+              alt="Fronsciers's Vision"
+              width={700}
+              height={700}
+            />
+          </div>
+
+          <p className=" text-lg lg:text-3xl text-gray-600 max-w-2xl mx-auto tracking-tight ">
+            Fronsciers grows as the communities keep contribute to the
+            innovations
           </p>
         </div>
       </div>

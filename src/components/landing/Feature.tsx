@@ -1,122 +1,136 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
+import React from "react";
+import { Separator } from "../ui/separator";
+import { CardSwap, Card } from "../ui/card-swap";
+import {
+  Upload,
+  Eye,
+  Shield,
+  FileText,
+  TrendingUp,
+  DollarSign,
+} from "lucide-react";
 
 export function Feature() {
-  const [isVisible, setIsVisible] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const text1Ref = useRef<HTMLDivElement>(null);
-  const text2Ref = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isVisible) {
-          setIsVisible(true);
-          startAnimation();
-        }
-      },
-      {
-        threshold: 0.5,
-        rootMargin: "0px 0px -100px 0px",
-      }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-      }
-    };
-  }, [isVisible]);
-
-  const startAnimation = () => {
-    if (!text1Ref.current || !text2Ref.current) return;
-
-    const tl = gsap.timeline();
-    timelineRef.current = tl;
-
-    gsap.set(text2Ref.current, { opacity: 0, y: 30 });
-
-    tl.to(
-      text1Ref.current,
-      {
-        duration: 0.8,
-        opacity: 0,
-        y: -30,
-        ease: "power2.inOut",
-      },
-      0
-    );
-
-    tl.to(
-      text2Ref.current,
-      {
-        duration: 0.8,
-        opacity: 1,
-        y: 0,
-        ease: "power2.inOut",
-      },
-      0.4
-    );
-  };
-
   return (
-    <div
-      ref={containerRef}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "50vh",
-        padding: "20px 30px",
-        fontSize: "30px",
-        color: "#dfdcff",
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(50px)",
-        transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
-      }}
-    >
-      <div
-        style={{
-          width: "550px",
-          position: "relative",
-          height: "50vh",
-          fontSize: "50px",
-        }}
-      >
-        <div
-          ref={text1Ref}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-          }}
-        >
-          traditional publishing costs you thousands of dollars to publish your
-          paper
+    <section className="pt-20 pb-0 px-4 bg-white h-[85vh] lg:h-[70vh] overflow-hidden justify-between">
+      <Separator className="mb-16" />
+      <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16">
+        <div className="order-1 lg:order-1">
+          <div className="text-center lg:text-left mb-8 lg:mb-16">
+            <h2 className="font-spectral tracking-tight font-semibold text-primary word mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">
+              How Fronsciers Works
+            </h2>
+            <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto lg:max-w-xl -mb-48 mt-2 lg:mb-0 lg:mt-0 leading-tight">
+              Experience the future of academic publishing with our streamlined
+              blockchain-powered platform
+            </p>
+          </div>
         </div>
-        <div
-          ref={text2Ref}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            opacity: 0,
-          }}
-        >
-          with Fronsciers you only need to deposit fifty dollars for your paper
+        <div className="order-2 lg:order-2 flex flex-col -mt-24">
+          <div
+            style={{ height: "600px", position: "relative" }}
+            className="md:h-[700px] lg:h-[700px] "
+          >
+            <CardSwap
+              cardDistance={20}
+              verticalDistance={10}
+              delay={3000}
+              pauseOnHover={true}
+            >
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <Upload className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    Submit Manuscript
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Upload your research paper with metadata. Supports all major
+                    academic formats.
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <Eye className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    Peer Review
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Rigorous peer review by qualified experts ensuring quality
+                    and credibility.
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    Blockchain Publication
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Published on blockchain with immutable timestamps and
+                    permanent accessibility.
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <FileText className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    NFT Creation
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Your paper becomes a unique NFT with proof of ownership and
+                    monetization opportunities.
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    Track Impact
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Monitor citations and engagement metrics through real-time
+                    blockchain analytics.
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <DollarSign className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-foreground mb-3">
+                    Earn Revenue
+                  </h3>
+                  <p className="text-muted-foreground text-md leading-tight">
+                    Generate income through NFT sales, citation royalties, and
+                    platform revenue sharing.
+                  </p>
+                </div>
+              </Card>
+            </CardSwap>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

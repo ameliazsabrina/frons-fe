@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { DM_Sans, Anton } from "next/font/google";
+import { DM_Sans, Spectral } from "next/font/google";
 
 import "./globals.css";
 import DynamicProvider from "@/provider/DynamicProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
+import { CustomCursor } from "@/components/ui/custom-cursor";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -11,14 +12,14 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
 });
 
-const anton = Anton({
+const spectral = Spectral({
   subsets: ["latin"],
   weight: ["400"],
-  variable: "--font-anton",
+  variable: "--font-spectral",
 });
 
 export const metadata: Metadata = {
-  title: "FRONSCIERS - Revolutionary Blockchain Academic Publishing",
+  title: "Fronsciers - Revolutionary Blockchain Academic Publishing",
   description:
     "Modernizing academic research publication through decentralized technologies, tokenized incentives, and community-driven peer review on Solana blockchain.",
 };
@@ -31,10 +32,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${anton.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${spectral.variable} font-sans antialiased`}
       >
         <LoadingProvider>
-          <DynamicProvider>{children}</DynamicProvider>
+          <DynamicProvider>
+            <CustomCursor />
+            {children}
+          </DynamicProvider>
         </LoadingProvider>
       </body>
     </html>

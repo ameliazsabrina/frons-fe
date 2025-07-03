@@ -61,14 +61,14 @@ export function Hero() {
               >
                 <span className="text-primary">Research</span>
                 <br />
-                <span className="text-gray-900 dark:text-gray-100 italic ">
+                <span className="text-gray-900 dark:text-gray-100 italic  font-spectral ">
                   Reimagined
                 </span>
               </h1>
 
               <p
                 ref={subtitleRef}
-                className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-tight font-medium mb-2 lg:mb-16 whitespace-nowrap"
+                className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-tight font-medium mb-2 lg:mb-16 lg:whitespace-nowrap"
               >
                 Spend less to publish, earn more for your impact. Start from $50
                 only!

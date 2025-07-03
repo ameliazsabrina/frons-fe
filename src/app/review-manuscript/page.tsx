@@ -379,7 +379,7 @@ export default function ReviewManuscriptPage() {
             <div className="flex-1 p-4 sm:p-6">
               {/* Header Section */}
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
                   Peer Review
                 </h1>
                 <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">

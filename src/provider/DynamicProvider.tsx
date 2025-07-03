@@ -1,8 +1,5 @@
 "use client";
-import {
-  DynamicContextProvider,
-  DynamicWidget,
-} from "@dynamic-labs/sdk-react-core";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
@@ -26,7 +23,6 @@ export default function DynamicProvider({ children }: DynamicProviderProps) {
       }}
     >
       {children}
-      <DynamicWidget />
     </DynamicContextProvider>
   );
 }
