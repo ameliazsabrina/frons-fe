@@ -18,7 +18,6 @@ export default function DynamicProvider({ children }: DynamicProviderProps) {
   return (
     <DynamicContextProvider
       settings={{
-        // Find your environment id at https://app.dynamic.xyz/dashboard/developer
         environmentId: "d73d73bd-6e9a-4603-b5a5-ab8e25f9a7cb",
         walletConnectors: [SolanaWalletConnectors],
         events: {
@@ -27,6 +26,7 @@ export default function DynamicProvider({ children }: DynamicProviderProps) {
       }}
     >
       {children}
+      <DynamicWidget />
     </DynamicContextProvider>
   );
 }

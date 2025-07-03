@@ -33,7 +33,7 @@ export function Loading({ className, progress }: LoadingProps) {
               />
             </div>
             <p className="text-sm text-primary mt-2 font-semibold">
-              {progress}% loaded
+              {progress}%
             </p>
           </div>
         )}

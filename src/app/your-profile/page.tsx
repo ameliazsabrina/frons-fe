@@ -16,7 +16,6 @@ import {
   MapPinIcon,
   MailIcon,
   BuildingIcon,
-  GraduationCapIcon,
   LinkIcon,
   PlusIcon,
   LoaderIcon,
@@ -113,6 +112,7 @@ export default function YourProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showRegistrationPrompt, setShowRegistrationPrompt] = useState(false);
+  const [showWalletRegistration, setShowWalletRegistration] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     title: "",
@@ -140,7 +140,7 @@ export default function YourProfilePage() {
     const fetchProfile = async () => {
       if (!connected || !publicKey) {
         setLoading(false);
-        setError("Please connect your wallet to view profile");
+        setShowWalletRegistration(true);
         return;
       }
 
@@ -250,6 +250,10 @@ export default function YourProfilePage() {
 
     fetchProfile();
   }, [connected, publicKey, apiUrl, showToast]);
+
+  const handleRegisterWallet = () => {
+    router.push("/register-wallet");
+  };
 
   const extractFields = (cvData: any): string[] => {
     const fields = [];
@@ -534,6 +538,55 @@ export default function YourProfilePage() {
                   <p className="text-muted-foreground">
                     Loading your profile...
                   </p>
+                </div>
+              </div>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (showWalletRegistration) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen bg-white flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="flex flex-col min-h-screen">
+              <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+                <div className="flex items-center gap-2 px-4 py-3">
+                  <SidebarTrigger />
+                  <Separator orientation="vertical" className="h-6" />
+                </div>
+              </div>
+              <div className="flex-1 p-4 sm:p-6">
+                <div className="mb-8 text-center">
+                  <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-anton uppercase tracking-tight">
+                    Your Profile
+                  </h1>
+                  <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">
+                    Manage your academic profile and research information
+                  </p>
+                </div>
+                <div className="flex-col items-center justify-center mt-16">
+                  <Card className="max-w-md mx-auto shadow-lg border border-gray-200 rounded-xl bg-white">
+                    <CardContent className="p-8 text-center">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        Wallet Required
+                      </h2>
+                      <p className="text-gray-600 mb-6">
+                        You need to connect or create a Solana wallet to access
+                        your profile.
+                      </p>
+                      <Button
+                        onClick={handleRegisterWallet}
+                        className="w-full  "
+                      >
+                        Register Wallet
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>

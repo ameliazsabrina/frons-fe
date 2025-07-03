@@ -1,4 +1,9 @@
 import { useState, useCallback } from "react";
+import { backendAPI } from "@/lib/api";
+import {
+  ManuscriptSubmissionRequest,
+  ManuscriptSubmissionResponse,
+} from "@/types/backend";
 
 interface ManuscriptSubmissionProps {
   submitManuscriptSubsidized: any;
@@ -29,26 +34,19 @@ export function useManuscriptSubmission({
           return;
         }
 
-        // Create form data for submission
-        const formData = new FormData();
-        formData.append("manuscript", file);
-        formData.append("title", manuscriptData.title);
-        formData.append(
-          "author",
-          manuscriptData.authors[0]?.name || "Unknown Author"
-        );
-        formData.append("category", manuscriptData.categories.join(","));
-        formData.append("abstract", manuscriptData.abstract);
-        formData.append("keywords", manuscriptData.keywords.join(","));
-        formData.append("authorWallet", walletAddress);
+        // Prepare submission data
+        const submissionData: ManuscriptSubmissionRequest = {
+          manuscript: file,
+          title: manuscriptData.title,
+          author: manuscriptData.authors[0]?.name || "Unknown Author",
+          category: manuscriptData.categories.join(","),
+          abstract: manuscriptData.abstract,
+          keywords: manuscriptData.keywords.join(","),
+          authorWallet: walletAddress,
+        };
 
         // Submit to backend
-        const response = await fetch(`${apiUrl}/api/manuscripts/submit`, {
-          method: "POST",
-          body: formData,
-        });
-
-        const result = await response.json();
+        const result = await backendAPI.submitManuscript(submissionData);
 
         if (result.success) {
           console.log("✅ Manuscript submitted successfully:", result);
@@ -68,16 +66,19 @@ IPFS Hash: ${result.manuscript.cid}
 Your manuscript is now under peer review. You will be notified when the review process is complete.`);
         } else {
           console.error("❌ Manuscript submission failed:", result);
-
-          if (result.code === "CV_REQUIRED") {
-            alert("CV registration required. Please upload your CV first.");
-          } else {
-            alert(`Submission failed: ${result.message || "Unknown error"}`);
-          }
+          alert(`Submission failed: Unknown error`);
         }
       } catch (error) {
         console.error("Failed to submit manuscript:", error);
-        alert("Network error while submitting manuscript. Please try again.");
+
+        // Handle specific backend errors
+        if (backendAPI.isCVRequiredError(error)) {
+          alert("CV registration required. Please upload your CV first.");
+        } else if (backendAPI.isMissingWalletError(error)) {
+          alert("Please provide your wallet address to submit manuscripts.");
+        } else {
+          alert("Network error while submitting manuscript. Please try again.");
+        }
       } finally {
         setLoading(false);
       }

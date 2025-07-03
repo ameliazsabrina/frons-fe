@@ -17,7 +17,7 @@ import { BasicInfoSection } from "@/components/manuscript/BasicInfoSection";
 import { AuthorsKeywordsSection } from "@/components/manuscript/AuthorsKeywordsSection";
 import { FileUploadSection } from "@/components/manuscript/FileUploadSection";
 import { SubmitButton } from "@/components/manuscript/SubmitButton";
-import { WalletConnection } from "@/components/WalletConnection";
+import { WalletConnection } from "@/components/wallet-connection";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { useManuscriptForm } from "@/hooks/useManuscriptForm";

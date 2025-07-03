@@ -15,6 +15,11 @@ interface CardTitleProps {
   className?: string;
 }
 
+interface CardDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
 interface CardContentProps {
   children: React.ReactNode;
   className?: string;
@@ -49,6 +54,13 @@ export function CardTitle({ children, className = "" }: CardTitleProps) {
       {children}
     </h3>
   );
+}
+
+export function CardDescription({
+  children,
+  className = "",
+}: CardDescriptionProps) {
+  return <p className={`text-sm text-gray-600 ${className}`}>{children}</p>;
 }
 
 export function CardContent({ children, className = "" }: CardContentProps) {

@@ -1,6 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /\/__tests__\//,
+      })
+    );
+
+    // Handle Turnkey and other web3 modules
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      url: false,
+      zlib: false,
+      http: false,
+      https: false,
+      assert: false,
+      os: false,
+      path: false,
+    };
+
+    // Handle problematic modules
+    config.externals = config.externals || [];
+    if (isServer) {
+      config.externals.push({
+        "@turnkey/http": "commonjs @turnkey/http",
+        "@turnkey/solana": "commonjs @turnkey/solana",
+        "@turnkey/viem": "commonjs @turnkey/viem",
+      });
+    }
+
+    // Important: return the modified config
+    return config;
+  },
 };
 
 export default nextConfig;

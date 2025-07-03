@@ -36,8 +36,8 @@ NEXT_PUBLIC_SOLANA_WS_URL=wss://api.devnet.solana.com
 NEXT_PUBLIC_PROGRAM_ID=28VkA76EcTTN746SxZyYT8NTte9gofeBQ2L4N8hfYPgd
 
 # Backend API
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
-NEXT_PUBLIC_WS_URL=ws://localhost:3001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5001/api
+NEXT_PUBLIC_WS_URL=ws://localhost:5001
 
 # Feature Flags
 NEXT_PUBLIC_ENABLE_NFT_MINTING=true

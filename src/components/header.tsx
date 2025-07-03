@@ -4,12 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
+
+import { WalletConnection } from "@/components/wallet-connection";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -17,6 +19,8 @@ import {
   LayoutDashboardIcon,
   FileTextIcon,
   ClipboardCheckIcon,
+  UserIcon,
+  BookOpenIcon,
 } from "lucide-react";
 
 export function Header() {
@@ -81,6 +85,7 @@ export function Header() {
                         Overview
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
                         href="/submit-manuscript"
@@ -99,6 +104,21 @@ export function Header() {
                         Review Manuscript
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/register-cv" className="flex items-center">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        Register CV
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/published-manuscripts"
+                        className="flex items-center"
+                      >
+                        <BookOpenIcon className="mr-2 h-4 w-4" />
+                        Published Papers
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -113,7 +133,7 @@ export function Header() {
             </Link>
 
             <div className="flex items-center">
-              <DynamicWidget innerButtonComponent={"Get Started"} />
+              <WalletConnection />
             </div>
           </div>
         </div>
