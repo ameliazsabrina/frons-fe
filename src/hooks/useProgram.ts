@@ -8,8 +8,18 @@ import {
 } from "@project-serum/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useMemo } from "react";
-import { SOLANA_CONFIG } from "@/constants/solana";
-import IDL from "@/constants/fronsciers.json";
+import { SOLANA_CONFIG } from "@/lib/constants/solana";
+import IDL from "@/lib/constants/fronsciers.json";
+
+function isValidSolanaAddress(address: string | undefined): boolean {
+  if (!address) return false;
+  try {
+    new PublicKey(address);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const useProgram = () => {
   const { wallets } = useWallets();
@@ -24,7 +34,7 @@ export const useProgram = () => {
     if (!primaryWallet) return null;
 
     return {
-      publicKey: primaryWallet.address
+      publicKey: isValidSolanaAddress(primaryWallet.address)
         ? new PublicKey(primaryWallet.address)
         : null,
     };

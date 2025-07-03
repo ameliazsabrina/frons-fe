@@ -8,11 +8,20 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       appId={process.env.NEXT_PUBLIC_PRIVY_API_KEY || ""}
       clientId={process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || ""}
       config={{
+        loginMethods: ["wallet", "google", "github"],
+        appearance: {
+          theme: "light",
+          accentColor: "#16007E",
+        },
+
         embeddedWallets: {
+          createOnLogin: "all-users",
+          requireUserPasswordOnCreate: false,
           solana: {
             createOnLogin: "all-users",
           },
         },
+
         solanaClusters: [
           {
             name: "devnet",

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import { useWallets } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   WalletIcon,
@@ -24,17 +18,21 @@ import {
   CheckCircleIcon,
   AlertCircleIcon,
   PlusIcon,
+  LoaderIcon,
+  RefreshCwIcon,
 } from "lucide-react";
-import LoginWithEmail from "@/hooks/useLoginWithEmail";
 
 export const WalletConnection = () => {
-  const { login, logout, authenticated, user, ready } = usePrivy();
+  const { login, logout, authenticated, user, ready, createWallet } =
+    usePrivy();
   const { wallets } = useWallets();
-  const { sendCode, loginWithCode } = useLoginWithEmail();
 
   const [copied, setCopied] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState("Connected User");
-  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [walletCreationError, setWalletCreationError] = useState<string | null>(
+    null
+  );
 
   const connected = authenticated;
 
@@ -50,6 +48,14 @@ export const WalletConnection = () => {
     }
   }, [user]);
 
+  // Auto-create wallet if user is authenticated but has no wallets
+  useEffect(() => {
+    if (authenticated && wallets.length === 0 && !isCreatingWallet) {
+      handleCreateWallet();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, wallets.length]);
+
   const copyAddress = async (address: string) => {
     try {
       await navigator.clipboard.writeText(address);
@@ -60,27 +66,37 @@ export const WalletConnection = () => {
     }
   };
 
+  const handleCreateWallet = async () => {
+    if (!createWallet) {
+      setWalletCreationError("Wallet creation not available");
+      return;
+    }
+    setIsCreatingWallet(true);
+    setWalletCreationError(null);
+    try {
+      await createWallet();
+    } catch (error) {
+      setWalletCreationError("Failed to create wallet. Please try again.");
+    } finally {
+      setIsCreatingWallet(false);
+    }
+  };
+
+  if (!ready) {
+    return (
+      <div className="flex items-center gap-2">
+        <LoaderIcon className="h-4 w-4 animate-spin" />
+        <span className="text-sm">Loading...</span>
+      </div>
+    );
+  }
+
   if (!connected) {
     return (
-      <div className="flex flex-col gap-2">
-        <Button onClick={login} variant="outline" className="text-sm">
-          <WalletIcon className="h-4 w-4 mr-2" />
-          Connect Wallet
-        </Button>
-        <Button
-          onClick={() => setShowEmailLogin(!showEmailLogin)}
-          variant="ghost"
-          size="sm"
-          className="text-xs"
-        >
-          Login with Email
-        </Button>
-        {showEmailLogin && (
-          <div className="mt-2 p-3 border rounded-lg bg-muted/50">
-            <LoginWithEmail />
-          </div>
-        )}
-      </div>
+      <Button onClick={login} variant="outline" className="text-sm">
+        <WalletIcon className="h-4 w-4 mr-2" />
+        Connect Wallet
+      </Button>
     );
   }
 
@@ -88,9 +104,9 @@ export const WalletConnection = () => {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="gap-2">
-          <WalletIcon className="h-4 w-4" />
-          {userDisplayName}
-          <Badge variant="secondary" className="text-xs">
+          {/* <WalletIcon className="h-4 w-4" /> */}
+          <p className="text-xs">{userDisplayName}</p>
+          <Badge variant="secondary" className="text-xs ">
             {wallets.length > 0
               ? `${wallets.length} Wallet${wallets.length > 1 ? "s" : ""}`
               : "No Wallet"}
@@ -133,7 +149,7 @@ export const WalletConnection = () => {
                       {wallet.address.slice(-4)}
                     </span>
                     <Badge variant="outline" className="text-xs">
-                      {wallet.chainId}
+                      Solana
                     </Badge>
                   </div>
                   <Button
@@ -162,18 +178,36 @@ export const WalletConnection = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-xs text-muted-foreground">
-                    Wallets are created automatically when you log in. If you
-                    don't see any wallets, try refreshing the page or logging
-                    out and back in.
+                    A Solana wallet should be created automatically when you log
+                    in. If you don't see a wallet, try creating one manually.
                   </p>
-                  <Button
-                    onClick={() => window.location.reload()}
-                    size="sm"
-                    className="w-full"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Refresh Page
-                  </Button>
+                  {walletCreationError && (
+                    <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                      {walletCreationError}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleCreateWallet}
+                      disabled={isCreatingWallet}
+                      size="sm"
+                      className="flex-1"
+                    >
+                      {isCreatingWallet ? (
+                        <LoaderIcon className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                      )}
+                      Create Wallet
+                    </Button>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <RefreshCwIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>

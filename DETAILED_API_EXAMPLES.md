@@ -918,6 +918,8 @@ curl "http://localhost:5001/api/manuscripts/recent/Artificial Intelligence?limit
 
 ## 8. Frontend Integration Examples
 
+For detailed frontend integration examples and React/TypeScript components, please refer to [NFT_FRONTEND_INTEGRATION.md](./NFT_FRONTEND_INTEGRATION.md).
+
 ### Profile Update Interface
 
 ```javascript
