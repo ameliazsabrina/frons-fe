@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLinkIcon, LoaderIcon } from "lucide-react";
 import { useNFTIntegration } from "@/hooks/useNFTIntegration";
 import { NFTMetadata } from "@/types/backend";
+import { useLoading } from "@/context/LoadingContext";
 
 interface NFTBadgeProps {
   mintAddress: string;
@@ -18,7 +19,7 @@ export function NFTBadge({ mintAddress, className = "" }: NFTBadgeProps) {
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const { getNFTMetadata, verifyNFTMetadata } = useNFTIntegration();
-
+  const { isLoading } = useLoading();
   useEffect(() => {
     const fetchNFTData = async () => {
       try {
@@ -48,7 +49,7 @@ export function NFTBadge({ mintAddress, className = "" }: NFTBadgeProps) {
     }
   }, [mintAddress, getNFTMetadata, verifyNFTMetadata]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Badge className={`bg-gray-100 text-gray-600 ${className}`}>
         <LoaderIcon className="h-3 w-3 mr-1 animate-spin" />

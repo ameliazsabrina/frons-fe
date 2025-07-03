@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useLoading } from "@/context/LoadingContext";
 import {
@@ -63,9 +63,10 @@ interface QuickAction {
 
 export default function OverviewPage() {
   const router = useRouter();
-  const { user, primaryWallet } = useDynamicContext();
-  const connected = !!user;
-  const publicKey = primaryWallet?.address;
+  const { user, authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const connected = authenticated;
+  const publicKey = wallets[0]?.address;
 
   const [isClient, setIsClient] = useState(false);
   const [program, setProgram] = useState<any>(null);
@@ -73,7 +74,7 @@ export default function OverviewPage() {
 
   const { program: solanaProgram } = useProgram();
   const { pdas: solanaPDAs } = usePDAs(
-    publicKey ? new PublicKey(publicKey) : null
+    publicKey ? new PublicKey(publicKey) : undefined
   );
 
   useEffect(() => {

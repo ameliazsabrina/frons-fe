@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Spectral } from "next/font/google";
 
 import "./globals.css";
-import DynamicProvider from "@/provider/DynamicProvider";
+import PrivyProvider from "@/provider/PrivyProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 
@@ -35,10 +35,10 @@ export default function RootLayout({
         className={`${dmSans.variable} ${spectral.variable} font-sans antialiased`}
       >
         <LoadingProvider>
-          <DynamicProvider>
+          <PrivyProvider>
             <CustomCursor />
             {children}
-          </DynamicProvider>
+          </PrivyProvider>
         </LoadingProvider>
       </body>
     </html>

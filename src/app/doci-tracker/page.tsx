@@ -14,11 +14,14 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { useToast } from "@/components/ui/toast";
 
 export default function DocisPage() {
-  const { connected } = useWallet();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const { showToast } = useToast();

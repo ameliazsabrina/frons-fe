@@ -7,6 +7,7 @@ import {
   ProfileUpdateRequest,
   ProfileUpdateResponse,
 } from "@/types/backend";
+import { useLoading } from "@/context/LoadingContext";
 
 interface CVData {
   fullName: string;
@@ -21,13 +22,12 @@ interface CVData {
 export function useCVRegistration() {
   const [cvStatus, setCvStatus] = useState<CVStatus | null>(null);
   const [cvData, setCvData] = useState<CVData | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isLoading } = useLoading();
 
   const checkCVRegistration = useCallback(
     async (walletAddress: string): Promise<boolean> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.checkCVStatus(walletAddress);
@@ -53,7 +53,6 @@ export function useCVRegistration() {
         setError("Network error while checking CV status");
         return false;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -65,7 +64,6 @@ export function useCVRegistration() {
       walletAddress: string
     ): Promise<CVParseResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.uploadCV(cv, walletAddress);
@@ -92,7 +90,6 @@ export function useCVRegistration() {
         setError(err instanceof Error ? err.message : "Failed to upload CV");
         return null;
       } finally {
-        setLoading(false);
       }
     },
     [checkCVRegistration]
@@ -101,7 +98,6 @@ export function useCVRegistration() {
   const getUserProfile = useCallback(
     async (walletAddress: string): Promise<UserProfileResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getUserProfile(walletAddress);
@@ -127,7 +123,6 @@ export function useCVRegistration() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -139,7 +134,6 @@ export function useCVRegistration() {
       updateData: ProfileUpdateRequest
     ): Promise<ProfileUpdateResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.updateUserProfile(
@@ -170,7 +164,6 @@ export function useCVRegistration() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -179,7 +172,6 @@ export function useCVRegistration() {
   const getUserSpecialization = useCallback(
     async (walletAddress: string): Promise<any> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getUserSpecialization(walletAddress);
@@ -193,7 +185,6 @@ export function useCVRegistration() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -202,7 +193,7 @@ export function useCVRegistration() {
   return {
     cvStatus,
     cvData,
-    loading,
+    isLoading,
     error,
     checkCVRegistration,
     uploadCV,

@@ -4,11 +4,12 @@ import { usePDAs } from "./usePDAs";
 import { ManuscriptSubmission } from "@/types/fronsciers";
 import { PublicKey } from "@solana/web3.js";
 import { web3 } from "@project-serum/anchor";
+import { useLoading } from "@/context/LoadingContext";
 
 export const useManuscriptWorkflow = () => {
   const { program, wallet } = useProgram();
   const { pdas, getManuscriptPDA } = usePDAs(wallet?.publicKey || undefined);
-  const [loading, setLoading] = useState(false);
+  const { isLoading } = useLoading();
 
   const registerUser = useCallback(
     async (education: string) => {
@@ -16,7 +17,6 @@ export const useManuscriptWorkflow = () => {
         throw new Error("Wallet not connected or program not available");
       }
 
-      setLoading(true);
       try {
         const tx = await program.methods
           .registerUser(education)
@@ -32,8 +32,6 @@ export const useManuscriptWorkflow = () => {
       } catch (error) {
         console.error("Failed to register user:", error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
     [program, wallet, pdas]
@@ -45,7 +43,6 @@ export const useManuscriptWorkflow = () => {
         throw new Error("Wallet not connected or program not available");
       }
 
-      setLoading(true);
       try {
         const manuscriptId = `${Date.now()}-${wallet.publicKey.toString()}`;
         const manuscriptPDA = getManuscriptPDA(manuscriptId);
@@ -69,8 +66,6 @@ export const useManuscriptWorkflow = () => {
       } catch (error) {
         console.error("Failed to submit manuscript:", error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
     [program, wallet, pdas, getManuscriptPDA]
@@ -82,7 +77,6 @@ export const useManuscriptWorkflow = () => {
         throw new Error("Wallet not connected or program not available");
       }
 
-      setLoading(true);
       try {
         const tx = await program.methods
           .reviewManuscript(decision)
@@ -97,8 +91,6 @@ export const useManuscriptWorkflow = () => {
       } catch (error) {
         console.error("Failed to review manuscript:", error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
     [program, wallet]
@@ -110,7 +102,6 @@ export const useManuscriptWorkflow = () => {
         throw new Error("Wallet not connected or program not available");
       }
 
-      setLoading(true);
       try {
         const tx = await program.methods
           .mintDociNft(title, description)
@@ -127,8 +118,6 @@ export const useManuscriptWorkflow = () => {
       } catch (error) {
         console.error("Failed to mint DOCI NFT:", error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
     [program, wallet, pdas]
@@ -139,6 +128,6 @@ export const useManuscriptWorkflow = () => {
     submitManuscript,
     reviewManuscript,
     mintDOCINFT,
-    loading,
+    isLoading,
   };
 };

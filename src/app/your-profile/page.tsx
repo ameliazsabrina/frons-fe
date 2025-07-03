@@ -27,9 +27,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast";
+import { useLoading } from "@/context/LoadingContext";
 
 interface ProfileData {
   name: string;
@@ -103,11 +105,13 @@ interface ApiProfileResponse {
 }
 
 export default function YourProfilePage() {
-  const { connected, publicKey } = useWallet();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
   const router = useRouter();
   const { showToast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-
+  const { isLoading } = useLoading();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -519,7 +523,7 @@ export default function YourProfilePage() {
     setIsEditing(false);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <div className="min-h-screen bg-white flex w-full">
@@ -581,7 +585,7 @@ export default function YourProfilePage() {
                       </p>
                       <Button
                         onClick={handleRegisterWallet}
-                        className="w-full  "
+                        className="w-full  text-sm"
                       >
                         Register Wallet
                       </Button>

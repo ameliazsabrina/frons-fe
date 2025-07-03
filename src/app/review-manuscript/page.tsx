@@ -37,14 +37,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 import { Header } from "@/components/header";
-import { CreateWallets } from "@/components/wallet-connection";
 import { PendingReviewManuscript } from "@/types/backend";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useLoading } from "@/context/LoadingContext";
+import { WalletConnection } from "@/components/wallet-connection";
 
 interface ReviewManuscript {
   id: string;
@@ -102,9 +104,11 @@ const reviewStatuses = [
 
 export default function ReviewManuscriptPage() {
   const router = useRouter();
-  const { connected, publicKey } = useWallet();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
   const {
-    loading,
+    isLoading: loading,
     error,
     getPendingReviewManuscripts,
     getReviewStatus,
@@ -124,7 +128,7 @@ export default function ReviewManuscriptPage() {
   const [reviewers, setReviewers] = useState<string[]>(["", "", ""]); // Minimum 3 reviewers
   const { showToast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-
+  const { isLoading } = useLoading();
   const parseCategory = (categoryData: any): string => {
     if (!categoryData) return "Uncategorized";
 
@@ -352,7 +356,7 @@ export default function ReviewManuscriptPage() {
               <p className="text-gray-600 mb-6">
                 Please connect your wallet to access the review dashboard.
               </p>
-              <CreateWallets />
+              <WalletConnection />
             </CardContent>
           </Card>
         </div>
@@ -450,7 +454,7 @@ export default function ReviewManuscriptPage() {
 
               {/* Manuscripts List */}
               <div className="space-y-6">
-                {loading ? (
+                {isLoading ? (
                   <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80">
                     <CardContent className="p-8 text-center">
                       <ClipboardCheckIcon className="h-12 w-12 text-gray-200 mx-auto mb-4" />

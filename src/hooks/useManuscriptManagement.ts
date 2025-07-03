@@ -11,9 +11,10 @@ import {
   ReviewSubmissionRequest,
   ReviewSubmissionResponse,
 } from "@/types/backend";
+import { useLoading } from "@/context/LoadingContext";
 
 export function useManuscriptManagement() {
-  const [loading, setLoading] = useState(false);
+  const { isLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
 
   // Get manuscripts pending review
@@ -23,7 +24,6 @@ export function useManuscriptManagement() {
       category?: string
     ): Promise<PendingReviewResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getPendingReviewManuscripts(
@@ -40,7 +40,6 @@ export function useManuscriptManagement() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -53,7 +52,6 @@ export function useManuscriptManagement() {
       limit: number = 10
     ): Promise<PublishedManuscriptsResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getPublishedManuscripts(
@@ -70,7 +68,6 @@ export function useManuscriptManagement() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -80,7 +77,6 @@ export function useManuscriptManagement() {
   const getManuscriptsByStatus = useCallback(
     async (status: string, limit: number = 20): Promise<any> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getManuscriptsByStatus(status, limit);
@@ -92,7 +88,6 @@ export function useManuscriptManagement() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -105,7 +100,6 @@ export function useManuscriptManagement() {
       limit: number = 5
     ): Promise<PublishedManuscriptsResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getRecentManuscripts(category, limit);
@@ -119,7 +113,6 @@ export function useManuscriptManagement() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -133,7 +126,6 @@ export function useManuscriptManagement() {
       assignedBy: string
     ): Promise<ReviewAssignmentResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const data: ReviewAssignmentRequest = {
@@ -156,7 +148,6 @@ export function useManuscriptManagement() {
 
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -172,7 +163,6 @@ export function useManuscriptManagement() {
       confidentialComments?: string
     ): Promise<ReviewSubmissionResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const data: ReviewSubmissionRequest = {
@@ -199,7 +189,6 @@ export function useManuscriptManagement() {
 
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -209,7 +198,6 @@ export function useManuscriptManagement() {
   const getReviewStatus = useCallback(
     async (manuscriptId: number): Promise<ReviewStatusResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getReviewStatus(manuscriptId);
@@ -221,7 +209,6 @@ export function useManuscriptManagement() {
         );
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
@@ -234,7 +221,6 @@ export function useManuscriptManagement() {
       publishedBy: string
     ): Promise<PublicationResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const data: PublicationRequest = {
@@ -258,14 +244,13 @@ export function useManuscriptManagement() {
 
         return null;
       } finally {
-        setLoading(false);
       }
     },
     []
   );
 
   return {
-    loading,
+    isLoading,
     error,
     getPendingReviewManuscripts,
     getPublishedManuscripts,

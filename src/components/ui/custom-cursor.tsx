@@ -50,18 +50,22 @@ export const CustomCursor = () => {
 
       // Update cursor classes for hover state
       const circle = cursor.querySelector(".cursor-circle") as HTMLElement;
-      const arrow = cursor.querySelector(".cursor-arrow") as HTMLElement;
+      const arrow = cursor.querySelector(".cursor-arrow") as SVGElement;
 
       if (isHoveringRef.current) {
         circle.className =
           "cursor-circle rounded-full border-2 backdrop-blur-sm flex items-center justify-center transition-all duration-300 w-16 h-16 border-primary bg-primary/20";
-        arrow.className =
-          "cursor-arrow transition-all duration-300 w-6 h-6 text-primary";
+        arrow.setAttribute(
+          "class",
+          "cursor-arrow transition-all duration-300 w-6 h-6 text-primary"
+        );
       } else {
         circle.className =
           "cursor-circle rounded-full border-2 backdrop-blur-sm flex items-center justify-center transition-all duration-300 w-14 h-14 border-primary/60 bg-primary/10";
-        arrow.className =
-          "cursor-arrow transition-all duration-300 w-5 h-5 text-primary";
+        arrow.setAttribute(
+          "class",
+          "cursor-arrow transition-all duration-300 w-5 h-5 text-primary"
+        );
       }
 
       if (moveTimeoutRef.current) {

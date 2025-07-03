@@ -24,8 +24,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import axios from "axios";
+import { useLoading } from "@/context/LoadingContext";
 
 interface ReviewData {
   id: string;
@@ -58,9 +60,11 @@ export default function SubmitReviewPage() {
   const router = useRouter();
   const params = useParams();
   const reviewId = params.reviewId as string;
-  const { connected, publicKey } = useWallet();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
   const { showToast } = useToast();
-
+  const { isLoading } = useLoading();
   const [reviewData, setReviewData] = useState<ReviewData | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -429,7 +433,7 @@ export default function SubmitReviewPage() {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <div className="min-h-screen bg-white flex w-full">

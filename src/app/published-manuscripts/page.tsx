@@ -19,6 +19,7 @@ import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 import { Header } from "@/components/header";
 import { NFTBadge } from "@/components/ui/nft-badge";
 import { PublishedManuscript } from "@/types/backend";
+import { useLoading } from "@/context/LoadingContext";
 
 const RESEARCH_CATEGORIES = [
   "Artificial Intelligence",
@@ -44,13 +45,17 @@ const RESEARCH_CATEGORIES = [
 ];
 
 export default function PublishedManuscriptsPage() {
-  const { getPublishedManuscripts, loading, error } = useManuscriptManagement();
+  const {
+    getPublishedManuscripts,
+    isLoading: loading,
+    error,
+  } = useManuscriptManagement();
   const [manuscripts, setManuscripts] = useState<PublishedManuscript[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
     "Artificial Intelligence"
   );
   const [totalCount, setTotalCount] = useState(0);
-
+  const { isLoading } = useLoading();
   useEffect(() => {
     loadPublishedManuscripts();
   }, [selectedCategory]);
@@ -175,7 +180,7 @@ export default function PublishedManuscriptsPage() {
         )}
 
         {/* Manuscripts Grid */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>

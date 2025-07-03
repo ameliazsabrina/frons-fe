@@ -21,19 +21,23 @@ import {
   BookOpenIcon,
   BriefcaseIcon,
 } from "lucide-react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { Header } from "@/components/header";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
+import { useLoading } from "@/context/LoadingContext";
 
 export default function RegisterCVPage() {
-  const { connected, publicKey } = useWallet();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
   const router = useRouter();
   const {
     cvStatus,
     cvData,
-    loading,
+    isLoading: loading,
     error,
     checkCVRegistration,
     uploadCV,
@@ -44,7 +48,7 @@ export default function RegisterCVPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showProfile, setShowProfile] = useState(false);
-
+  const { isLoading } = useLoading();
   // Check CV status when wallet connects
   useEffect(() => {
     if (connected && publicKey) {
@@ -384,8 +388,8 @@ export default function RegisterCVPage() {
             {/* Load Profile Button (if CV exists but profile not shown) */}
             {cvStatus?.hasCV && !showProfile && (
               <div className="text-center">
-                <Button onClick={handleLoadProfile} disabled={loading}>
-                  {loading ? "Loading..." : "View Profile Details"}
+                <Button onClick={handleLoadProfile} disabled={isLoading}>
+                  {isLoading ? "Loading..." : "View Profile Details"}
                 </Button>
               </div>
             )}

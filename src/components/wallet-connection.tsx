@@ -1,8 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { useWalletManager } from "@/hooks/useDynamicWaas";
-import { ChainEnum } from "@dynamic-labs/sdk-api-core";
+import React, { useState, useEffect } from "react";
+import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,67 +16,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   WalletIcon,
-  PlusIcon,
-  KeyIcon,
   LogOutIcon,
   CopyIcon,
   CheckCircleIcon,
   AlertCircleIcon,
-  LoaderIcon,
+  PlusIcon,
 } from "lucide-react";
+import LoginWithEmail from "@/hooks/useLoginWithEmail";
 
 export const WalletConnection = () => {
-  const { user, handleLogOut, setShowAuthFlow } = useDynamicContext();
-  const {
-    createWalletAccount,
-    importPrivateKey,
-    dynamicWaasIsEnabled,
-    solWallets,
-  } = useWalletManager();
+  const { login, logout, authenticated, user, ready } = usePrivy();
+  const { wallets } = useWallets();
+  const { sendCode, loginWithCode } = useLoginWithEmail();
 
-  const [isCreating, setIsCreating] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [privateKey, setPrivateKey] = useState("");
-  const [showImport, setShowImport] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [userDisplayName, setUserDisplayName] = useState("Connected User");
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
 
-  const connected = !!user;
+  const connected = authenticated;
 
-  const handleCreateWallet = async () => {
-    try {
-      setIsCreating(true);
-      await createWalletAccount([ChainEnum.Sol]);
-    } catch (error: any) {
-      console.error("Failed to create wallet:", error);
-      alert(`Failed to create wallet: ${error.message}`);
-    } finally {
-      setIsCreating(false);
+  useEffect(() => {
+    if (user) {
+      if (user.email && typeof user.email === "object" && user.email.address) {
+        setUserDisplayName(user.email.address);
+      } else if (typeof user.email === "string") {
+        setUserDisplayName(user.email);
+      } else if (user.id) {
+        setUserDisplayName(`User ${user.id.slice(0, 8)}`);
+      }
     }
-  };
-
-  const handleImportKey = async () => {
-    if (!privateKey.trim()) {
-      alert("Please enter a private key");
-      return;
-    }
-
-    try {
-      setIsImporting(true);
-      await importPrivateKey(ChainEnum.Sol, privateKey.trim());
-      setPrivateKey("");
-      setShowImport(false);
-    } catch (error: any) {
-      console.error("Failed to import private key:", error);
-      alert(`Failed to import private key: ${error.message}`);
-    } finally {
-      setIsImporting(false);
-    }
-  };
+  }, [user]);
 
   const copyAddress = async (address: string) => {
     try {
@@ -91,37 +62,42 @@ export const WalletConnection = () => {
 
   if (!connected) {
     return (
-      <Button
-        variant="default"
-        className="text-sm"
-        size="sm"
-        onClick={() => setShowAuthFlow(true)}
-      >
-        Get Started
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button onClick={login} variant="outline" className="text-sm">
+          <WalletIcon className="h-4 w-4 mr-2" />
+          Connect Wallet
+        </Button>
+        <Button
+          onClick={() => setShowEmailLogin(!showEmailLogin)}
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+        >
+          Login with Email
+        </Button>
+        {showEmailLogin && (
+          <div className="mt-2 p-3 border rounded-lg bg-muted/50">
+            <LoginWithEmail />
+          </div>
+        )}
+      </div>
     );
   }
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" className="gap-2">
           <WalletIcon className="h-4 w-4" />
-          {solWallets.length > 0 ? (
-            <>
-              <span className="hidden sm:inline">
-                {solWallets[0].address.slice(0, 4)}...
-                {solWallets[0].address.slice(-4)}
-              </span>
-              <Badge variant="secondary" className="text-xs">
-                {solWallets.length}
-              </Badge>
-            </>
-          ) : (
-            <span>No Wallet</span>
-          )}
+          {userDisplayName}
+          <Badge variant="secondary" className="text-xs">
+            {wallets.length > 0
+              ? `${wallets.length} Wallet${wallets.length > 1 ? "s" : ""}`
+              : "No Wallet"}
+          </Badge>
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-80" align="end">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
@@ -129,180 +105,90 @@ export const WalletConnection = () => {
               <WalletIcon className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">
-                {user?.email || user?.username || "Connected User"}
-              </p>
+              <p className="text-sm font-medium">{userDisplayName}</p>
               <p className="text-xs text-muted-foreground">
-                {solWallets.length > 0 ? "Wallet Connected" : "No Wallet"}
+                {wallets.length > 0
+                  ? `${wallets.length} Wallet${
+                      wallets.length > 1 ? "s" : ""
+                    } Connected`
+                  : "No Wallet"}
               </p>
             </div>
           </div>
 
           <Separator />
 
-          {!dynamicWaasIsEnabled ? (
-            <Card className="border-destructive/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertCircleIcon className="h-4 w-4 text-destructive" />
-                  WaaS Not Enabled
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">
-                  Dynamic WaaS is not enabled in your project settings.
-                </p>
-              </CardContent>
-            </Card>
-          ) : solWallets.length === 0 ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Create Wallet</CardTitle>
-                <CardDescription className="text-xs">
-                  Set up your Solana wallet to start using the platform
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  onClick={handleCreateWallet}
-                  disabled={isCreating}
-                  className="w-full"
-                  size="sm"
+          {wallets.length > 0 ? (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">Your Wallets</h4>
+              {wallets.map((wallet, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                 >
-                  {isCreating ? (
-                    <>
-                      <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Create New Wallet
-                    </>
-                  )}
-                </Button>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or
+                  <div className="flex items-center gap-2">
+                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-mono">
+                      {wallet.address.slice(0, 6)}...
+                      {wallet.address.slice(-4)}
                     </span>
+                    <Badge variant="outline" className="text-xs">
+                      {wallet.chainId}
+                    </Badge>
                   </div>
-                </div>
-
-                {!showImport ? (
                   <Button
-                    variant="outline"
-                    onClick={() => setShowImport(true)}
-                    className="w-full"
                     size="sm"
+                    variant="ghost"
+                    onClick={() => copyAddress(wallet.address)}
                   >
-                    <KeyIcon className="h-4 w-4 mr-2" />
-                    Import Private Key
+                    {copied ? (
+                      <CheckCircleIcon className="h-4 w-4" />
+                    ) : (
+                      <CopyIcon className="h-4 w-4" />
+                    )}
                   </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="privateKey" className="text-xs">
-                        Solana Private Key
-                      </Label>
-                      <Input
-                        id="privateKey"
-                        type="password"
-                        placeholder="Enter your private key"
-                        value={privateKey}
-                        onChange={(e) => setPrivateKey(e.target.value)}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleImportKey}
-                        disabled={isImporting || !privateKey.trim()}
-                        className="flex-1"
-                        size="sm"
-                      >
-                        {isImporting ? (
-                          <>
-                            <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
-                            Importing...
-                          </>
-                        ) : (
-                          "Import"
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowImport(false);
-                          setPrivateKey("");
-                        }}
-                        className="flex-1"
-                        size="sm"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              ))}
+            </div>
           ) : (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Your Wallets</CardTitle>
-                <CardDescription className="text-xs">
-                  Manage your Solana wallets
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {solWallets.map((wallet, index) => (
-                  <div
-                    key={wallet.address}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">No Wallets</h4>
+              <Card className="border-muted">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <AlertCircleIcon className="h-4 w-4 text-muted-foreground" />
+                    No Embedded Wallets
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Wallets are created automatically when you log in. If you
+                    don't see any wallets, try refreshing the page or logging
+                    out and back in.
+                  </p>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    size="sm"
+                    className="w-full"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-mono truncate">
-                        {wallet.address}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Solana Wallet {index + 1}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyAddress(wallet.address)}
-                      className="ml-2"
-                    >
-                      {copied ? (
-                        <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <CopyIcon className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Refresh Page
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           <Separator />
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleLogOut}
-              className="flex-1"
-              size="sm"
-            >
-              <LogOutIcon className="h-4 w-4 mr-2" />
-              Disconnect
-            </Button>
-          </div>
+          <Button
+            onClick={logout}
+            variant="ghost"
+            className="w-full text-destructive hover:text-destructive"
+          >
+            <LogOutIcon className="h-4 w-4 mr-2" />
+            Disconnect
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

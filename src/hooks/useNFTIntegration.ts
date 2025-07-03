@@ -7,16 +7,16 @@ import {
   NFTMetadataGetResponse,
   NFTVerificationResponse,
 } from "@/types/backend";
+import { useLoading } from "@/context/LoadingContext";
 
 export function useNFTIntegration() {
-  const [loading, setLoading] = useState(false);
+  const { isLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
 
   // Check NFT service health
   const checkNFTHealth =
     useCallback(async (): Promise<NFTHealthResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.checkNFTHealth();
@@ -27,8 +27,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to check NFT services"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     }, []);
 
@@ -36,7 +34,6 @@ export function useNFTIntegration() {
   const createNFTMetadata = useCallback(
     async (data: NFTMetadataRequest): Promise<NFTMetadataResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.createNFTMetadata(data);
@@ -47,8 +44,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to create NFT metadata"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -58,7 +53,6 @@ export function useNFTIntegration() {
   const getNFTMetadata = useCallback(
     async (mint: string): Promise<NFTMetadataGetResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.getNFTMetadata(mint);
@@ -69,8 +63,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to get NFT metadata"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -83,7 +75,6 @@ export function useNFTIntegration() {
       data: Partial<NFTMetadataRequest>
     ): Promise<NFTMetadataResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.updateNFTMetadata(mint, data);
@@ -94,8 +85,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to update NFT metadata"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -105,7 +94,6 @@ export function useNFTIntegration() {
   const verifyNFTMetadata = useCallback(
     async (mint: string): Promise<NFTVerificationResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.verifyNFTMetadata(mint);
@@ -116,8 +104,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to verify NFT metadata"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -132,7 +118,6 @@ export function useNFTIntegration() {
       publicationDate: string;
     }): Promise<any> => {
       try {
-        setLoading(true);
         setError(null);
 
         const result = await backendAPI.generateNFTPreviewImage(data);
@@ -145,8 +130,6 @@ export function useNFTIntegration() {
             : "Failed to generate preview image"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -166,7 +149,6 @@ export function useNFTIntegration() {
       doci: string
     ): Promise<NFTMetadataResponse | null> => {
       try {
-        setLoading(true);
         setError(null);
 
         const nftData: NFTMetadataRequest = {
@@ -190,8 +172,6 @@ export function useNFTIntegration() {
           err instanceof Error ? err.message : "Failed to create academic NFT"
         );
         return null;
-      } finally {
-        setLoading(false);
       }
     },
     []
@@ -218,7 +198,6 @@ export function useNFTIntegration() {
       error?: string;
     }> => {
       try {
-        setLoading(true);
         setError(null);
 
         // 1. Publish manuscript
@@ -265,14 +244,13 @@ export function useNFTIntegration() {
           error: errorMessage,
         };
       } finally {
-        setLoading(false);
       }
     },
     [createAcademicNFT, verifyNFTMetadata]
   );
 
   return {
-    loading,
+    isLoading,
     error,
     checkNFTHealth,
     createNFTMetadata,

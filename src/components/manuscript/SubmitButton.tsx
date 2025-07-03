@@ -9,6 +9,7 @@ import {
   AlertCircleIcon,
   LoaderIcon,
 } from "lucide-react";
+import { useLoading } from "@/context/LoadingContext";
 
 interface SubmitButtonProps {
   loading: boolean;
@@ -25,6 +26,7 @@ export function SubmitButton({
   cvVerified,
   onSubmit,
 }: SubmitButtonProps) {
+  const { isLoading } = useLoading();
   const getValidationMessage = () => {
     if (!connected) {
       return "Please connect your wallet to submit a manuscript";
@@ -79,7 +81,7 @@ export function SubmitButton({
           disabled={!canSubmit}
           className="w-full h-12 text-lg font-medium"
         >
-          {loading ? (
+          {isLoading ? (
             <>
               <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
               Submitting Manuscript...

@@ -18,21 +18,25 @@ import { AuthorsKeywordsSection } from "@/components/manuscript/AuthorsKeywordsS
 import { FileUploadSection } from "@/components/manuscript/FileUploadSection";
 import { SubmitButton } from "@/components/manuscript/SubmitButton";
 import { WalletConnection } from "@/components/wallet-connection";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { useManuscriptForm } from "@/hooks/useManuscriptForm";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useManuscriptWorkflow } from "@/hooks/useManuscriptWorkflow";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
+import { useLoading } from "@/context/LoadingContext";
 
 export default function SubmitManuscriptPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  const { connected, publicKey } = useWallet();
-  const { submitManuscript, loading } = useManuscriptWorkflow();
+  const { authenticated: connected, user } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
+  const { submitManuscript, isLoading: loading } = useManuscriptWorkflow();
   const { checkCVRegistration } = useCVRegistration();
   const router = useRouter();
-
+  const { isLoading } = useLoading();
   const [cvVerified, setCvVerified] = useState(false);
 
   const {
@@ -210,7 +214,7 @@ export default function SubmitManuscriptPage() {
 
             <CardFooter className="bg-gray-50 border-t border-gray-100 p-6">
               <SubmitButton
-                loading={loading}
+                loading={isLoading}
                 connected={connected}
                 isFormValid={isFormValid}
                 cvVerified={cvVerified}

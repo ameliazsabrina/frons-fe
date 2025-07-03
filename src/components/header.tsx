@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { usePrivy } from "@privy-io/react-auth";
 
 import { WalletConnection } from "@/components/wallet-connection";
 import { Separator } from "@/components/ui/separator";
@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 export function Header() {
-  const { user } = useDynamicContext();
+  const { user } = usePrivy();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -51,7 +51,7 @@ export function Header() {
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <div className="container max-w-7xl mx-auto px-4">
+      <div className="container max-w-7xl mx-auto px-8">
         <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
