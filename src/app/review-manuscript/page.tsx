@@ -34,7 +34,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useProgram } from "@/hooks/useProgram";
+import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast";
 
@@ -94,7 +94,7 @@ const reviewStatuses = [
 
 export default function ReviewManuscriptPage() {
   const router = useRouter();
-  const { connected, publicKey } = useProgram();
+  const { connected, publicKey } = useWallet();
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);

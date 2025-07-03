@@ -3,11 +3,24 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useProgram } from "@/hooks/useProgram";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
+import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDownIcon,
+  LayoutDashboardIcon,
+  FileTextIcon,
+  ClipboardCheckIcon,
+} from "lucide-react";
 
 export function Header() {
-  const { connected } = useProgram();
+  const { user } = useDynamicContext();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -52,6 +65,47 @@ export function Header() {
           </Link>
 
           <div className="flex items-center space-x-4">
+            {user && (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="default" className="text-sm">
+                      Overview
+                      <ChevronDownIcon className="ml-1 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/overview" className="flex items-center">
+                        <LayoutDashboardIcon className="mr-2 h-4 w-4" />
+                        Overview
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/submit-manuscript"
+                        className="flex items-center"
+                      >
+                        <FileTextIcon className="mr-2 h-4 w-4" />
+                        Submit Manuscript
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/review-manuscript"
+                        className="flex items-center"
+                      >
+                        <ClipboardCheckIcon className="mr-2 h-4 w-4" />
+                        Review Manuscript
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Separator orientation="vertical" className="h-6" />
+              </>
+            )}
+
             <Link href="/register-institution">
               <Button variant="outline" className="hidden sm:flex text-sm ">
                 Register Your Institution

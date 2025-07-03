@@ -24,7 +24,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useProgram } from "@/hooks/useProgram";
+import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 
 interface ReviewData {
@@ -58,7 +58,7 @@ export default function SubmitReviewPage() {
   const router = useRouter();
   const params = useParams();
   const reviewId = params.reviewId as string;
-  const { connected, publicKey } = useProgram();
+  const { connected, publicKey } = useWallet();
   const { showToast } = useToast();
 
   const [reviewData, setReviewData] = useState<ReviewData | null>(null);

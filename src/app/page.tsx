@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/landing/Hero";
+import { Feature } from "@/components/landing/Feature";
 import { Mission } from "@/components/landing/Mission";
 import { PublishingAdvantages } from "@/components/landing/PublishingAdvantages";
 import { CTA } from "@/components/landing/Cta";
@@ -33,6 +34,7 @@ export default function Home() {
     <div className="bg-white">
       <Header />
       <Hero />
+      <Feature />
       <Mission />
       <PublishingAdvantages />
       <CTA />

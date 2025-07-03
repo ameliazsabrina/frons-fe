@@ -68,9 +68,10 @@ export function Hero() {
 
               <p
                 ref={subtitleRef}
-                className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-tight font-medium mb-2 lg:mb-16"
+                className="text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-tight font-medium mb-2 lg:mb-16 whitespace-nowrap"
               >
-                Where academic brilliance meets blockchain innovation.
+                Spend less to publish, earn more for your impact. Start from $50
+                only!
                 <br />
                 <span className="text-primary font-medium ">
                   Publish. Review. Earn. Repeat.

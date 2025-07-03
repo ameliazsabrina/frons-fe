@@ -1,23 +1,30 @@
-import { useState } from "react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  Program,
+  AnchorProvider,
+  web3,
+  utils,
+  BN,
+} from "@project-serum/anchor";
+import { useMemo } from "react";
+import { SOLANA_CONFIG } from "@/constants/solana";
+import IDL from "@/constants/fronsciers.json";
 
-export function useProgram() {
-  // Placeholder: always connected
-  const [connected] = useState(true);
+export const useProgram = () => {
+  const { connection } = useConnection();
+  const wallet = useWallet();
 
-  // Mock publicKey with toString method
-  const publicKey = {
-    toString: () => "0xMockWalletAddress1234567890abcdef",
-  };
+  const provider = useMemo(() => {
+    if (!wallet) return null;
+    return new AnchorProvider(connection, wallet as any, {
+      commitment: SOLANA_CONFIG.COMMITMENT,
+    });
+  }, [connection, wallet]);
 
-  // Mock submitManuscriptSubsidized function
-  const submitManuscriptSubsidized = async () => {
-    console.log("Mock submitManuscriptSubsidized called");
-    return { success: true };
-  };
+  const program = useMemo(() => {
+    if (!provider) return null;
+    return new Program(IDL as any, SOLANA_CONFIG.PROGRAM_ID, provider);
+  }, [provider]);
 
-  return {
-    connected,
-    publicKey,
-    submitManuscriptSubsidized,
-  };
-}
+  return { program, provider, connection, wallet };
+};

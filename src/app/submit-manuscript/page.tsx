@@ -17,17 +17,19 @@ import { BasicInfoSection } from "@/components/manuscript/BasicInfoSection";
 import { AuthorsKeywordsSection } from "@/components/manuscript/AuthorsKeywordsSection";
 import { FileUploadSection } from "@/components/manuscript/FileUploadSection";
 import { SubmitButton } from "@/components/manuscript/SubmitButton";
-import { useProgram } from "@/hooks/useProgram";
+import { WalletConnection } from "@/components/WalletConnection";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { useManuscriptForm } from "@/hooks/useManuscriptForm";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { useManuscriptSubmission } from "@/hooks/useManuscriptSubmission";
+import { useManuscriptWorkflow } from "@/hooks/useManuscriptWorkflow";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
 
 export default function SubmitManuscriptPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  const { submitManuscriptSubsidized, connected, publicKey } = useProgram();
+  const { connected, publicKey } = useWallet();
+  const { submitManuscript, loading } = useManuscriptWorkflow();
   const { checkCVRegistration } = useCVRegistration();
   const router = useRouter();
 
@@ -58,11 +60,6 @@ export default function SubmitManuscriptPage() {
     uploadToIPFS,
     resetUpload,
   } = useFileUpload();
-
-  const { loading, submitManuscript } = useManuscriptSubmission({
-    submitManuscriptSubsidized,
-    checkCVRegistration,
-  });
 
   const handleCVVerified = useCallback(() => {
     setCvVerified(true);
@@ -110,116 +107,118 @@ export default function SubmitManuscriptPage() {
       return;
     }
 
-    const onSuccess = () => {
+    if (!manuscriptData.ipfsHash) {
+      console.error("IPFS hash is required");
+      return;
+    }
+
+    try {
+      await submitManuscript({
+        ipfsHash: manuscriptData.ipfsHash,
+        title: manuscriptData.title,
+        description: manuscriptData.abstract,
+        authors: manuscriptData.authors.map((a) => a.name),
+        keywords: manuscriptData.keywords,
+      });
+
       resetForm();
       resetUpload();
-    };
-
-    await submitManuscript(
-      manuscriptData,
-      file,
-      publicKey.toString(),
-      apiUrl,
-      onSuccess
-    );
+      // Redirect to success page or show success message
+    } catch (error) {
+      console.error("Failed to submit manuscript:", error);
+      // Handle error (show toast, etc.)
+    }
   };
+
+  if (!connected) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="container max-w-5xl mx-auto px-4 py-8">
+          <WalletConnection />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <div className="container max-w-5xl mx-auto px-4 py-8">
-        {connected && publicKey ? (
-          <CVRegistrationGuard
-            walletAddress={publicKey.toString()}
-            onCVVerified={handleCVVerified}
-            showUploadOption={true}
-          >
-            <Card className="shadow-lg border-gray-200">
-              <CardHeader className="bg-white border-b border-gray-100">
-                <div className="flex flex-col items-start justify-between gap-4">
-                  <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                    Back to Reviews
-                  </Button>
-                  <div className="flex flex-col items-left gap-2">
-                    <CardTitle className="text-xl text-gray-900">
-                      Manuscript Submission
-                    </CardTitle>
-                    <p className="text-gray-600 text-sm">
-                      Fill in the details and upload your research manuscript
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-6 space-y-6">
-                <BasicInfoSection
-                  title={manuscriptData.title}
-                  abstract={manuscriptData.abstract}
-                  onChange={handleInputChange}
-                />
-
-                <AuthorsKeywordsSection
-                  authorsInput={authorsInput}
-                  keywordsInput={keywordsInput}
-                  authors={manuscriptData.authors}
-                  keywords={manuscriptData.keywords}
-                  onAuthorsInputChange={setAuthorsInput}
-                  onKeywordsInputChange={setKeywordsInput}
-                  onAuthorsBlur={handleAuthorsBlur}
-                  onKeywordsBlur={handleKeywordsBlur}
-                />
-
-                <div>
-                  <Label className="text-sm font-medium">
-                    Research Categories *
-                  </Label>
-                  <ResearchCategorySelector
-                    selectedCategories={manuscriptData.categories}
-                    onCategoriesChange={handleCategoriesChange}
-                  />
-                </div>
-
-                <Separator />
-
-                <FileUploadSection
-                  file={file}
-                  uploading={uploading}
-                  uploadProgress={uploadProgress}
-                  uploadResult={uploadResult}
-                  onFileChange={handleFileChange}
-                  onUpload={handleIPFSUpload}
-                />
-              </CardContent>
-
-              <CardFooter className="bg-gray-50 border-t border-gray-100 p-6">
-                <SubmitButton
-                  loading={loading}
-                  connected={connected}
-                  isFormValid={isFormValid}
-                  cvVerified={cvVerified}
-                  onSubmit={handleSubmit}
-                />
-              </CardFooter>
-            </Card>
-          </CVRegistrationGuard>
-        ) : (
+        <CVRegistrationGuard
+          walletAddress={publicKey?.toString() || ""}
+          onCVVerified={handleCVVerified}
+          showUploadOption={true}
+        >
           <Card className="shadow-lg border-gray-200">
-            <CardContent className="p-6">
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2 text-amber-800">
-                  <AlertCircleIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">
-                    Wallet Connection Required
-                  </span>
+            <CardHeader className="bg-white border-b border-gray-100">
+              <div className="flex flex-col items-start justify-between gap-4">
+                <Button variant="outline" onClick={() => router.back()}>
+                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                  Back to Reviews
+                </Button>
+                <div className="flex flex-col items-left gap-2">
+                  <CardTitle className="text-xl text-gray-900">
+                    Manuscript Submission
+                  </CardTitle>
+                  <p className="text-gray-600 text-sm">
+                    Fill in the details and upload your research manuscript
+                  </p>
                 </div>
-                <p className="text-xs text-amber-700 mt-1">
-                  Please connect your wallet to submit a manuscript.
-                </p>
               </div>
+            </CardHeader>
+
+            <CardContent className="p-6 space-y-6">
+              <BasicInfoSection
+                title={manuscriptData.title}
+                abstract={manuscriptData.abstract}
+                onChange={handleInputChange}
+              />
+
+              <AuthorsKeywordsSection
+                authorsInput={authorsInput}
+                keywordsInput={keywordsInput}
+                authors={manuscriptData.authors}
+                keywords={manuscriptData.keywords}
+                onAuthorsInputChange={setAuthorsInput}
+                onKeywordsInputChange={setKeywordsInput}
+                onAuthorsBlur={handleAuthorsBlur}
+                onKeywordsBlur={handleKeywordsBlur}
+              />
+
+              <div>
+                <Label className="text-sm font-medium">
+                  Research Categories *
+                </Label>
+                <ResearchCategorySelector
+                  selectedCategories={manuscriptData.categories}
+                  onCategoriesChange={handleCategoriesChange}
+                />
+              </div>
+
+              <Separator />
+
+              <FileUploadSection
+                file={file}
+                uploading={uploading}
+                uploadProgress={uploadProgress}
+                uploadResult={uploadResult}
+                onFileChange={handleFileChange}
+                onUpload={handleIPFSUpload}
+              />
             </CardContent>
+
+            <CardFooter className="bg-gray-50 border-t border-gray-100 p-6">
+              <SubmitButton
+                loading={loading}
+                connected={connected}
+                isFormValid={isFormValid}
+                cvVerified={cvVerified}
+                onSubmit={handleSubmit}
+              />
+            </CardFooter>
           </Card>
-        )}
+        </CVRegistrationGuard>
       </div>
     </div>
   );

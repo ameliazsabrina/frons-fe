@@ -14,11 +14,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useProgram } from "@/hooks/useProgram";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useToast } from "@/components/ui/toast";
 
 export default function DocisPage() {
-  const { connected } = useProgram();
+  const { connected } = useWallet();
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const { showToast } = useToast();

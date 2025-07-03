@@ -28,7 +28,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { useProgram } from "@/hooks/useProgram";
+import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast";
 
@@ -104,7 +104,7 @@ interface ApiProfileResponse {
 }
 
 export default function YourProfilePage() {
-  const { connected, publicKey } = useProgram();
+  const { connected, publicKey } = useWallet();
   const router = useRouter();
   const { showToast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";

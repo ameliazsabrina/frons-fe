@@ -32,7 +32,7 @@ export function Loading({ className, progress }: LoadingProps) {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-sm text-primary/60 mt-2 font-semibold">
+            <p className="text-sm text-primary mt-2 font-semibold">
               {progress}% loaded
             </p>
           </div>
