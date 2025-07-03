@@ -25,7 +25,7 @@ export function Loading({ className, progress }: LoadingProps) {
 
       <div className="text-center space-y-4 relative z-10 px-4">
         {progress !== undefined && (
-          <div className="w-64 mx-auto pt-4">
+          <div className="w-64 mx-auto pt-2">
             <div className="w-full bg-gray-200 rounded-full h-2 font-semibold">
               <div
                 className="bg-primary h-2 rounded-full transition-all duration-300 ease-out font-semibold"

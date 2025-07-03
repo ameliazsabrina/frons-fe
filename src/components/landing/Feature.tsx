@@ -2,18 +2,10 @@
 import React from "react";
 import { Separator } from "../ui/separator";
 import { CardSwap, Card } from "../ui/card-swap";
-import {
-  Upload,
-  Eye,
-  Shield,
-  FileText,
-  TrendingUp,
-  DollarSign,
-} from "lucide-react";
 
 export function Feature() {
   return (
-    <section className="pt-20 pb-0 px-4 bg-white h-[85vh] lg:h-[70vh] overflow-hidden justify-between">
+    <section className="pt-20 pb-0 px-16 bg-white h-[85vh] lg:h-[70vh] overflow-hidden justify-between z-10">
       <Separator className="mb-16" />
       <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16">
         <div className="order-1 lg:order-1">
@@ -35,18 +27,21 @@ export function Feature() {
             <CardSwap
               cardDistance={20}
               verticalDistance={10}
-              delay={3000}
-              pauseOnHover={true}
+              delay={4000}
+              pauseOnHover={false}
             >
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <Upload className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      1
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    Submit Manuscript
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">Submit</span>
+                    <span className="block">Manuscript</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Upload your research paper with metadata. Supports all major
                     academic formats.
                   </p>
@@ -55,13 +50,16 @@ export function Feature() {
 
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <Eye className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      2
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    Peer Review
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">Peer</span>
+                    <span className="block">Review</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Rigorous peer review by qualified experts ensuring quality
                     and credibility.
                   </p>
@@ -70,13 +68,16 @@ export function Feature() {
 
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <Shield className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      3
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    Blockchain Publication
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">Blockchain</span>
+                    <span className="block">Publication</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Published on blockchain with immutable timestamps and
                     permanent accessibility.
                   </p>
@@ -85,13 +86,16 @@ export function Feature() {
 
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <FileText className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      4
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    NFT Creation
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">NFT</span>
+                    <span className="block">Creation</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Your paper becomes a unique NFT with proof of ownership and
                     monetization opportunities.
                   </p>
@@ -100,13 +104,16 @@ export function Feature() {
 
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <TrendingUp className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      5
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    Track Impact
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">Track</span>
+                    <span className="block">Impact</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Monitor citations and engagement metrics through real-time
                     blockchain analytics.
                   </p>
@@ -115,13 +122,16 @@ export function Feature() {
 
               <Card>
                 <div className="flex flex-col items-center text-center h-full">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                    <DollarSign className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-primary/20">
+                    <span className="text-3xl lg:text-4xl font-bold text-primary">
+                      6
+                    </span>
                   </div>
-                  <h3 className="text-3xl font-semibold text-foreground mb-3">
-                    Earn Revenue
+                  <h3 className="text-4xl lg:text-6xl font-bold text-primary mb-4 tracking-tight max-w-sm mx-auto">
+                    <span className="block">Earn</span>
+                    <span className="block">Revenue</span>
                   </h3>
-                  <p className="text-muted-foreground text-md leading-tight">
+                  <p className="text-foreground/80 text-lg leading-relaxed lg:text-2xl lg:leading-tight">
                     Generate income through NFT sales, citation royalties, and
                     platform revenue sharing.
                   </p>

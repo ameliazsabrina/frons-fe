@@ -64,7 +64,7 @@ export function PublishingAdvantages() {
   }, [advantages.length]);
 
   return (
-    <div ref={containerRef} className="bg-white lg:-mt-20 -mt-10">
+    <div ref={containerRef} className="bg-white lg:-mt-20 -mt-10 z-30">
       <header className="h-[25vh] lg:h-[40vh] w-full flex flex-col items-center justify-center pt-0">
         <Separator className="mb-16" />
         <h1 className="text-center font-spectral font-semibold text-primary text-5xl  md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">

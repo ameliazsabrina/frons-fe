@@ -28,7 +28,7 @@ Create a `.env.local` file with the following variables:
 ```env
 # Required for NFT functionality
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
-NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+NEXT_PUBLIC_SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=3451b7c4-f90f-451e-a4b5-c51966815b43
 NEXT_PUBLIC_FRONSCIERS_PROGRAM_ID=your_program_id_here
 NEXT_PUBLIC_USD_MINT=your_usd_mint_address_here
 NEXT_PUBLIC_FRONS_MINT=your_frons_mint_address_here

@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 export const WalletConnection = () => {
-  const { user, handleLogOut } = useDynamicContext();
+  const { user, handleLogOut, setShowAuthFlow } = useDynamicContext();
   const {
     createWalletAccount,
     importPrivateKey,
@@ -91,7 +91,12 @@ export const WalletConnection = () => {
 
   if (!connected) {
     return (
-      <Button variant="default" className="text-sm" size="sm">
+      <Button
+        variant="default"
+        className="text-sm"
+        size="sm"
+        onClick={() => setShowAuthFlow(true)}
+      >
         Get Started
       </Button>
     );
