@@ -80,7 +80,10 @@ export function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href="/overview" className="flex items-center">
+                      <Link
+                        href="https://fronsciers.replit.app/dashboard"
+                        className="flex items-center"
+                      >
                         <LayoutDashboardIcon className="mr-2 h-4 w-4" />
                         Overview
                       </Link>

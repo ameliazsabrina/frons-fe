@@ -60,7 +60,7 @@ interface ReviewManuscript {
   metadataCid?: string;
   ipfsUrls: {
     manuscript: string;
-    metadata: string | null;
+    metadata?: string | null;
   };
   gateways: string[];
   reviewStatus?:
@@ -168,10 +168,134 @@ export default function ReviewManuscriptPage() {
     setCategories([{ name: "All", count: 0 }]);
   }, []);
 
+  // Mock data for demo purposes
+  const generateMockReviewManuscripts = (): PendingReviewManuscript[] => [
+    {
+      id: 1,
+      title: "Advanced Quantum Computing Applications in Cryptography",
+      author: "Dr. Alice Johnson",
+      abstract:
+        "This paper explores novel applications of quantum computing in modern cryptographic systems, presenting breakthrough algorithms for quantum-resistant encryption.",
+      category: ["Quantum Computing", "Computer Science", "Cryptography"],
+      submissionDate: "2024-03-15",
+      status: "pending_review",
+      cid: "QmX1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmX1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0",
+      },
+      reviewInfo: {
+        reviewsCompleted: 2,
+        reviewsRequired: 3,
+        canPublish: false,
+      },
+    },
+    {
+      id: 2,
+      title: "Machine Learning for Climate Change Prediction Models",
+      author: "Prof. Robert Chen",
+      abstract:
+        "We present a comprehensive machine learning framework for predicting climate patterns with unprecedented accuracy using neural networks and satellite data.",
+      category: [
+        "Machine Learning",
+        "Environmental Science",
+        "Climate Science",
+      ],
+      submissionDate: "2024-03-18",
+      status: "ready_for_publication",
+      cid: "QmB1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmB1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0",
+      },
+      reviewInfo: {
+        reviewsCompleted: 3,
+        reviewsRequired: 3,
+        canPublish: true,
+      },
+    },
+    {
+      id: 3,
+      title: "Blockchain Technology in Healthcare Data Management",
+      author: "Dr. Maria Santos",
+      abstract:
+        "This research proposes a novel blockchain-based system for secure and efficient healthcare data management, ensuring patient privacy while enabling data sharing.",
+      category: ["Blockchain Technology", "Healthcare", "Data Management"],
+      submissionDate: "2024-03-20",
+      status: "in_review",
+      cid: "QmC2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmC2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1",
+      },
+      reviewInfo: {
+        reviewsCompleted: 1,
+        reviewsRequired: 3,
+        canPublish: false,
+      },
+    },
+    {
+      id: 4,
+      title: "Neural Network Optimization for Drug Discovery",
+      author: "Dr. James Wilson",
+      abstract:
+        "We introduce advanced neural network architectures specifically designed for drug discovery, achieving significant improvements in molecular property prediction.",
+      category: ["Artificial Intelligence", "Medicine", "Drug Discovery"],
+      submissionDate: "2024-03-22",
+      status: "awaiting_reviewers",
+      cid: "QmD3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmD3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2",
+      },
+      reviewInfo: {
+        reviewsCompleted: 0,
+        reviewsRequired: 3,
+        canPublish: false,
+      },
+    },
+    {
+      id: 5,
+      title: "Sustainable Energy Systems Using AI Optimization",
+      author: "Prof. Sarah Kim",
+      abstract:
+        "This paper presents an AI-driven approach to optimize sustainable energy systems, demonstrating significant improvements in efficiency and cost reduction.",
+      category: [
+        "Artificial Intelligence",
+        "Environmental Science",
+        "Energy Systems",
+      ],
+      submissionDate: "2024-03-25",
+      status: "pending_review",
+      cid: "QmE4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmE4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3",
+      },
+      reviewInfo: {
+        reviewsCompleted: 2,
+        reviewsRequired: 3,
+        canPublish: false,
+      },
+    },
+  ];
+
   const loadPendingManuscripts = useCallback(async () => {
-    const result = await getPendingReviewManuscripts(20);
-    if (result?.success) {
-      setManuscripts(result.manuscripts);
+    // Generate mock data for demo
+    const mockManuscripts = generateMockReviewManuscripts();
+
+    try {
+      const result = await getPendingReviewManuscripts(20);
+      if (result?.success && result.manuscripts) {
+        // Combine mock data with real data
+        const combinedManuscripts = [...mockManuscripts, ...result.manuscripts];
+        setManuscripts(combinedManuscripts);
+      } else {
+        setManuscripts(mockManuscripts);
+      }
+    } catch (error) {
+      console.log("API not available, using mock data");
+      setManuscripts(mockManuscripts);
     }
   }, [getPendingReviewManuscripts]);
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DOCIManuscript } from "@/types/fronsciers";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { PublicKey } from "@solana/web3.js";
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp * 1000).toLocaleDateString();
@@ -38,7 +39,164 @@ export default function DocisPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const [manuscripts, setManuscripts] = useState<DOCIManuscript[]>([]);
+
+  // Generate mock DOCI data for demo purposes (client-side only)
+  const generateMockDOCIs = (): DOCIManuscript[] => {
+    if (typeof window === "undefined") return []; // Prevent SSR issues
+
+    try {
+      return [
+        {
+          doci: "10.fronsciers/manuscript.2024.001.v1",
+          manuscriptAccount: new PublicKey("11111111111111111111111111111111"),
+          mintAddress: new PublicKey("22222222222222222222222222222222"),
+          manuscriptHash: Array.from({ length: 32 }, (_, i) => i),
+          authors: [new PublicKey("33333333333333333333333333333333")],
+          peerReviewers: [
+            new PublicKey("44444444444444444444444444444444"),
+            new PublicKey("55555555555555555555555555555555"),
+            new PublicKey("66666666666666666666666666666666"),
+          ],
+          publicationDate: Math.floor(Date.now() / 1000) - 86400 * 30, // 30 days ago
+          version: 1,
+          citationCount: 23,
+          accessCount: 156,
+          metadataUri:
+            "https://ipfs.io/ipfs/QmX7Y8Z9A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6",
+          royaltyConfig: {
+            authorsShare: 70,
+            platformShare: 20,
+            reviewersShare: 10,
+          },
+          bump: 255,
+        },
+        {
+          doci: "10.fronsciers/manuscript.2024.002.v2",
+          manuscriptAccount: new PublicKey("77777777777777777777777777777777"),
+          mintAddress: new PublicKey("88888888888888888888888888888888"),
+          manuscriptHash: Array.from({ length: 32 }, (_, i) => i + 32),
+          authors: [
+            new PublicKey("99999999999999999999999999999999"),
+            new PublicKey("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+          ],
+          peerReviewers: [
+            new PublicKey("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"),
+            new PublicKey("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"),
+            new PublicKey("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"),
+          ],
+          publicationDate: Math.floor(Date.now() / 1000) - 86400 * 15, // 15 days ago
+          version: 2,
+          citationCount: 45,
+          accessCount: 289,
+          metadataUri:
+            "https://ipfs.io/ipfs/QmA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0",
+          royaltyConfig: {
+            authorsShare: 70,
+            platformShare: 20,
+            reviewersShare: 10,
+          },
+          bump: 254,
+        },
+        {
+          doci: "10.fronsciers/manuscript.2024.003.v1",
+          manuscriptAccount: new PublicKey(
+            "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+          ),
+          mintAddress: new PublicKey("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
+          manuscriptHash: Array.from({ length: 32 }, (_, i) => i + 64),
+          authors: [new PublicKey("1111111111111111111111111111111112")],
+          peerReviewers: [
+            new PublicKey("1111111111111111111111111111111113"),
+            new PublicKey("1111111111111111111111111111111114"),
+            new PublicKey("1111111111111111111111111111111115"),
+            new PublicKey("1111111111111111111111111111111116"),
+          ],
+          publicationDate: Math.floor(Date.now() / 1000) - 86400 * 7, // 7 days ago
+          version: 1,
+          citationCount: 12,
+          accessCount: 78,
+          metadataUri:
+            "https://ipfs.io/ipfs/QmB2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1",
+          royaltyConfig: {
+            authorsShare: 70,
+            platformShare: 20,
+            reviewersShare: 10,
+          },
+          bump: 253,
+        },
+        {
+          doci: "10.fronsciers/manuscript.2024.004.v1",
+          manuscriptAccount: new PublicKey(
+            "1111111111111111111111111111111117"
+          ),
+          mintAddress: new PublicKey("1111111111111111111111111111111118"),
+          manuscriptHash: Array.from({ length: 32 }, (_, i) => i + 96),
+          authors: [
+            new PublicKey("1111111111111111111111111111111119"),
+            new PublicKey("111111111111111111111111111111111A"),
+            new PublicKey("111111111111111111111111111111111B"),
+          ],
+          peerReviewers: [
+            new PublicKey("111111111111111111111111111111111C"),
+            new PublicKey("111111111111111111111111111111111D"),
+            new PublicKey("111111111111111111111111111111111E"),
+          ],
+          publicationDate: Math.floor(Date.now() / 1000) - 86400 * 3, // 3 days ago
+          version: 1,
+          citationCount: 8,
+          accessCount: 34,
+          metadataUri:
+            "https://ipfs.io/ipfs/QmC3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2",
+          royaltyConfig: {
+            authorsShare: 70,
+            platformShare: 20,
+            reviewersShare: 10,
+          },
+          bump: 252,
+        },
+        {
+          doci: "10.fronsciers/manuscript.2024.005.v3",
+          manuscriptAccount: new PublicKey(
+            "111111111111111111111111111111111F"
+          ),
+          mintAddress: new PublicKey("1111111111111111111111111111111120"),
+          manuscriptHash: Array.from({ length: 32 }, (_, i) => i + 128),
+          authors: [new PublicKey("1111111111111111111111111111111121")],
+          peerReviewers: [
+            new PublicKey("1111111111111111111111111111111122"),
+            new PublicKey("1111111111111111111111111111111123"),
+            new PublicKey("1111111111111111111111111111111124"),
+            new PublicKey("1111111111111111111111111111111125"),
+            new PublicKey("1111111111111111111111111111111126"),
+          ],
+          publicationDate: Math.floor(Date.now() / 1000) - 86400 * 1, // 1 day ago
+          version: 3,
+          citationCount: 67,
+          accessCount: 412,
+          metadataUri:
+            "https://ipfs.io/ipfs/QmD4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3",
+          royaltyConfig: {
+            authorsShare: 70,
+            platformShare: 20,
+            reviewersShare: 10,
+          },
+          bump: 251,
+        },
+      ];
+    } catch (error) {
+      console.error("Error generating mock DOCIs:", error);
+      return [];
+    }
+  };
+
+  // Initialize mock data on client side
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setManuscripts(generateMockDOCIs());
+    }
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

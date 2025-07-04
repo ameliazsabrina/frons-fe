@@ -85,44 +85,202 @@ export default function PublishedManuscriptsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("newest");
 
+  // Mock data for demo purposes
+  const generateMockManuscripts = (): PublishedManuscript[] => [
+    {
+      id: 1,
+      title:
+        "QA Blockchain Electronic Health Data System for Secure Medical Records Exchange",
+      author:
+        "James Kolapo Oladele, Arnold Adimabua Ojugo1*, Christopher Chukwufunaya Odiakaose2, Frances Uchechukwu Emordi3, Reuben Akporube Abere1, Blessing Nwozor1, Patrick Ogholuwarami Ejeh2 and Victor Ochuko Geteloma",
+      category: ["Quantum Computing", "Machine Learning", "Medicine"],
+      abstract:
+        "This paper presents a groundbreaking approach to drug discovery using quantum machine learning algorithms. We demonstrate significant improvements in molecular property prediction and drug-target interaction modeling.",
+      status: "Published",
+      submissionDate: "2024-01-15",
+      publishedDate: "2024-02-28",
+      cid: "QmX7Y8Z9A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6",
+      ipfsUrls: {
+        manuscript:
+          "https://lavender-obliged-krill-876.mypinata.cloud/ipfs/bafybeif55nxsboonmeb2a3bq6cfwyn2pp43imusvcb3cksso2ozvdybu2y?pinataGatewayToken=30J7NvmruuWRqqLcl_dP3pIOLXNPHFV9WTVmGKyiAZYAELn2aYtbB7YbegNFivjc",
+      },
+    },
+    {
+      id: 2,
+      title:
+        "Clinical characteristics and relevant factor analysis in super-aged COVID-19 patients",
+      author:
+        "MA Xiaorong, Zheng Tian, aresilan guliru, abudu shalamu rukeyamu, Zhang Jianfeng, Dai Bin",
+      category: ["Medicine", "Biology", "Physics"],
+      abstract:
+        "We propose a novel decentralized AI framework that leverages blockchain technology for secure and privacy-preserving federated learning across multiple institutions.",
+      status: "Published",
+      submissionDate: "2024-01-20",
+      publishedDate: "2024-03-05",
+      cid: "QmA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0",
+      ipfsUrls: {
+        manuscript:
+          "https://lavender-obliged-krill-876.mypinata.cloud/ipfs/bafybeid62pkhmwoqcwfnhyhcppg7j4uif3tdh7yd6jsflcg2mrl6psgsym?pinataGatewayToken=30J7NvmruuWRqqLcl_dP3pIOLXNPHFV9WTVmGKyiAZYAELn2aYtbB7YbegNFivjc",
+      },
+    },
+    {
+      id: 3,
+      title: "Neural Network Optimization for Climate Change Prediction Models",
+      author: "Dr. Emily Watson",
+      category: ["Environmental Science", "Machine Learning", "Mathematics"],
+      abstract:
+        "This research introduces advanced neural network architectures optimized for long-term climate prediction, achieving unprecedented accuracy in temperature and precipitation forecasting.",
+      status: "Published",
+      submissionDate: "2024-02-01",
+      publishedDate: "2024-03-12",
+      cid: "QmB2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmB2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1",
+      },
+    },
+    {
+      id: 4,
+      title: "CRISPR-Cas9 Enhancement Through AI-Guided Design",
+      author: "Dr. James Liu",
+      category: ["Biology", "Artificial Intelligence", "Medicine"],
+      abstract:
+        "We present an AI-guided approach to enhance CRISPR-Cas9 precision, reducing off-target effects by 95% while maintaining high editing efficiency.",
+      status: "Published",
+      submissionDate: "2024-02-10",
+      publishedDate: "2024-03-18",
+      cid: "QmC3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmC3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2",
+      },
+    },
+    {
+      id: 5,
+      title: "Sustainable Energy Storage: Next-Generation Battery Technologies",
+      author: "Prof. Anna Kowalski",
+      category: ["Engineering", "Chemistry", "Environmental Science"],
+      abstract:
+        "This paper explores novel battery technologies using sustainable materials, achieving 300% improvement in energy density while reducing environmental impact.",
+      status: "Published",
+      submissionDate: "2024-02-15",
+      publishedDate: "2024-03-25",
+      cid: "QmD4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmD4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3",
+      },
+    },
+    {
+      id: 6,
+      title:
+        "Neuroplasticity in Virtual Reality: Cognitive Enhancement Studies",
+      author: "Dr. Robert Kim",
+      category: ["Neuroscience", "Psychology", "Computer Science"],
+      abstract:
+        "Our research demonstrates how virtual reality environments can enhance neuroplasticity, leading to improved cognitive function and memory retention in aging populations.",
+      status: "Published",
+      submissionDate: "2024-02-20",
+      publishedDate: "2024-04-01",
+      cid: "QmE5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmE5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4",
+      },
+    },
+    {
+      id: 7,
+      title: "Economic Impact of Cryptocurrency Adoption in Developing Nations",
+      author: "Prof. Maria Santos",
+      category: ["Economics", "Blockchain Technology"],
+      abstract:
+        "This comprehensive study analyzes the economic implications of cryptocurrency adoption in developing countries, revealing significant impacts on financial inclusion and economic growth.",
+      status: "Published",
+      submissionDate: "2024-02-25",
+      publishedDate: "2024-04-08",
+      cid: "QmF6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmF6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5",
+      },
+    },
+    {
+      id: 8,
+      title: "Quantum Entanglement in Biological Systems: New Discoveries",
+      author: "Dr. Thomas Anderson",
+      category: ["Physics", "Biology", "Quantum Computing"],
+      abstract:
+        "We present evidence of quantum entanglement effects in biological systems, particularly in photosynthesis and neural networks, opening new avenues for bio-quantum research.",
+      status: "Published",
+      submissionDate: "2024-03-01",
+      publishedDate: "2024-04-15",
+      cid: "QmG7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6",
+      ipfsUrls: {
+        manuscript:
+          "https://ipfs.io/ipfs/QmG7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6",
+      },
+    },
+  ];
+
   // Fetch published manuscripts
   const fetchPublishedManuscripts = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Get published manuscripts from different categories
-      const categories = RESEARCH_CATEGORIES.filter(
-        (cat) => cat !== "All Categories"
-      );
-      const allManuscripts: PublishedManuscript[] = [];
+      // Generate mock data for demo
+      const mockManuscripts = generateMockManuscripts();
 
-      // Fetch from each category
-      for (const category of categories) {
-        try {
-          const result = await backendAPI.getPublishedManuscripts(category, 50);
-          if (result.success && result.manuscripts) {
-            allManuscripts.push(...result.manuscripts);
+      // Try to fetch real data and combine with mock data
+      try {
+        const categories = RESEARCH_CATEGORIES.filter(
+          (cat) => cat !== "All Categories"
+        );
+        const allManuscripts: PublishedManuscript[] = [...mockManuscripts];
+
+        // Fetch from each category
+        for (const category of categories) {
+          try {
+            const result = await backendAPI.getPublishedManuscripts(
+              category,
+              20
+            );
+            if (result.success && result.manuscripts) {
+              // Add real manuscripts with higher IDs to avoid conflicts
+              const realManuscripts = result.manuscripts.map((m: any) => ({
+                ...m,
+                id: m.id + 1000, // Offset to avoid conflicts with mock data
+              }));
+              allManuscripts.push(...realManuscripts);
+            }
+          } catch (err) {
+            console.warn(
+              `Failed to fetch manuscripts for category ${category}:`,
+              err
+            );
           }
-        } catch (err) {
-          console.warn(
-            `Failed to fetch manuscripts for category ${category}:`,
-            err
-          );
         }
+
+        // Remove duplicates by ID
+        const uniqueManuscripts = allManuscripts.filter(
+          (manuscript, index, self) =>
+            index === self.findIndex((m) => m.id === manuscript.id)
+        );
+
+        setManuscripts(uniqueManuscripts);
+        setFilteredManuscripts(uniqueManuscripts);
+      } catch (apiError) {
+        console.log("API not available, using mock data only");
+        setManuscripts(mockManuscripts);
+        setFilteredManuscripts(mockManuscripts);
       }
-
-      // Remove duplicates by ID
-      const uniqueManuscripts = allManuscripts.filter(
-        (manuscript, index, self) =>
-          index === self.findIndex((m) => m.id === manuscript.id)
-      );
-
-      setManuscripts(uniqueManuscripts);
-      setFilteredManuscripts(uniqueManuscripts);
     } catch (err) {
       console.error("Failed to fetch published manuscripts:", err);
-      setError("Failed to load published manuscripts. Please try again.");
+      // Fallback to mock data on error
+      const mockManuscripts = generateMockManuscripts();
+      setManuscripts(mockManuscripts);
+      setFilteredManuscripts(mockManuscripts);
+      setError(null); // Don't show error, just use mock data
     } finally {
       setLoading(false);
     }

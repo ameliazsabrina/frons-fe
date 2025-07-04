@@ -90,7 +90,6 @@ export default function RegisterCVPage() {
     }
   };
 
-  // Upload CV
   const handleUploadCV = async () => {
     if (!selectedFile || !validSolanaPublicKey) return;
 
@@ -98,7 +97,6 @@ export default function RegisterCVPage() {
       setUploading(true);
       setUploadProgress(0);
 
-      // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) return prev;
@@ -156,7 +154,7 @@ export default function RegisterCVPage() {
             </div>
             <div className="container max-w-4xl mx-auto px-4 py-8">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  -bold tracking-tight">
                   CV Registration
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
