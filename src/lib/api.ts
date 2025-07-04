@@ -29,7 +29,9 @@ class BackendAPI {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    this.baseUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://fronsciers-be.azakiyasabrina.workers.dev";
   }
 
   private async request<T>(

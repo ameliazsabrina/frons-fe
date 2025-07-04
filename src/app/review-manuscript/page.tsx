@@ -356,9 +356,9 @@ export default function ReviewManuscriptPage() {
                 <Separator orientation="vertical" className="h-6" />
               </div>
             </div>
-            <div className="container max-w-6xl mx-auto px-4 py-8">
+            <div className="container max-w-6xl mx-auto px-4 py-8 lg:px-16">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
                   Review Manuscripts
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
@@ -400,7 +400,7 @@ export default function ReviewManuscriptPage() {
           <div className="flex-1 p-4 sm:p-6">
             {/* Header Section */}
             <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  text-bold tracking-tight">
                 Review Manuscripts
               </h1>
               <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">

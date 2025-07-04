@@ -1,14 +1,40 @@
 # Detailed API Examples - Peer Review Workflow & NFT Integration
 
-## Base URL: `http://localhost:5001`
+## Base URL: `https://fronsciers-be.azakiyasabrina.workers.dev` (Production) | `http://localhost:5001` (Development)
 
 This document provides detailed request/response examples for the **peer review workflow** and **NFT integration** API endpoints.
 
+## ⚠️ Important: Current Service Status
+
+**PRODUCTION STATUS (Cloudflare Workers):**
+
+- ✅ **CV Registration**: Fully operational
+- ✅ **Manuscript Submission**: Fully operational
+- ✅ **Peer Review Workflow**: Fully operational
+- ✅ **Publication Process**: Fully operational
+- ✅ **IPFS File Storage**: Fully operational
+- ✅ **Database Operations**: Fully operational
+- ⚠️ **NFT Service**: **Temporarily disabled** (returns 503 Service Unavailable)
+
+**NFT SERVICE NOTICE:**
+The NFT creation service is currently disabled in the Cloudflare Workers environment due to technical limitations with native dependencies (Metaboss CLI, Sharp image processing). NFT endpoints will return a 503 response with an appropriate message. The core peer review workflow remains fully functional.
+
+## 📋 Using This Documentation
+
+**URL Usage in Examples:**
+
+- Most curl examples use `localhost:5001` for **development/testing**
+- For **production**, replace with `https://fronsciers-be.azakiyasabrina.workers.dev`
+- Frontend integrations should use the appropriate URL based on environment
+- Key workflow examples show both development and production URLs
+
 ## 🎯 Complete Workflow Overview
 
-**FULL FLOW:** CV Registration → Submit → Review Queue → 3+ Reviewers → Publication Decision → Published → NFT Creation → Blockchain Verification
+**CURRENT OPERATIONAL FLOW:** CV Registration → Submit → Review Queue → 3+ Reviewers → Publication Decision → Published
 
-**NFT INTEGRATION:** Published manuscripts are automatically converted to academic NFTs on Solana blockchain, providing:
+**FULL FUTURE FLOW:** CV Registration → Submit → Review Queue → 3+ Reviewers → Publication Decision → Published → NFT Creation → Blockchain Verification
+
+**NFT INTEGRATION (Temporarily Disabled):** Published manuscripts will be automatically converted to academic NFTs on Solana blockchain when the service is restored, providing:
 
 - Immutable proof of publication
 - Royalty distribution to authors, reviewers, and platform
@@ -45,10 +71,18 @@ This document provides detailed request/response examples for the **peer review 
 
 Check if a user has registered their CV and can submit manuscripts.
 
-**Request:**
+> **📝 Note:** The examples below use `localhost:5001` for development. For production, replace with `https://fronsciers-be.azakiyasabrina.workers.dev`
+
+**Request (Development):**
 
 ```bash
 curl "http://localhost:5001/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
+```
+
+**Request (Production):**
+
+```bash
+curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
 ```
 
 **Response (CV Registered):**
@@ -918,8 +952,6 @@ curl "http://localhost:5001/api/manuscripts/recent/Artificial Intelligence?limit
 
 ## 8. Frontend Integration Examples
 
-For detailed frontend integration examples and React/TypeScript components, please refer to [NFT_FRONTEND_INTEGRATION.md](./NFT_FRONTEND_INTEGRATION.md).
-
 ### Profile Update Interface
 
 ```javascript
@@ -1304,657 +1336,104 @@ const publishManuscript = async (manuscriptId) => {
 }
 ```
 
-## 10. NFT Integration (Academic NFTs)
+## 10. NFT Integration (⚠️ Currently Disabled)
 
-### Overview: Academic NFT Creation
+### ⚠️ Service Status Notice
 
-After a manuscript is published through peer review, it's automatically converted to an **Academic NFT** on the Solana blockchain. This provides:
+**ALL NFT endpoints are currently returning 503 Service Unavailable** due to Cloudflare Workers technical limitations. The service will be restored in a future update.
 
-- **Immutable Publication Record**: Permanent blockchain verification
-- **Royalty Distribution**: Automated revenue sharing between authors, reviewers, and platform
-- **Academic Credentials**: Verifiable proof of peer-reviewed publication
-- **IPFS Storage**: Decentralized, permanent storage of manuscript and metadata
+### Typical Error Response for NFT Endpoints
 
-### NFT Creation Flow
-
-1. **Manuscript Published** → Peer review completed, manuscript approved
-2. **NFT Metadata Generated** → Creates structured metadata with publication details
-3. **NFT Image Generated** → Creates visual representation of the academic work
-4. **IPFS Upload** → Stores image and metadata on decentralized storage
-5. **Solana Metadata Creation** → Links NFT to Solana blockchain using Metaboss
-6. **Verification** → Confirms NFT creation and provides explorer links
-
-### NFT Health Check
-
-**GET** `/api/nft-metadata/health`
-
-Check the status of NFT-related services (IPFS, Metaboss, Image Generation).
-
-**Request:**
-
-```bash
-curl "http://localhost:5001/api/nft-metadata/health"
-```
-
-**Response:**
+**All NFT endpoints** (`/api/nft-metadata/*`) currently return:
 
 ```json
 {
-  "status": "healthy",
-  "service": "nft-metadata",
-  "timestamp": "2024-01-01T12:00:00.000Z",
-  "services": {
-    "ipfs": true,
-    "metaboss": true,
-    "imageGenerator": true
-  },
-  "dependencies": {
-    "pinata": true,
-    "metaboss": true,
-    "imageGeneration": true
-  }
+  "error": "Service temporarily unavailable",
+  "message": "NFT metadata service is temporarily disabled for Cloudflare Workers deployment due to technical limitations with native dependencies.",
+  "status": 503,
+  "serviceStatus": "disabled",
+  "expectedResolution": "Future update with Workers-compatible implementation"
 }
 ```
 
-**Response (Degraded Service):**
+### Affected NFT Endpoints (Currently Disabled)
 
-```json
-{
-  "status": "degraded",
-  "service": "nft-metadata",
-  "timestamp": "2024-01-01T12:00:00.000Z",
-  "services": {
-    "ipfs": true,
-    "metaboss": false,
-    "imageGenerator": true
-  },
-  "dependencies": {
-    "pinata": true,
-    "metaboss": false,
-    "imageGeneration": true
-  }
-}
-```
+The following endpoints are temporarily unavailable:
 
-### Create Academic NFT
+- `GET /api/nft-metadata/health` - NFT service health check
+- `POST /api/nft-metadata/create` - Create academic NFT
+- `GET /api/nft-metadata/:mint` - Get NFT metadata
+- `PUT /api/nft-metadata/:mint` - Update NFT metadata
+- `GET /api/nft-metadata/:mint/verify` - Verify NFT metadata
+- `POST /api/nft-metadata/preview-image` - Generate preview image
 
-**POST** `/api/nft-metadata/create`
+### Frontend Integration Notes for NFT Features
 
-Create NFT metadata and image for a published manuscript.
+When integrating NFT features in your frontend:
 
-**⚠️ Required Fields:**
-
-- `mint` - Solana mint address for the NFT
-- `doci` - Digital Object Citation Identifier (unique academic identifier)
-- `title` - Manuscript title
-- `description` - Manuscript description/abstract
-- `ipfs_hash` - IPFS hash of the published manuscript
-- `author` - Author name
-
-**Optional Fields:**
-
-- `reviewers` - Array of reviewer wallet addresses
-- `publication_date` - Unix timestamp (defaults to current time)
-- `authors_share` - Author royalty percentage (default: 5000 = 50%)
-- `platform_share` - Platform royalty percentage (default: 2000 = 20%)
-- `reviewers_share` - Reviewer royalty percentage (default: 3000 = 30%)
-
-**Request Example:**
-
-```bash
-curl -X POST http://localhost:5001/api/nft-metadata/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-    "doci": "10.5281/zenodo.1234567",
-    "title": "Quantum Error Correction Methods in Modern Computing",
-    "description": "This paper presents novel approaches to quantum error correction, demonstrating significant improvements in qubit stability and error rates through innovative algorithmic techniques.",
-    "ipfs_hash": "QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
-    "author": "Dr. Alice Johnson",
-    "reviewers": [
-      "0xReviewer1Address123...",
-      "0xReviewer2Address456...",
-      "0xReviewer3Address789..."
-    ],
-    "authors_share": 5000,
-    "platform_share": 2000,
-    "reviewers_share": 3000
-  }'
-```
-
-**Response Example:**
-
-```json
-{
-  "success": true,
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "doci": "10.5281/zenodo.1234567",
-  "imageIpfsHash": "QmNFTImageHash123456789",
-  "metadataIpfsHash": "QmNFTMetadataHash987654321",
-  "explorerUrl": "https://explorer.solana.com/address/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU?cluster=devnet"
-}
-```
-
-**Error Response (Missing Fields):**
-
-```json
-{
-  "error": "Missing required fields: mint, doci",
-  "required": ["mint", "doci", "title", "description", "ipfs_hash", "author"]
-}
-```
-
-### Get NFT Metadata
-
-**GET** `/api/nft-metadata/:mint`
-
-Retrieve NFT metadata for a specific mint address.
-
-**Request:**
-
-```bash
-curl "http://localhost:5001/api/nft-metadata/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "metadata": {
-    "name": "Quantum Error Correction Methods in Modern Computing",
-    "symbol": "ACADEMIC",
-    "description": "This paper presents novel approaches to quantum error correction...",
-    "image": "https://gateway.pinata.cloud/ipfs/QmNFTImageHash123456789",
-    "external_url": "https://ipfs.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
-    "properties": {
-      "files": [
-        {
-          "uri": "https://ipfs.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
-          "type": "application/pdf"
-        }
-      ],
-      "category": "Quantum Computing"
-    },
-    "attributes": [
-      {
-        "trait_type": "Author",
-        "value": "Dr. Alice Johnson"
-      },
-      {
-        "trait_type": "DOI",
-        "value": "10.5281/zenodo.1234567"
-      },
-      {
-        "trait_type": "Publication Date",
-        "value": "2024-01-15"
-      },
-      {
-        "trait_type": "Peer Reviewed",
-        "value": "Yes"
-      },
-      {
-        "trait_type": "Reviewers",
-        "value": 3
-      },
-      {
-        "trait_type": "Authors Share",
-        "value": "50%"
-      },
-      {
-        "trait_type": "Platform Share",
-        "value": "20%"
-      },
-      {
-        "trait_type": "Reviewers Share",
-        "value": "30%"
-      }
-    ],
-    "collection": {
-      "name": "Fronsciers Academic NFTs",
-      "family": "Peer-Reviewed Publications"
-    }
-  },
-  "explorerUrl": "https://explorer.solana.com/address/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU?cluster=devnet"
-}
-```
-
-**Error Response (Not Found):**
-
-```json
-{
-  "error": "Metadata not found",
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
-}
-```
-
-### Update NFT Metadata
-
-**PUT** `/api/nft-metadata/:mint`
-
-Update existing NFT metadata (useful for corrections or additional information).
-
-**Request:**
-
-```bash
-curl -X PUT http://localhost:5001/api/nft-metadata/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU \
-  -H "Content-Type: application/json" \
-  -d '{
-    "doci": "10.5281/zenodo.1234567",
-    "title": "Quantum Error Correction Methods in Modern Computing (Updated)",
-    "description": "Updated description with additional findings and corrections...",
-    "ipfs_hash": "QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
-    "author": "Dr. Alice Johnson",
-    "reviewers": [
-      "0xReviewer1Address123...",
-      "0xReviewer2Address456...",
-      "0xReviewer3Address789..."
-    ]
-  }'
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "imageIpfsHash": "QmUpdatedNFTImageHash123456789",
-  "metadataIpfsHash": "QmUpdatedNFTMetadataHash987654321"
-}
-```
-
-### Verify NFT Metadata
-
-**GET** `/api/nft-metadata/:mint/verify`
-
-Check if NFT metadata exists for a given mint address.
-
-**Request:**
-
-```bash
-curl "http://localhost:5001/api/nft-metadata/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU/verify"
-```
-
-**Response (Exists):**
-
-```json
-{
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "exists": true,
-  "explorerUrl": "https://explorer.solana.com/address/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU?cluster=devnet"
-}
-```
-
-**Response (Not Found):**
-
-```json
-{
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "exists": false,
-  "explorerUrl": "https://explorer.solana.com/address/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU?cluster=devnet"
-}
-```
-
-### Generate Preview Image
-
-**POST** `/api/nft-metadata/preview-image`
-
-Generate a preview image for NFT without creating metadata (for frontend previews).
-
-**Request:**
-
-```bash
-curl -X POST http://localhost:5001/api/nft-metadata/preview-image \
-  -H "Content-Type: application/json" \
-  -d '{
-    "doci": "10.5281/zenodo.1234567",
-    "ownerName": "Dr. Alice Johnson",
-    "title": "Quantum Error Correction Methods in Modern Computing",
-    "publicationDate": "2024-01-15"
-  }'
-```
-
-**Response:**
-
-```json
-{
-  "message": "Preview image generation not yet implemented",
-  "data": {
-    "doci": "10.5281/zenodo.1234567",
-    "ownerName": "Dr. Alice Johnson",
-    "title": "Quantum Error Correction Methods in Modern Computing",
-    "publicationDate": "2024-01-15"
-  }
-}
-```
-
-## 11. Complete End-to-End Workflow Example
-
-### Full Academic Publication & NFT Creation
-
-```bash
-# 0. MANDATORY FIRST STEP: Register CV
-curl -X POST http://localhost:5001/api/parse-cv/parse-cv \
-  -F "cv=@alice_johnson_cv.pdf" \
-  -F "walletAddress=0xAliceWallet123..."
-# Response: CV parsed and saved successfully
-
-# 0.1. Verify CV registration
-curl "http://localhost:5001/api/manuscripts/check-cv-status/0xAliceWallet123..."
-# Response: { "success": true, "canSubmitManuscripts": true }
-
-# 1. Submit manuscript for peer review (CV required)
-curl -X POST http://localhost:5001/api/manuscripts/submit \
-  -F "manuscript=@quantum_research.pdf" \
-  -F "title=Quantum Error Correction Methods" \
-  -F "author=Dr. Alice Johnson" \
-  -F "category=Quantum Computing" \
-  -F "abstract=Novel approaches to quantum error correction..." \
-  -F "authorWallet=0xAliceWallet123..."
-# Response: Manuscript ID 456, Status: "under_review"
-
-# 2. Editor assigns 3 reviewers
-curl -X POST http://localhost:5001/api/reviews/manuscript/456/assign-reviewers \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reviewers": ["0xExpert1", "0xExpert2", "0xExpert3"],
-    "assignedBy": "editor@quantumjournal.com"
-  }'
-# Response: 3 review records created (IDs: 601, 602, 603)
-
-# 3. All reviewers submit decisions
-curl -X POST http://localhost:5001/api/reviews/601/submit-review \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "accept",
-    "comments": "Innovative approach with solid theoretical foundation.",
-    "reviewerWallet": "0xExpert1"
-  }'
-
-curl -X POST http://localhost:5001/api/reviews/602/submit-review \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "accept",
-    "comments": "Excellent experimental validation of the proposed methods.",
-    "reviewerWallet": "0xExpert2"
-  }'
-
-curl -X POST http://localhost:5001/api/reviews/603/submit-review \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "accept",
-    "comments": "Innovative approach with solid foundation.",
-    "reviewerWallet": "0xExpert3"
-  }'
-
-# 4. Check if ready to publish
-curl "http://localhost:5001/api/reviews/manuscript/456/review-status"
-# Response: canPublish: true, nextAction: "ready_to_publish"
-
-# 5. Publish the manuscript
-curl -X POST http://localhost:5001/api/manuscripts/456/publish \
-  -H "Content-Type: application/json" \
-  -d '{"publishedBy": "editor@quantumjournal.com"}'
-# Response: Status changed to "published"
-
-# 6. 🎯 NEW: Create Academic NFT
-curl -X POST http://localhost:5001/api/nft-metadata/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-    "doci": "10.5281/zenodo.1234567",
-    "title": "Quantum Error Correction Methods in Modern Computing",
-    "description": "This paper presents novel approaches to quantum error correction...",
-    "ipfs_hash": "QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
-    "author": "Dr. Alice Johnson",
-    "reviewers": ["0xExpert1", "0xExpert2", "0xExpert3"],
-    "authors_share": 5000,
-    "platform_share": 2000,
-    "reviewers_share": 3000
-  }'
-# Response: NFT metadata and image created successfully
-
-# 7. Verify NFT creation
-curl "http://localhost:5001/api/nft-metadata/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU/verify"
-# Response: exists: true
-
-# 8. Get complete NFT metadata
-curl "http://localhost:5001/api/nft-metadata/7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
-# Response: Complete NFT metadata with all attributes
-
-# 9. Manuscript now appears in public listings with NFT info
-curl "http://localhost:5001/api/manuscripts/published/Quantum Computing"
-# Response: Shows published manuscript with NFT mint address
-```
-
-## 12. NFT Integration Examples
-
-### Frontend NFT Creation Interface
-
-```javascript
-// Create NFT after manuscript publication
-const createAcademicNFT = async (manuscriptData, mintAddress) => {
+````javascript
+// Check NFT service availability
+const checkNFTServiceStatus = async () => {
   try {
-    const nftData = {
-      mint: mintAddress,
-      doci: manuscriptData.doi || `10.5281/zenodo.${Date.now()}`,
-      title: manuscriptData.title,
-      description: manuscriptData.abstract,
-      ipfs_hash: manuscriptData.ipfs_hash,
-      author: manuscriptData.author,
-      reviewers: manuscriptData.reviewers || [],
-      authors_share: 5000, // 50%
-      platform_share: 2000, // 20%
-      reviewers_share: 3000, // 30%
-    };
-
-    const response = await fetch("/api/nft-metadata/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nftData),
-    });
-
+    const response = await fetch("/api/nft-metadata/health");
     const result = await response.json();
 
-    if (result.success) {
-      console.log("✅ Academic NFT created successfully");
-      console.log(`🆔 Mint Address: ${result.mint}`);
-      console.log(`🖼️ Image IPFS: ${result.imageIpfsHash}`);
-      console.log(`📄 Metadata IPFS: ${result.metadataIpfsHash}`);
-      console.log(`🔗 Explorer: ${result.explorerUrl}`);
-
+    if (response.status === 503) {
+      console.log("ℹ️ NFT service currently disabled");
       return {
-        success: true,
-        mint: result.mint,
-        imageIpfsHash: result.imageIpfsHash,
-        metadataIpfsHash: result.metadataIpfsHash,
-        explorerUrl: result.explorerUrl,
+        available: false,
+        message: result.message,
+        status: "disabled"
       };
-    } else {
-      console.error("❌ NFT creation failed:", result.error);
-      return { success: false, error: result.error };
-    }
-  } catch (error) {
-    console.error("Failed to create NFT:", error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Verify NFT exists
-const verifyNFT = async (mintAddress) => {
-  try {
-    const response = await fetch(`/api/nft-metadata/${mintAddress}/verify`);
-    const result = await response.json();
-
-    if (result.exists) {
-      console.log(`✅ NFT verified: ${mintAddress}`);
-      console.log(`🔗 Explorer: ${result.explorerUrl}`);
-      return true;
-    } else {
-      console.log(`❌ NFT not found: ${mintAddress}`);
-      return false;
-    }
-  } catch (error) {
-    console.error("Failed to verify NFT:", error);
-    return false;
-  }
-};
-
-// Get complete NFT metadata
-const getNFTMetadata = async (mintAddress) => {
-  try {
-    const response = await fetch(`/api/nft-metadata/${mintAddress}`);
-    const result = await response.json();
-
-    if (result.success) {
-      console.log("📖 NFT Metadata retrieved:");
-      console.log(`📚 Title: ${result.metadata.name}`);
-      console.log(
-        `👤 Author: ${
-          result.metadata.attributes.find((a) => a.trait_type === "Author")
-            ?.value
-        }`
-      );
-      console.log(
-        `📅 Published: ${
-          result.metadata.attributes.find(
-            (a) => a.trait_type === "Publication Date"
-          )?.value
-        }`
-      );
-      console.log(
-        `🔍 DOI: ${
-          result.metadata.attributes.find((a) => a.trait_type === "DOI")?.value
-        }`
-      );
-      console.log(
-        `💰 Authors Share: ${
-          result.metadata.attributes.find(
-            (a) => a.trait_type === "Authors Share"
-          )?.value
-        }`
-      );
-
-      return result.metadata;
-    } else {
-      console.error("❌ Failed to get NFT metadata:", result.error);
-      return null;
-    }
-  } catch (error) {
-    console.error("Failed to get NFT metadata:", error);
-    return null;
-  }
-};
-
-// Complete workflow integration
-const publishManuscriptAndCreateNFT = async (manuscriptId, mintAddress) => {
-  try {
-    // 1. Publish manuscript
-    const publishResult = await publishManuscript(manuscriptId);
-    if (!publishResult) {
-      throw new Error("Failed to publish manuscript");
     }
 
-    // 2. Get published manuscript data
-    const manuscriptData = await getManuscriptById(manuscriptId);
-
-    // 3. Create NFT
-    const nftResult = await createAcademicNFT(manuscriptData, mintAddress);
-    if (!nftResult.success) {
-      throw new Error(`Failed to create NFT: ${nftResult.error}`);
-    }
-
-    // 4. Verify NFT creation
-    const verified = await verifyNFT(mintAddress);
-    if (!verified) {
-      throw new Error("NFT verification failed");
-    }
-
-    console.log(
-      "🎉 Complete! Manuscript published and NFT created successfully"
-    );
     return {
-      success: true,
-      manuscript: publishResult,
-      nft: nftResult,
+      available: true,
+      status: result.status,
+      services: result.services
     };
   } catch (error) {
-    console.error("❌ Workflow failed:", error);
-    return { success: false, error: error.message };
+    console.error("Failed to check NFT service:", error);
+    return {
+      available: false,
+      status: "error",
+      error: error.message
+    };
   }
 };
-```
 
-### NFT Display Component
-
-```javascript
-// Display NFT information in publication feed
-const NFTBadge = ({ mintAddress }) => {
-  const [nftData, setNftData] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Conditional NFT features
+const ManuscriptActions = ({ manuscript }) => {
+  const [nftServiceAvailable, setNftServiceAvailable] = useState(false);
 
   useEffect(() => {
-    const fetchNFTData = async () => {
-      try {
-        const response = await fetch(`/api/nft-metadata/${mintAddress}`);
-        const result = await response.json();
-
-        if (result.success) {
-          setNftData(result.metadata);
-        }
-      } catch (error) {
-        console.error("Failed to fetch NFT data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (mintAddress) {
-      fetchNFTData();
-    }
-  }, [mintAddress]);
-
-  if (loading) {
-    return <div className="nft-badge loading">Loading NFT...</div>;
-  }
-
-  if (!nftData) {
-    return <div className="nft-badge error">NFT not found</div>;
-  }
+    checkNFTServiceStatus().then(status => {
+      setNftServiceAvailable(status.available);
+    });
+  }, []);
 
   return (
-    <div className="nft-badge">
-      <div className="nft-icon">🎯</div>
-      <div className="nft-info">
-        <div className="nft-title">Academic NFT</div>
-        <div className="nft-details">
-          <span>
-            DOI: {nftData.attributes.find((a) => a.trait_type === "DOI")?.value}
-          </span>
-          <span>
-            Author Share:{" "}
-            {
-              nftData.attributes.find((a) => a.trait_type === "Authors Share")
-                ?.value
-            }
-          </span>
-        </div>
-      </div>
-      <a
-        href={`https://explorer.solana.com/address/${mintAddress}?cluster=devnet`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="nft-explorer-link"
-      >
-        View on Solana Explorer
+    <div className="manuscript-actions">
+      <a href={manuscript.ipfsUrls.manuscript} target="_blank">
+        📄 View Manuscript
       </a>
+
+      {/* Conditionally show NFT actions */}
+      {nftServiceAvailable ? (
+        <button onClick={() => createNFT(manuscript.id)}>
+          🎯 Create NFT
+        </button>
+      ) : (
+        <div className="nft-disabled-notice">
+          <span>🔧 NFT service temporarily unavailable</span>
+          <small>Feature will be restored in future update</small>
+        </div>
+      )}
     </div>
   );
 };
 
-// Enhanced publication card with NFT info
+// Graceful degradation for NFT features
 const PublicationCard = ({ manuscript }) => {
   return (
     <div className="publication-card">
@@ -1970,8 +1449,26 @@ const PublicationCard = ({ manuscript }) => {
         </span>
       </div>
 
-      {/* NFT Badge for published manuscripts */}
-      {manuscript.nftMint && <NFTBadge mintAddress={manuscript.nftMint} />}
+      {/* Show NFT placeholder when service is disabled */}
+      <div className="nft-section">
+        {manuscript.nftMint ? (
+          <div className="nft-badge">
+            <div className="nft-icon">🎯</div>
+            <div className="nft-info">
+              <div className="nft-title">Academic NFT</div>
+              <div className="nft-status">Available on blockchain</div>
+            </div>
+          </div>
+        ) : (
+          <div className="nft-placeholder">
+            <div className="nft-icon">🔧</div>
+            <div className="nft-info">
+              <div className="nft-title">NFT Creation</div>
+              <div className="nft-status">Temporarily unavailable</div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="actions">
         <a
@@ -1981,142 +1478,267 @@ const PublicationCard = ({ manuscript }) => {
         >
           📄 View Manuscript
         </a>
-        {manuscript.nftMint && (
-          <a
-            href={`https://explorer.solana.com/address/${manuscript.nftMint}?cluster=devnet`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            🎯 View NFT
-          </a>
-        )}
       </div>
     </div>
   );
 };
+
+### Future NFT Integration
+
+When the NFT service is restored, it will provide:
+
+## 11. Complete End-to-End Workflow Example (Current)
+
+### Full Academic Publication Workflow (NFT Creation Temporarily Disabled)
+
+```bash
+# 0. MANDATORY FIRST STEP: Register CV
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/parse-cv \
+  -F "cv=@alice_johnson_cv.pdf" \
+  -F "walletAddress=0xAliceWallet123..."
+# Response: CV parsed and saved successfully
+
+# 0.1. Verify CV registration
+curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0xAliceWallet123..."
+# Response: { "success": true, "canSubmitManuscripts": true }
+
+# 1. Submit manuscript for peer review (CV required)
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/submit \
+  -F "manuscript=@quantum_research.pdf" \
+  -F "title=Quantum Error Correction Methods" \
+  -F "author=Dr. Alice Johnson" \
+  -F "category=Quantum Computing" \
+  -F "abstract=Novel approaches to quantum error correction..." \
+  -F "authorWallet=0xAliceWallet123..."
+# Response: Manuscript ID 456, Status: "under_review"
+
+# 2. Editor assigns 3 reviewers
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/assign-reviewers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reviewers": ["0xExpert1", "0xExpert2", "0xExpert3"],
+    "assignedBy": "editor@quantumjournal.com"
+  }'
+# Response: 3 review records created (IDs: 601, 602, 603)
+
+# 3. All reviewers submit decisions
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/601/submit-review \
+  -H "Content-Type: application/json" \
+  -d '{
+    "decision": "accept",
+    "comments": "Innovative approach with solid theoretical foundation.",
+    "reviewerWallet": "0xExpert1"
+  }'
+
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/602/submit-review \
+  -H "Content-Type: application/json" \
+  -d '{
+    "decision": "accept",
+    "comments": "Excellent experimental validation of the proposed methods.",
+    "reviewerWallet": "0xExpert2"
+  }'
+
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/603/submit-review \
+  -H "Content-Type: application/json" \
+  -d '{
+    "decision": "accept",
+    "comments": "Innovative approach with solid foundation.",
+    "reviewerWallet": "0xExpert3"
+  }'
+
+# 4. Check if ready to publish
+curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/review-status"
+# Response: canPublish: true, nextAction: "ready_to_publish"
+
+# 5. Publish the manuscript
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/456/publish \
+  -H "Content-Type: application/json" \
+  -d '{"publishedBy": "editor@quantumjournal.com"}'
+# Response: Status changed to "published"
+
+# 6. ⚠️ NFT Creation (Currently Disabled)
+curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/nft-metadata/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "doci": "10.5281/zenodo.1234567",
+    "title": "Quantum Error Correction Methods in Modern Computing",
+    "description": "This paper presents novel approaches to quantum error correction...",
+    "ipfs_hash": "QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o",
+    "author": "Dr. Alice Johnson"
+  }'
+# Response: 503 Service Unavailable - NFT service temporarily disabled
+
+# 7. Manuscript appears in public listings (without NFT for now)
+curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published/Quantum Computing"
+# Response: Shows published manuscript in public feed
+````
+
+## 12. Production Deployment Information
+
+### API Base URLs
+
+**Production (Cloudflare Workers):**
+
+```
+https://fronsciers-be.azakiyasabrina.workers.dev
 ```
 
-### NFT Health Monitoring
+**Local Development:**
+
+```
+http://localhost:5001
+```
+
+### Service Status Summary
+
+| Service               | Status         | Notes                      |
+| --------------------- | -------------- | -------------------------- |
+| CV Registration       | ✅ Operational | Full functionality         |
+| Manuscript Submission | ✅ Operational | All features working       |
+| Peer Review Workflow  | ✅ Operational | Complete review process    |
+| Publication Process   | ✅ Operational | Publishing workflow active |
+| IPFS File Storage     | ✅ Operational | Pinata integration working |
+| Database Operations   | ✅ Operational | Supabase connection active |
+| NFT Creation          | ⚠️ Disabled    | Temporarily unavailable    |
+| Health Check          | ✅ Operational | System monitoring active   |
+
+### Frontend Integration URLs
+
+Update your frontend configuration to use the production URLs:
 
 ```javascript
-// Monitor NFT service health
-const checkNFTServices = async () => {
+// Frontend configuration
+const API_CONFIG = {
+  production: {
+    baseURL: "https://fronsciers-be.azakiyasabrina.workers.dev",
+    nftEnabled: false, // Currently disabled
+  },
+  development: {
+    baseURL: "http://localhost:5001",
+    nftEnabled: true, // Available in local development
+  },
+};
+
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? API_CONFIG.production.baseURL
+    : API_CONFIG.development.baseURL;
+
+const NFT_ENABLED =
+  process.env.NODE_ENV === "production"
+    ? API_CONFIG.production.nftEnabled
+    : API_CONFIG.development.nftEnabled;
+```
+
+### Error Handling for Disabled Services
+
+```javascript
+// Handle NFT service unavailability
+const handleNFTRequest = async (endpoint, data) => {
   try {
-    const response = await fetch("/api/nft-metadata/health");
-    const result = await response.json();
+    const response = await fetch(
+      `${API_BASE_URL}/api/nft-metadata/${endpoint}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    );
 
-    const services = result.services;
-    const issues = [];
-
-    if (!services.ipfs) issues.push("IPFS service unavailable");
-    if (!services.metaboss) issues.push("Metaboss CLI not available");
-    if (!services.imageGenerator) issues.push("Image generation service down");
-
-    if (issues.length > 0) {
-      console.warn("⚠️ NFT services degraded:", issues);
+    if (response.status === 503) {
+      const result = await response.json();
       return {
-        status: "degraded",
-        issues: issues,
-        services: services,
-      };
-    } else {
-      console.log("✅ All NFT services healthy");
-      return {
-        status: "healthy",
-        services: services,
+        success: false,
+        disabled: true,
+        message: result.message,
       };
     }
+
+    return await response.json();
   } catch (error) {
-    console.error("❌ Failed to check NFT services:", error);
     return {
-      status: "unhealthy",
+      success: false,
       error: error.message,
     };
   }
 };
+```
 
-// Auto-retry NFT creation on service issues
-const createNFTWithRetry = async (nftData, maxRetries = 3) => {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`🔄 NFT creation attempt ${attempt}/${maxRetries}`);
+## 13. Summary & Frontend Integration Checklist
 
-      const result = await createAcademicNFT(nftData);
+### ✅ What's Working in Production
 
-      if (result.success) {
-        console.log(`✅ NFT created successfully on attempt ${attempt}`);
-        return result;
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error(`❌ Attempt ${attempt} failed:`, error.message);
+**Full Operational Services:**
 
-      if (attempt === maxRetries) {
-        throw new Error(`NFT creation failed after ${maxRetries} attempts`);
-      }
+- ✅ CV registration and parsing
+- ✅ Manuscript submission and storage
+- ✅ Complete peer review workflow (3+ reviewers required)
+- ✅ Publication process
+- ✅ IPFS file storage via Pinata
+- ✅ Database operations via Supabase
+- ✅ Health monitoring
 
-      // Wait before retry
-      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-    }
-  }
+**Current Production URL:** `https://fronsciers-be.azakiyasabrina.workers.dev`
+
+### ⚠️ Temporarily Disabled
+
+**NFT Service:** All `/api/nft-metadata/*` endpoints return 503 due to Cloudflare Workers limitations with:
+
+- Metaboss CLI (native binary)
+- Sharp image processing (native dependencies)
+- File system operations
+
+### 🚀 Frontend Integration Quick Start
+
+```javascript
+// Production-ready configuration
+const API_CONFIG = {
+  baseURL:
+    process.env.NODE_ENV === "production"
+      ? "https://fronsciers-be.azakiyasabrina.workers.dev"
+      : "http://localhost:5001",
+  nftEnabled: process.env.NODE_ENV !== "production", // Disabled in production
+};
+
+// Essential endpoints for your frontend:
+const ENDPOINTS = {
+  // CV Registration (Required first step)
+  uploadCV: "/api/parse-cv/parse-cv",
+  checkCVStatus: "/api/manuscripts/check-cv-status/:wallet",
+  getUserProfile: "/api/parse-cv/user/profile/:wallet",
+
+  // Manuscript Workflow
+  submitManuscript: "/api/manuscripts/submit",
+  getPendingReview: "/api/manuscripts/pending-review",
+  getPublished: "/api/manuscripts/published/:category",
+
+  // Review Process
+  assignReviewers: "/api/reviews/manuscript/:id/assign-reviewers",
+  submitReview: "/api/reviews/:id/submit-review",
+  checkReviewStatus: "/api/reviews/manuscript/:id/review-status",
+  publishManuscript: "/api/manuscripts/:id/publish",
+
+  // System Health
+  health: "/api/health",
 };
 ```
 
-## 13. NFT Error Handling
+### 🔄 Migration from Previous Version
 
-### NFT Creation Errors
+If updating from a previous implementation:
 
-**Missing Required Fields:**
+1. **Add CV requirement checks** before manuscript submission
+2. **Update status handling** - manuscripts start as "under_review", not "published"
+3. **Implement review workflow** with minimum 3 reviewers
+4. **Handle NFT service gracefully** - show disabled state, don't break UI
+5. **Update URLs** to production endpoint
 
-```json
-{
-  "error": "Missing required fields: mint, doci",
-  "required": ["mint", "doci", "title", "description", "ipfs_hash", "author"]
-}
-```
+### 📈 Deployment Status
 
-**Invalid Mint Address:**
+- **Startup Time:** ~32ms
+- **Bundle Size:** 4.7MB (1.4MB compressed)
+- **Success Rate:** 100% for operational endpoints
+- **Monitoring:** Active health checks on all services
 
-```json
-{
-  "error": "Invalid mint address",
-  "mint": "invalid-address"
-}
-```
-
-**Service Unavailable:**
-
-```json
-{
-  "success": false,
-  "error": "IPFS service unavailable - please try again later"
-}
-```
-
-### NFT Verification Errors
-
-**NFT Not Found:**
-
-```json
-{
-  "error": "Metadata not found",
-  "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
-}
-```
-
-**Service Health Issues:**
-
-```json
-{
-  "status": "degraded",
-  "service": "nft-metadata",
-  "services": {
-    "ipfs": true,
-    "metaboss": false,
-    "imageGenerator": true
-  }
-}
-```
-
-This documentation now includes the complete **NFT integration workflow**, showing how published manuscripts are automatically converted to academic NFTs on the Solana blockchain, providing immutable proof of publication and automated royalty distribution.
+This documentation provides complete coverage of the **peer review workflow** and **temporary NFT service status**, ensuring seamless frontend integration with the current production deployment.

@@ -109,7 +109,7 @@ export default function DocisPage() {
           </div>
           <div className="container max-w-6xl mx-auto px-4 py-8">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
                 DOCI Tracker
               </h1>
               <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">

@@ -156,7 +156,7 @@ export default function RegisterCVPage() {
             </div>
             <div className="container max-w-4xl mx-auto px-4 py-8">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
                   CV Registration
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
@@ -198,7 +198,7 @@ export default function RegisterCVPage() {
           </div>
           <div className="container max-w-4xl mx-auto px-4 py-8">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  text-bold tracking-tight">
                 CV Registration
               </h1>
               <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
