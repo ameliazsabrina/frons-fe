@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,6 @@ import {
   BuildingIcon,
   GraduationCapIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CVRegistrationGuardProps {
   walletAddress: string;
@@ -51,7 +50,7 @@ export function CVRegistrationGuard({
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   // Check CV registration status
-  const checkCVStatus = async () => {
+  const checkCVStatus = useCallback(async () => {
     try {
       setCvStatus("checking");
       const response = await fetch(
@@ -71,13 +70,13 @@ export function CVRegistrationGuard({
       setCvStatus("error");
       setError("Failed to check CV registration status");
     }
-  };
+  }, [apiUrl, walletAddress, onCVVerified]);
 
   useEffect(() => {
     if (walletAddress) {
       checkCVStatus();
     }
-  }, [walletAddress]);
+  }, [walletAddress, checkCVStatus]);
 
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

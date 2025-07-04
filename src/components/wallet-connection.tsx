@@ -179,7 +179,8 @@ export const WalletConnection = () => {
                 <CardContent className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     A Solana wallet should be created automatically when you log
-                    in. If you don't see a wallet, try creating one manually.
+                    in. If you don&apos;t see a wallet, try creating one
+                    manually.
                   </p>
                   {walletCreationError && (
                     <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">

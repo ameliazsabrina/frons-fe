@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
   Card,
@@ -86,13 +86,7 @@ export default function SubmitReviewPage() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
-  useEffect(() => {
-    if (connected && validSolanaPublicKey && reviewId) {
-      fetchReviewData();
-    }
-  }, [connected, validSolanaPublicKey, reviewId]);
-
-  const fetchReviewData = async () => {
+  const fetchReviewData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -282,7 +276,13 @@ export default function SubmitReviewPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [reviewId, apiUrl, showToast]);
+
+  useEffect(() => {
+    if (connected && validSolanaPublicKey && reviewId) {
+      fetchReviewData();
+    }
+  }, [connected, validSolanaPublicKey, reviewId, fetchReviewData]);
 
   const saveDraft = async () => {
     if (!validSolanaPublicKey || !reviewData) return;

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,18 +168,18 @@ export default function ReviewManuscriptPage() {
     setCategories([{ name: "All", count: 0 }]);
   }, []);
 
-  useEffect(() => {
-    if (connected) {
-      loadPendingManuscripts();
-    }
-  }, [connected]);
-
-  const loadPendingManuscripts = async () => {
+  const loadPendingManuscripts = useCallback(async () => {
     const result = await getPendingReviewManuscripts(20);
     if (result?.success) {
       setManuscripts(result.manuscripts);
     }
-  };
+  }, [getPendingReviewManuscripts]);
+
+  useEffect(() => {
+    if (connected) {
+      loadPendingManuscripts();
+    }
+  }, [connected, loadPendingManuscripts]);
 
   const handleViewManuscript = async (manuscript: PendingReviewManuscript) => {
     setSelectedManuscript(manuscript);
@@ -727,7 +727,8 @@ export default function ReviewManuscriptPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Assign at least 3 reviewers to "{selectedManuscript.title}"
+                  Assign at least 3 reviewers to &quot;
+                  {selectedManuscript.title}&quot;
                 </p>
 
                 {reviewers.map((reviewer, index) => (

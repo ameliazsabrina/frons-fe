@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,13 +91,7 @@ export default function YourProfilePage() {
   const [message, setMessage] = useState<string | null>(null);
   const [hasCV, setHasCV] = useState(false);
 
-  useEffect(() => {
-    if (connected && validSolanaPublicKey) {
-      loadUserProfile();
-    }
-  }, [connected, validSolanaPublicKey]);
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     if (!validSolanaPublicKey) return;
 
     try {
@@ -118,7 +112,13 @@ export default function YourProfilePage() {
     } catch (err) {
       console.error("Failed to load profile:", err);
     }
-  };
+  }, [validSolanaPublicKey, checkCVRegistration, getUserProfile]);
+
+  useEffect(() => {
+    if (connected && validSolanaPublicKey) {
+      loadUserProfile();
+    }
+  }, [connected, validSolanaPublicKey, loadUserProfile]);
 
   const handleEditStart = () => {
     setIsEditing(true);

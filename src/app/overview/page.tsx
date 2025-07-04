@@ -432,8 +432,8 @@ export default function OverviewPage() {
                   Welcome back, {getUserDisplayName(user)}
                 </h1>
                 <p className="text-lg text-muted-foreground font-medium max-w-3xl mx-auto">
-                  Here's an overview of your academic publishing activity and
-                  FRONS token balance.
+                  Here&apos;s an overview of your academic publishing activity
+                  and FRONS token balance.
                 </p>
                 <Separator className="max-w-full mx-auto" />
               </div>

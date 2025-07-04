@@ -140,7 +140,7 @@ export default function DocisPage() {
                     No DOCIs Found
                   </h2>
                   <p className="text-muted-foreground">
-                    You haven't minted any DOCIs for your manuscripts yet.
+                    You haven&apos;t minted any DOCIs for your manuscripts yet.
                   </p>
                 </CardContent>
               </Card>
