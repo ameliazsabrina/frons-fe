@@ -27,12 +27,19 @@ import { useManuscriptWorkflow } from "@/hooks/useManuscriptWorkflow";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
+import SidebarProvider from "@/provider/SidebarProvider";
+import { OverviewSidebar } from "@/components/overview-sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { isValidSolanaAddress } from "@/hooks/useProgram";
 
 export default function SubmitManuscriptPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
   const { authenticated: connected, user } = usePrivy();
   const { wallets } = useWallets();
   const publicKey = wallets[0]?.address;
+  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
+    ? publicKey
+    : undefined;
   const { submitManuscript, isLoading: loading } = useManuscriptWorkflow();
   const { checkCVRegistration } = useCVRegistration();
   const router = useRouter();
@@ -86,11 +93,11 @@ export default function SubmitManuscriptPage() {
   ]);
 
   const handleIPFSUpload = async () => {
-    if (!connected || !publicKey) return;
+    if (!connected || !validSolanaPublicKey) return;
 
     const ipfsHash = await uploadToIPFS(
       manuscriptData,
-      publicKey.toString(),
+      validSolanaPublicKey,
       apiUrl
     );
     if (ipfsHash) {
@@ -103,11 +110,11 @@ export default function SubmitManuscriptPage() {
 
     const validationError = validateForm(
       connected,
-      publicKey,
+      validSolanaPublicKey,
       cvVerified,
       file
     );
-    if (validationError !== null || !file || !publicKey) {
+    if (validationError !== null || !file || !validSolanaPublicKey) {
       return;
     }
 
@@ -136,94 +143,129 @@ export default function SubmitManuscriptPage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="container max-w-5xl mx-auto px-4 py-8">
-          <WalletConnection />
+      <SidebarProvider>
+        <div className="min-h-screen bg-primary/5 flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <div className="flex items-center gap-2 px-4 py-3">
+                <SidebarTrigger className="w-10 h-10" />
+                <Separator orientation="vertical" className="h-6" />
+              </div>
+            </div>
+            <div className="container max-w-5xl mx-auto px-4 py-8">
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                  Submit Manuscript
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Share your research with the academic community through our
+                  blockchain-powered platform
+                </p>
+              </div>
+              <WalletConnection />
+            </div>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="container max-w-5xl mx-auto px-4 py-8">
-        <CVRegistrationGuard
-          walletAddress={publicKey?.toString() || ""}
-          onCVVerified={handleCVVerified}
-          showUploadOption={true}
-        >
-          <Card className="shadow-lg border-gray-200">
-            <CardHeader className="bg-white border-b border-gray-100">
-              <div className="flex flex-col items-start justify-between gap-4">
-                <Button variant="outline" onClick={() => router.back()}>
-                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                  Back to Reviews
-                </Button>
-                <div className="flex flex-col items-left gap-2">
-                  <CardTitle className="text-xl text-gray-900">
-                    Manuscript Submission
-                  </CardTitle>
-                  <p className="text-gray-600 text-sm">
-                    Fill in the details and upload your research manuscript
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-6 space-y-6">
-              <BasicInfoSection
-                title={manuscriptData.title}
-                abstract={manuscriptData.abstract}
-                onChange={handleInputChange}
-              />
-
-              <AuthorsKeywordsSection
-                authorsInput={authorsInput}
-                keywordsInput={keywordsInput}
-                authors={manuscriptData.authors}
-                keywords={manuscriptData.keywords}
-                onAuthorsInputChange={setAuthorsInput}
-                onKeywordsInputChange={setKeywordsInput}
-                onAuthorsBlur={handleAuthorsBlur}
-                onKeywordsBlur={handleKeywordsBlur}
-              />
-
-              <div>
-                <Label className="text-sm font-medium">
-                  Research Categories *
-                </Label>
-                <ResearchCategorySelector
-                  selectedCategories={manuscriptData.categories}
-                  onCategoriesChange={handleCategoriesChange}
-                />
+    <SidebarProvider>
+      <div className="min-h-screen bg-primary/5 flex w-full">
+        <OverviewSidebar connected={connected} />
+        <SidebarInset className="flex-1">
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <SidebarTrigger className="w-10 h-10" />
+              <Separator orientation="vertical" className="h-6" />
+            </div>
+          </div>
+          <div className="container max-w-5xl mx-auto px-4 py-8">
+            <CVRegistrationGuard
+              walletAddress={validSolanaPublicKey || ""}
+              onCVVerified={handleCVVerified}
+              showUploadOption={true}
+            >
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                  Submit Manuscript
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Share your research with the academic community through our
+                  blockchain-powered platform
+                </p>
               </div>
 
-              <Separator />
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardHeader className="border-b border-gray-100">
+                  <div className="flex flex-col items-start justify-between gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => router.back()}
+                      className="text-sm"
+                    >
+                      <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                  </div>
+                </CardHeader>
 
-              <FileUploadSection
-                file={file}
-                uploading={uploading}
-                uploadProgress={uploadProgress}
-                uploadResult={uploadResult}
-                onFileChange={handleFileChange}
-                onUpload={handleIPFSUpload}
-              />
-            </CardContent>
+                <CardContent className="p-6 space-y-8">
+                  <BasicInfoSection
+                    title={manuscriptData.title}
+                    abstract={manuscriptData.abstract}
+                    onChange={handleInputChange}
+                  />
 
-            <CardFooter className="bg-gray-50 border-t border-gray-100 p-6">
-              <SubmitButton
-                loading={isLoading}
-                connected={connected}
-                isFormValid={isFormValid}
-                cvVerified={cvVerified}
-                onSubmit={handleSubmit}
-              />
-            </CardFooter>
-          </Card>
-        </CVRegistrationGuard>
+                  <AuthorsKeywordsSection
+                    authorsInput={authorsInput}
+                    keywordsInput={keywordsInput}
+                    authors={manuscriptData.authors}
+                    keywords={manuscriptData.keywords}
+                    onAuthorsInputChange={setAuthorsInput}
+                    onKeywordsInputChange={setKeywordsInput}
+                    onAuthorsBlur={handleAuthorsBlur}
+                    onKeywordsBlur={handleKeywordsBlur}
+                  />
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-primary">
+                      Research Categories *
+                    </Label>
+                    <ResearchCategorySelector
+                      selectedCategories={manuscriptData.categories}
+                      onCategoriesChange={handleCategoriesChange}
+                    />
+                  </div>
+
+                  <Separator className="my-6" />
+
+                  <FileUploadSection
+                    file={file}
+                    uploading={uploading}
+                    uploadProgress={uploadProgress}
+                    uploadResult={uploadResult}
+                    onFileChange={handleFileChange}
+                    onUpload={handleIPFSUpload}
+                  />
+                </CardContent>
+
+                <CardFooter className="bg-primary/5 border-t border-gray-100 p-6">
+                  <SubmitButton
+                    loading={isLoading}
+                    connected={connected}
+                    isFormValid={isFormValid}
+                    cvVerified={cvVerified}
+                    onSubmit={handleSubmit}
+                  />
+                </CardFooter>
+              </Card>
+            </CVRegistrationGuard>
+          </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

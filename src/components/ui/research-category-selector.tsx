@@ -78,7 +78,7 @@ const RESEARCH_CATEGORIES = {
     "Tunnel Engineering",
     "Foundation Engineering",
   ],
-  Law: [
+  "Law and Legal Studies": [
     "Constitutional Law",
     "Criminal Law",
     "Civil Law",
@@ -129,7 +129,7 @@ const RESEARCH_CATEGORIES = {
     "Labor Economics",
     "Public Economics",
   ],
-  Physics: [
+  "Physics and Astronomy": [
     "Quantum Physics",
     "Particle Physics",
     "Astrophysics",
@@ -151,7 +151,7 @@ const RESEARCH_CATEGORIES = {
     "Computational Physics",
     "Experimental Physics",
   ],
-  Chemistry: [
+  "Chemistry and Materials Science": [
     "Organic Chemistry",
     "Inorganic Chemistry",
     "Physical Chemistry",
@@ -173,7 +173,7 @@ const RESEARCH_CATEGORIES = {
     "Supramolecular Chemistry",
     "Nanochemistry",
   ],
-  Biology: [
+  "Biology and Life Sciences": [
     "Molecular Biology",
     "Cell Biology",
     "Genetics",
@@ -198,7 +198,7 @@ const RESEARCH_CATEGORIES = {
     "Conservation Biology",
     "Population Biology",
   ],
-  Mathematics: [
+  "Mathematics and Statistics": [
     "Algebra",
     "Calculus",
     "Geometry",
@@ -223,7 +223,7 @@ const RESEARCH_CATEGORIES = {
     "Computational Mathematics",
     "Applied Mathematics",
   ],
-  Psychology: [
+  "Psychology and Behavioral Sciences": [
     "Clinical Psychology",
     "Cognitive Psychology",
     "Social Psychology",
@@ -245,7 +245,7 @@ const RESEARCH_CATEGORIES = {
     "Military Psychology",
     "Rehabilitation Psychology",
   ],
-  Education: [
+  "Education and Teaching": [
     "Educational Technology",
     "Curriculum Development",
     "Educational Psychology",
@@ -313,7 +313,7 @@ const RESEARCH_CATEGORIES = {
     "Agricultural Statistics",
     "Agricultural Chemistry",
   ],
-  Architecture: [
+  "Architecture and Design": [
     "Architectural Design",
     "Urban Design",
     "Interior Design",
@@ -381,7 +381,7 @@ const RESEARCH_CATEGORIES = {
     "Social Movements",
     "Social Inequality",
   ],
-  Engineering: [
+  "Engineering and Technology": [
     "Mechanical Engineering",
     "Electrical Engineering",
     "Chemical Engineering",

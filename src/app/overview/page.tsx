@@ -11,7 +11,6 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useLoading } from "@/context/LoadingContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
 import {
   ClipboardCheckIcon,
   PlusIcon,
@@ -24,11 +23,14 @@ import {
   AwardIcon,
   ArrowUpRight,
 } from "lucide-react";
-import { useProgram } from "@/hooks/useProgram";
+import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
 import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
 import { useOverview, ManuscriptStats, UserStats } from "@/hooks/useOverview";
 import { Loading } from "@/components/ui/loading";
+import SidebarProvider from "@/provider/SidebarProvider";
+import { OverviewSidebar } from "@/components/overview-sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface QuickAction {
   title: string;
@@ -37,16 +39,6 @@ interface QuickAction {
   href: string;
   isPrimary?: boolean;
   badge?: string;
-}
-
-function isValidSolanaAddress(address: string | undefined): boolean {
-  if (!address) return false;
-  try {
-    new PublicKey(address);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export default function OverviewPage() {
@@ -372,92 +364,125 @@ export default function OverviewPage() {
 
   if (!isReady) {
     return (
-      <div className="min-h-screen bg-primary/5 flex items-center justify-center mt-20">
-        <div className="text-center">
-          <Loading />
+      <SidebarProvider>
+        <div className="min-h-screen bg-primary/5 flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <Loading />
+              </div>
+            </div>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   if (!connected || !isClient) {
     return (
-      <div className="min-h-screen bg-primary/5">
-        <div className="w-full py-12 space-y-12 lg:px-16 px-4">
-          <Alert variant="destructive" className="max-w-xl mx-auto">
-            <AlertDescription className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <WalletIcon className="h-5 w-5" />
-                Please connect your wallet to view your overview
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push("/")}
-              >
-                Connect Wallet
-              </Button>
-            </AlertDescription>
-          </Alert>
+      <SidebarProvider>
+        <div className="min-h-screen bg-primary/5 flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <div className="flex items-center gap-2 px-4 py-3">
+                <SidebarTrigger className="w-10 h-10" />
+                <Separator orientation="vertical" className="h-6" />
+              </div>
+            </div>
+            <div className="w-full py-12 space-y-12 lg:px-16 px-4">
+              <Alert variant="destructive" className="max-w-xl mx-auto">
+                <AlertDescription className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <WalletIcon className="h-5 w-5" />
+                    Please connect your wallet to view your overview
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push("/")}
+                  >
+                    Connect Wallet
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            </div>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-primary/5 flex items-center justify-center">
-      <div className="w-full py-12 space-y-12 lg:px-16 px-4">
-        <div className="text-center space-y-6">
-          <h1 className="text-5xl font-spectral font-semibold text-primary tracking-tight">
-            Welcome back, {getUserDisplayName(user)}
-          </h1>
-          <p className="text-lg text-muted-foreground font-medium max-w-3xl mx-auto">
-            Here's an overview of your academic publishing activity and FRONS
-            token balance.
-          </p>
-          <Separator className="max-w-full mx-auto" />
-        </div>
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loading />
-          </div>
-        ) : error ? (
-          <Card className="border-destructive mx-4">
-            <CardContent className="p-6">
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-12 max-w-[1400px] mx-auto">
-            <StatsOverview
-              userStats={userStats}
-              manuscriptStats={manuscriptStats}
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              <div className="lg:col-span-3">
-                <div className="p-8 bg-primary/10 rounded-xl space-y-8">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold">Quick Actions</h2>
-                    <Badge
-                      variant="secondary"
-                      className="px-2 py-1.5 text-xs ml-2"
-                    >
-                      {manuscriptStats.pendingReviews} reviews available
-                    </Badge>
-                  </div>
-                  <QuickActions manuscriptStats={manuscriptStats} />
-                </div>
-              </div>
-              <div>
-                <SidePanel
-                  userStats={userStats}
-                  manuscriptStats={manuscriptStats}
-                />
-              </div>
+    <SidebarProvider>
+      <div className="min-h-screen bg-primary/5 flex w-full">
+        <OverviewSidebar connected={connected} />
+        <SidebarInset className="flex-1">
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <SidebarTrigger className="w-10 h-10" />
+              <Separator orientation="vertical" className="h-6" />
             </div>
           </div>
-        )}
+          <main className="flex items-center justify-center">
+            <div className="w-full py-12 space-y-12 lg:px-16 px-4">
+              <div className="text-center space-y-6">
+                <h1 className="text-5xl font-spectral font-semibold text-primary tracking-tight">
+                  Welcome back, {getUserDisplayName(user)}
+                </h1>
+                <p className="text-lg text-muted-foreground font-medium max-w-3xl mx-auto">
+                  Here's an overview of your academic publishing activity and
+                  FRONS token balance.
+                </p>
+                <Separator className="max-w-full mx-auto" />
+              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loading />
+                </div>
+              ) : error ? (
+                <Card className="border-destructive mx-4">
+                  <CardContent className="p-6">
+                    <p className="text-destructive">{error}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-12 max-w-[1400px] mx-auto">
+                  <StatsOverview
+                    userStats={userStats}
+                    manuscriptStats={manuscriptStats}
+                  />
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div className="lg:col-span-3">
+                      <div className="p-8 bg-primary/10 rounded-xl space-y-8">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-2xl font-semibold">
+                            Quick Actions
+                          </h2>
+                          <Badge
+                            variant="secondary"
+                            className="px-2 py-1.5 text-xs ml-2"
+                          >
+                            {manuscriptStats.pendingReviews} reviews available
+                          </Badge>
+                        </div>
+                        <QuickActions manuscriptStats={manuscriptStats} />
+                      </div>
+                    </div>
+                    <div>
+                      <SidePanel
+                        userStats={userStats}
+                        manuscriptStats={manuscriptStats}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

@@ -7,24 +7,38 @@ import {
   ScanIcon,
   ClipboardIcon,
   ArrowRightIcon,
+  AlertCircleIcon,
+  FileTextIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWallets } from "@privy-io/react-auth";
 import { useToast } from "@/components/ui/toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DOCIManuscript } from "@/types/fronsciers";
+import { isValidSolanaAddress } from "@/hooks/useProgram";
+
+const formatDate = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleDateString();
+};
 
 export default function DocisPage() {
-  const { authenticated: connected, user } = usePrivy();
+  const { authenticated: connected } = usePrivy();
   const { wallets } = useWallets();
   const publicKey = wallets[0]?.address;
+  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
+    ? publicKey
+    : undefined;
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [manuscripts, setManuscripts] = useState<DOCIManuscript[]>([]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -33,7 +47,8 @@ export default function DocisPage() {
     }
 
     try {
-      setSearching(true);
+      setLoading(true);
+      setError(null);
       console.log("Searching for DOCI:", searchQuery);
 
       // TODO: Implement DOCI search functionality
@@ -44,9 +59,9 @@ export default function DocisPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error: any) {
       console.error("DOCI search error:", error);
-      showToast("Failed to search DOCI. Please try again.", "error");
+      setError("Failed to search DOCI. Please try again.");
     } finally {
-      setSearching(false);
+      setLoading(false);
     }
   };
 
@@ -83,135 +98,127 @@ export default function DocisPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white flex w-full">
+      <div className="min-h-screen bg-primary/5 flex w-full">
         <OverviewSidebar connected={connected} />
-
         <SidebarInset className="flex-1">
-          <div className="flex flex-col min-h-screen">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="h-6" />
-              </div>
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <SidebarTrigger className="w-10 h-10" />
+              <Separator orientation="vertical" className="h-6" />
+            </div>
+          </div>
+          <div className="container max-w-6xl mx-auto px-4 py-8">
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                DOCI Tracker
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                Track and manage your Digital Object Certification Identifiers
+                (DOCIs)
+              </p>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-              <div className="w-full max-w-2xl space-y-8">
-                <div className="text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-                    <ScanIcon className="h-8 w-8 text-primary" />
-                  </div>
-                  <h1 className="text-3xl sm:text-4xl text-primary font-spectral tracking-tight">
-                    DOCI Tracker
-                  </h1>
-                  <p className="text-primary/80 text-sm sm:text-md max-w-lg mx-auto">
-                    Search and track Digital Object Content Identifiers (DOCIs)
-                    in the Fronsciers network. Enter a DOCI ID, manuscript
-                    title, or author name to find research documents.
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[200px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : error ? (
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-8 text-center">
+                  <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    Error
+                  </h2>
+                  <p className="text-red-600">{error}</p>
+                </CardContent>
+              </Card>
+            ) : manuscripts.length === 0 ? (
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-8 text-center">
+                  <FileTextIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    No DOCIs Found
+                  </h2>
+                  <p className="text-muted-foreground">
+                    You haven't minted any DOCIs for your manuscripts yet.
                   </p>
-                </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {manuscripts.map((manuscript) => (
+                  <Card
+                    key={manuscript.doci}
+                    className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex flex-col h-full">
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-4 mb-4">
+                            <h3 className="font-medium text-primary leading-tight">
+                              DOCI: {manuscript.doci}
+                            </h3>
+                          </div>
 
-                <div className="space-y-6">
-                  <div className="relative">
-                    <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Enter DOCI ID, title, or author..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      className="w-full pl-12 pr-32 py-4 text-lg border border-gray-200 rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 text-gray-900 placeholder-gray-500 shadow-sm"
-                    />
-                    <Button
-                      onClick={handleSearch}
-                      disabled={searching}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2"
-                    >
-                      {searching ? "Searching..." : "Search"}
-                      <ArrowRightIcon className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
+                          <div className="space-y-3 mb-4">
+                            <div className="flex flex-wrap gap-2">
+                              <Badge
+                                variant="secondary"
+                                className="bg-primary/10 text-primary text-xs"
+                              >
+                                Citations: {manuscript.citationCount}
+                              </Badge>
+                              <Badge
+                                variant="secondary"
+                                className="bg-primary/10 text-primary text-xs"
+                              >
+                                Access: {manuscript.accessCount}
+                              </Badge>
+                            </div>
+                          </div>
 
-                  {/* Quick Actions */}
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button
-                      variant="outline"
-                      onClick={handlePasteFromClipboard}
-                      className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-gray-50"
-                    >
-                      <ClipboardIcon className="h-4 w-4" />
-                      Paste DOCI ID
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleScanQR}
-                      className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-gray-50"
-                    >
-                      <ScanIcon className="h-4 w-4" />
-                      Scan QR Code
-                    </Button>
-                  </div>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>Version: {manuscript.version}</p>
+                            <p>
+                              Published:{" "}
+                              {formatDate(manuscript.publicationDate)}
+                            </p>
+                          </div>
+                        </div>
 
-                  {/* Example Searches */}
-                  <div className="text-center space-y-3">
-                    <p className="text-sm text-gray-500">Try searching for:</p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {[
-                        "DOCI-2024-001",
-                        "Blockchain Consensus",
-                        "Dr. Sarah Chen",
-                        "Peer Review Systems",
-                      ].map((example, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleExampleSearch(example)}
-                          className="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors border border-primary/20"
-                        >
-                          {example}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-gray-100">
-                  <div className="text-center p-4">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <SearchIcon className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Track Research
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Find and verify published research documents
-                    </p>
-                  </div>
-                  <div className="text-center p-4">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <ClipboardIcon className="h-4 w-4 text-green-600" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Verify Authenticity
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Confirm document integrity and ownership
-                    </p>
-                  </div>
-                  <div className="text-center p-4">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <ScanIcon className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Access Metadata
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      View detailed publication information
-                    </p>
-                  </div>
-                </div>
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              window.open(manuscript.metadataUri, "_blank")
+                            }
+                            className="text-xs"
+                          >
+                            <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                            View Metadata
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              window.open(
+                                `https://explorer.solana.com/address/${manuscript.mintAddress}?cluster=devnet`,
+                                "_blank"
+                              )
+                            }
+                            className="text-xs"
+                          >
+                            <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                            View NFT
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </SidebarInset>
       </div>

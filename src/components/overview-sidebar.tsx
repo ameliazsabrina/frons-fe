@@ -5,7 +5,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuItem,
@@ -22,6 +21,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { WalletConnection } from "./wallet-connection";
+import Link from "next/link";
 
 export function OverviewSidebar({ connected }: { connected: boolean }) {
   const links = [
@@ -56,13 +56,15 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
     <Sidebar className="bg-white">
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <div className="font-bold text-lg mb-4 flex justify-center mt-20 border-b border-gray-200 pb-4">
-            <Image
-              src="/logoname.svg"
-              alt="Fronsciers"
-              width={200}
-              height={200}
-            />
+          <div className="font-bold text-lg mb-4 flex justify-center mt-16 border-b border-gray-200 pb-4">
+            <Link href="/">
+              <Image
+                src="/logoname.svg"
+                alt="Fronsciers"
+                width={200}
+                height={200}
+              />
+            </Link>
           </div>
 
           <SidebarGroupContent>
@@ -94,7 +96,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
               Not Connected
             </div>
           )}
-        </div>{" "}
+        </div>
         <WalletConnection />
       </SidebarFooter>
     </Sidebar>

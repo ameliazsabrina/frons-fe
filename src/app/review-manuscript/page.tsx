@@ -30,12 +30,10 @@ import {
   CheckIcon,
   XIcon,
   EditIcon,
+  PenIcon,
 } from "lucide-react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWallets } from "@privy-io/react-auth";
@@ -47,13 +45,14 @@ import { PendingReviewManuscript } from "@/types/backend";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLoading } from "@/context/LoadingContext";
 import { WalletConnection } from "@/components/wallet-connection";
+import { isValidSolanaAddress } from "@/hooks/useProgram";
 
 interface ReviewManuscript {
   id: string;
   title: string;
   author: string;
   abstract: string;
-  category: string;
+  category: string[];
   submissionDate: string;
   keywords: string[];
   status: string;
@@ -107,6 +106,9 @@ export default function ReviewManuscriptPage() {
   const { authenticated: connected, user } = usePrivy();
   const { wallets } = useWallets();
   const publicKey = wallets[0]?.address;
+  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
+    ? publicKey
+    : undefined;
   const {
     isLoading: loading,
     error,
@@ -129,6 +131,7 @@ export default function ReviewManuscriptPage() {
   const { showToast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
   const { isLoading } = useLoading();
+
   const parseCategory = (categoryData: any): string => {
     if (!categoryData) return "Uncategorized";
 
@@ -189,7 +192,7 @@ export default function ReviewManuscriptPage() {
   };
 
   const handleAssignReviewers = async () => {
-    if (!selectedManuscript || !publicKey) return;
+    if (!selectedManuscript || !validSolanaPublicKey) return;
 
     const validReviewers = reviewers.filter((r) => r.trim() !== "");
     if (validReviewers.length < 3) {
@@ -200,7 +203,7 @@ export default function ReviewManuscriptPage() {
     const result = await assignReviewers(
       selectedManuscript.id,
       validReviewers,
-      publicKey.toString()
+      validSolanaPublicKey
     );
 
     if (result?.success) {
@@ -212,7 +215,7 @@ export default function ReviewManuscriptPage() {
   };
 
   const handlePublishManuscript = async () => {
-    if (!selectedManuscript || !publicKey) return;
+    if (!selectedManuscript || !validSolanaPublicKey) return;
 
     const confirmed = confirm(
       `Are you sure you want to publish "${selectedManuscript.title}"? This action cannot be undone.`
@@ -222,7 +225,7 @@ export default function ReviewManuscriptPage() {
 
     const result = await publishManuscript(
       selectedManuscript.id,
-      publicKey.toString()
+      validSolanaPublicKey
     );
 
     if (result?.success) {
@@ -343,352 +346,374 @@ export default function ReviewManuscriptPage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="container max-w-6xl mx-auto px-4 py-8">
-          <Card className="shadow-lg border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-xl text-gray-900">
-                Review Dashboard
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-6">
-                Please connect your wallet to access the review dashboard.
-              </p>
-              <WalletConnection />
-            </CardContent>
-          </Card>
+      <SidebarProvider>
+        <div className="min-h-screen bg-primary/5 flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <div className="flex items-center gap-2 px-4 py-3">
+                <SidebarTrigger className="w-10 h-10" />
+                <Separator orientation="vertical" className="h-6" />
+              </div>
+            </div>
+            <div className="container max-w-6xl mx-auto px-4 py-8">
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                  Review Manuscripts
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Contribute to academic excellence by reviewing submitted
+                  manuscripts
+                </p>
+              </div>
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardHeader>
+                  <CardTitle className="text-xl text-primary">
+                    Review Dashboard
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-6">
+                    Please connect your wallet to access the review dashboard.
+                  </p>
+                  <WalletConnection />
+                </CardContent>
+              </Card>
+            </div>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-white flex w-full">
+      <div className="min-h-screen bg-primary/5 flex w-full">
         <OverviewSidebar connected={connected} />
-
         <SidebarInset className="flex-1">
-          <div className="flex flex-col min-h-screen">
-            {/* Header with Sidebar Trigger */}
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="h-6" />
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <SidebarTrigger className="w-10 h-10" />
+              <Separator orientation="vertical" className="h-6" />
+            </div>
+          </div>
+          <div className="flex-1 p-4 sm:p-6">
+            {/* Header Section */}
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                Review Manuscripts
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                Contribute to academic excellence by reviewing submitted
+                manuscripts
+              </p>
+            </div>
+
+            {/* Search and Filter Section */}
+            <div className="mb-8 space-y-4">
+              {/* Search Bar */}
+              <div className="relative max-w-full">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search manuscripts by title, author, or keywords..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 text-sm"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex items-center gap-3">
+                <FilterIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-muted-foreground min-w-fit">
+                  Filter by category:
+                </span>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.name} value={category.name}>
+                        {category.name}
+                        {category.name !== "All" && ` (${category.count})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-muted-foreground">
+                  Filter by status:
+                </span>
+                {reviewStatuses.map((status) => (
+                  <Button
+                    key={status}
+                    variant={selectedStatus === status ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedStatus(status)}
+                    className="text-xs"
+                  >
+                    {status}
+                  </Button>
+                ))}
               </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 p-4 sm:p-6">
-              {/* Header Section */}
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
-                  Peer Review
-                </h1>
-                <p className="text-primary/80 text-sm sm:text-md max-w-2xl mx-auto">
-                  Review manuscripts, provide feedback, and contribute to the
-                  quality of academic research.
-                </p>
-              </div>
-
-              {/* Search and Filter Section */}
-              <div className="mb-8 space-y-4">
-                {/* Search Bar */}
-                <div className="relative max-w-full">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search manuscripts by title, author, or keywords..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 text-sm"
-                  />
+            {/* Manuscripts List */}
+            <div className="space-y-6">
+              {loading ? (
+                <div className="flex items-center justify-center min-h-[200px]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-
-                {/* Category Filter */}
-                <div className="flex items-center gap-3">
-                  <FilterIcon className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600 min-w-fit">
-                    Filter by category:
-                  </span>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.name} value={category.name}>
-                          {category.name}
-                          {category.name !== "All" && ` (${category.count})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Status Filter */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FilterIcon className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">
-                    Filter by status:
-                  </span>
-                  {reviewStatuses.map((status) => (
-                    <Button
-                      key={status}
-                      variant={
-                        selectedStatus === status ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setSelectedStatus(status)}
-                      className="text-xs"
+              ) : error ? (
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                  <CardContent className="p-8 text-center">
+                    <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold text-primary mb-2">
+                      Error
+                    </h2>
+                    <p className="text-red-600">{error}</p>
+                  </CardContent>
+                </Card>
+              ) : manuscripts.length === 0 ? (
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                  <CardContent className="p-8 text-center">
+                    <FileTextIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold text-primary mb-2">
+                      No Manuscripts to Review
+                    </h2>
+                    <p className="text-muted-foreground">
+                      There are no manuscripts assigned to you for review at
+                      this time.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {manuscripts.map((manuscript) => (
+                    <Card
+                      key={manuscript.id}
+                      className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200"
                     >
-                      {status}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+                      <CardContent className="p-6">
+                        <div className="flex flex-col h-full">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                              <h3 className="font-medium text-primary leading-tight">
+                                {manuscript.title}
+                              </h3>
+                            </div>
 
-              {/* Manuscripts List */}
-              <div className="space-y-6">
-                {isLoading ? (
-                  <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80">
-                    <CardContent className="p-8 text-center">
-                      <ClipboardCheckIcon className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">
-                        Loading manuscripts for review...
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : error ? (
-                  <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80">
-                    <CardContent className="p-8 text-center">
-                      <ClipboardCheckIcon className="h-12 w-12 text-red-200 mx-auto mb-4" />
-                      <p className="text-red-500 mb-2">{error}</p>
-                      <Button
-                        variant="outline"
-                        onClick={() => window.location.reload()}
-                        className="mt-2"
-                      >
-                        Try Again
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : filteredManuscripts.length === 0 ? (
-                  <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80">
-                    <CardContent className="p-8 text-center">
-                      <ClipboardCheckIcon className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">
-                        {manuscripts.length === 0
-                          ? "No manuscripts available for review"
-                          : "No manuscripts found"}
-                      </p>
-                      <p className="text-sm text-gray-400 mb-4">
-                        {manuscripts.length === 0
-                          ? "Manuscripts will appear here once they are submitted and ready for review."
-                          : "Try adjusting your search or filter criteria"}
-                      </p>
-                      {manuscripts.length === 0 && (
-                        <Button variant="default" asChild>
-                          <Link href="/submit-manuscript">
-                            Submit a Manuscript
-                          </Link>
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredManuscripts.map((manuscript) => (
-                      <div
-                        key={manuscript.id}
-                        onClick={() => handleViewManuscript(manuscript)}
-                        className="cursor-pointer"
-                      >
-                        <Card
-                          className={`transition-colors ${
-                            selectedManuscript?.id === manuscript.id
-                              ? "border-blue-500 bg-blue-50"
-                              : "hover:border-gray-300"
-                          }`}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-medium text-gray-900 mb-2">
-                                  {manuscript.title}
-                                </h3>
-                                <p className="text-sm text-gray-600 mb-2">
-                                  By {manuscript.author}
-                                </p>
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <Badge variant="outline">
-                                    {manuscript.category.join(", ")}
+                            <div className="space-y-3 mb-4">
+                              <p className="text-sm text-muted-foreground">
+                                By {manuscript.author}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {manuscript.category.map((cat, index) => (
+                                  <Badge
+                                    key={index}
+                                    variant="secondary"
+                                    className="bg-primary/10 text-primary text-xs"
+                                  >
+                                    {cat}
                                   </Badge>
-                                  {getStatusBadge(manuscript)}
-                                </div>
-                                <p className="text-xs text-gray-500">
-                                  Submitted:{" "}
-                                  {new Date(
-                                    manuscript.submissionDate
-                                  ).toLocaleDateString()}
-                                </p>
+                                ))}
                               </div>
-                              <EyeIcon className="h-4 w-4 text-gray-400" />
                             </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {/* Manuscript Details */}
-              <div className="lg:col-span-1">
-                {selectedManuscript ? (
-                  <Card className="shadow-lg border-gray-200 sticky top-8">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-gray-900">
-                        Manuscript Details
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <h3 className="font-medium text-gray-900 mb-2">
-                          {selectedManuscript.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          By {selectedManuscript.author}
-                        </p>
-                        <p className="text-sm text-gray-700 mb-4">
-                          {selectedManuscript.abstract.substring(0, 200)}...
-                        </p>
-                      </div>
-
-                      <Separator />
-
-                      {/* Review Progress */}
-                      {reviewStatus && (
-                        <div className="space-y-3">
-                          <h4 className="font-medium text-gray-900">
-                            Review Progress
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Reviews Completed:</span>
-                              <span className="font-medium">
-                                {reviewStatus.reviewsCompleted}/
-                                {reviewStatus.requiredReviews}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span>Can Publish:</span>
-                              <span
-                                className={
-                                  reviewStatus.canPublish
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }
-                              >
-                                {reviewStatus.canPublish ? "Yes" : "No"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span>Next Action:</span>
-                              <span className="text-blue-600">
-                                {reviewStatus.nextAction}
-                              </span>
+                            <div className="space-y-2 text-sm text-muted-foreground">
+                              <p>
+                                Submitted:{" "}
+                                {formatDate(manuscript.submissionDate)}
+                              </p>
+                              <p>Review Status: {manuscript.status}</p>
                             </div>
                           </div>
 
-                          {/* Review Details */}
-                          {reviewStatus.reviews &&
-                            reviewStatus.reviews.length > 0 && (
-                              <div className="mt-4">
-                                <h5 className="font-medium text-gray-900 mb-2">
-                                  Review Details
-                                </h5>
-                                <div className="space-y-2">
-                                  {reviewStatus.reviews.map((review: any) => (
-                                    <div
-                                      key={review.id}
-                                      className="flex items-center justify-between text-sm"
-                                    >
-                                      <span className="truncate">
-                                        {review.reviewer.substring(0, 8)}...
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          review.status === "completed"
-                                            ? "default"
-                                            : "secondary"
-                                        }
-                                        className="text-xs"
-                                      >
-                                        {review.status}
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                window.open(
+                                  manuscript.ipfsUrls.manuscript,
+                                  "_blank"
+                                )
+                              }
+                              className="text-xs"
+                            >
+                              <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                              View Paper
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`/submit-review/${manuscript.id}`)
+                              }
+                              className="text-xs"
+                            >
+                              <PenIcon className="h-3 w-3 mr-1" />
+                              Submit Review
+                            </Button>
+                          </div>
                         </div>
-                      )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
 
-                      <Separator />
+            {/* Manuscript Details */}
+            <div className="lg:col-span-1">
+              {selectedManuscript ? (
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200 sticky top-8">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-primary">
+                      Manuscript Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="font-medium text-primary mb-2">
+                        {selectedManuscript.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        By {selectedManuscript.author}
+                      </p>
+                      <p className="text-sm text-foreground mb-4">
+                        {selectedManuscript.abstract.substring(0, 200)}...
+                      </p>
+                    </div>
 
-                      {/* Actions */}
+                    <Separator />
+
+                    {/* Review Progress */}
+                    {reviewStatus && (
                       <div className="space-y-3">
+                        <h4 className="font-medium text-primary">
+                          Review Progress
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Reviews Completed:</span>
+                            <span className="font-medium">
+                              {reviewStatus.reviewsCompleted}/
+                              {reviewStatus.requiredReviews}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Can Publish:</span>
+                            <span
+                              className={
+                                reviewStatus.canPublish
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
+                              {reviewStatus.canPublish ? "Yes" : "No"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Next Action:</span>
+                            <span className="text-blue-600">
+                              {reviewStatus.nextAction}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Review Details */}
+                        {reviewStatus.reviews &&
+                          reviewStatus.reviews.length > 0 && (
+                            <div className="mt-4">
+                              <h5 className="font-medium text-primary mb-2">
+                                Review Details
+                              </h5>
+                              <div className="space-y-2">
+                                {reviewStatus.reviews.map((review: any) => (
+                                  <div
+                                    key={review.id}
+                                    className="flex items-center justify-between text-sm"
+                                  >
+                                    <span className="truncate">
+                                      {review.reviewer.substring(0, 8)}...
+                                    </span>
+                                    <Badge
+                                      variant={
+                                        review.status === "completed"
+                                          ? "default"
+                                          : "secondary"
+                                      }
+                                      className="text-xs"
+                                    >
+                                      {review.status}
+                                    </Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    {/* Actions */}
+                    <div className="space-y-3">
+                      <Button
+                        onClick={() =>
+                          window.open(
+                            selectedManuscript.ipfsUrls.manuscript,
+                            "_blank"
+                          )
+                        }
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                        View Manuscript
+                      </Button>
+
+                      {(!reviewStatus ||
+                        reviewStatus.reviewsCompleted === 0) && (
                         <Button
-                          onClick={() =>
-                            window.open(
-                              selectedManuscript.ipfsUrls.manuscript,
-                              "_blank"
-                            )
-                          }
-                          variant="outline"
+                          onClick={() => setShowAssignReviewers(true)}
                           className="w-full"
                         >
-                          <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                          View Manuscript
+                          <UsersIcon className="h-4 w-4 mr-2" />
+                          Assign Reviewers
                         </Button>
+                      )}
 
-                        {(!reviewStatus ||
-                          reviewStatus.reviewsCompleted === 0) && (
-                          <Button
-                            onClick={() => setShowAssignReviewers(true)}
-                            className="w-full"
-                          >
-                            <UsersIcon className="h-4 w-4 mr-2" />
-                            Assign Reviewers
-                          </Button>
-                        )}
-
-                        {reviewStatus?.canPublish && (
-                          <Button
-                            onClick={handlePublishManuscript}
-                            className="w-full bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckIcon className="h-4 w-4 mr-2" />
-                            Publish Manuscript
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="shadow-lg border-gray-200">
-                    <CardContent className="p-8 text-center text-gray-500">
-                      <FileTextIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>Select a manuscript to view details</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+                      {reviewStatus?.canPublish && (
+                        <Button
+                          onClick={handlePublishManuscript}
+                          className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckIcon className="h-4 w-4 mr-2" />
+                          Publish Manuscript
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    <FileTextIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Select a manuscript to view details</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </SidebarInset>
@@ -696,18 +721,18 @@ export default function ReviewManuscriptPage() {
         {/* Assign Reviewers Modal */}
         {showAssignReviewers && selectedManuscript && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4">
+            <Card className="w-full max-w-md mx-4 shadow-sm border border-gray-100 rounded-xl bg-white/80">
               <CardHeader>
-                <CardTitle>Assign Reviewers</CardTitle>
+                <CardTitle className="text-primary">Assign Reviewers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Assign at least 3 reviewers to "{selectedManuscript.title}"
                 </p>
 
                 {reviewers.map((reviewer, index) => (
                   <div key={index}>
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-primary">
                       Reviewer {index + 1} Wallet Address
                     </label>
                     <input
@@ -719,7 +744,7 @@ export default function ReviewManuscriptPage() {
                         setReviewers(newReviewers);
                       }}
                       placeholder="0x..."
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
                     />
                   </div>
                 ))}

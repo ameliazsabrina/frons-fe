@@ -14,12 +14,19 @@ import {
   BookOpenIcon,
   AwardIcon,
   CheckCircleIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 import { Header } from "@/components/header";
 import { NFTBadge } from "@/components/ui/nft-badge";
 import { PublishedManuscript } from "@/types/backend";
 import { useLoading } from "@/context/LoadingContext";
+import SidebarProvider from "@/provider/SidebarProvider";
+import { OverviewSidebar } from "@/components/overview-sidebar";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { isValidSolanaAddress } from "@/hooks/useProgram";
 
 const RESEARCH_CATEGORIES = [
   "Artificial Intelligence",
@@ -56,6 +63,13 @@ export default function PublishedManuscriptsPage() {
   );
   const [totalCount, setTotalCount] = useState(0);
   const { isLoading } = useLoading();
+  const { authenticated: connected } = usePrivy();
+  const { wallets } = useWallets();
+  const publicKey = wallets[0]?.address;
+  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
+    ? publicKey
+    : undefined;
+
   useEffect(() => {
     loadPublishedManuscripts();
   }, [selectedCategory]);
@@ -92,208 +106,122 @@ export default function PublishedManuscriptsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <div className="container max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Published Manuscripts
-          </h1>
-          <p className="text-gray-600">
-            Peer-reviewed academic publications with blockchain verification
-          </p>
-        </div>
-
-        {/* Category Filter */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            Filter by Category
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {RESEARCH_CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+    <SidebarProvider>
+      <div className="min-h-screen bg-primary/5 flex w-full">
+        <OverviewSidebar connected={connected} />
+        <SidebarInset className="flex-1">
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <SidebarTrigger className="w-10 h-10" />
+              <Separator orientation="vertical" className="h-6" />
+            </div>
           </div>
-        </div>
+          <div className="container max-w-6xl mx-auto px-4 py-8">
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral uppercase tracking-tight">
+                Published Manuscripts
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                Explore groundbreaking research published on the blockchain
+              </p>
+            </div>
 
-        {/* Stats */}
-        <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <BookOpenIcon className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-800">
-                    Total Published
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-blue-900 mt-1">
-                  {totalCount}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                  <span className="text-sm font-medium text-green-800">
-                    Peer Reviewed
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-green-900 mt-1">100%</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-purple-50 border-purple-200">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <AwardIcon className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm font-medium text-purple-800">
-                    NFT Verified
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-purple-900 mt-1">
-                  {manuscripts.filter((m) => m.nftMint).length}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <Alert className="border-red-200 bg-red-50 mb-6">
-            <AlertDescription className="text-red-800">
-              {error}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Manuscripts Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : manuscripts.length === 0 ? (
-          <Card className="text-center p-12">
-            <FileTextIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Published Manuscripts
-            </h3>
-            <p className="text-gray-600">
-              No manuscripts have been published in the "{selectedCategory}"
-              category yet.
-            </p>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {manuscripts.map((manuscript) => (
-              <Card
-                key={manuscript.id}
-                className="shadow-lg border-gray-200 hover:shadow-xl transition-shadow"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
-                        {manuscript.title}
-                      </CardTitle>
-                      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                        <UserIcon className="h-4 w-4" />
-                        <span>{manuscript.author}</span>
-                      </div>
-                    </div>
-                    {manuscript.nftMint && (
-                      <NFTBadge mintAddress={manuscript.nftMint} />
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-1">
-                    {manuscript.category.map((cat) => (
-                      <Badge
-                        key={cat}
-                        variant="outline"
-                        className={`text-xs ${getCategoryColor(cat)}`}
-                      >
-                        {cat}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Publication Info */}
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      <span>
-                        Published: {formatDate(manuscript.publishedDate)}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FileTextIcon className="h-4 w-4" />
-                      <span>
-                        Submitted: {formatDate(manuscript.submissionDate)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Actions */}
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() =>
-                        window.open(manuscript.ipfsUrls.manuscript, "_blank")
-                      }
-                    >
-                      <ExternalLinkIcon className="h-4 w-4 mr-1" />
-                      View Paper
-                    </Button>
-                    {manuscript.nftMint && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          window.open(
-                            `https://explorer.solana.com/address/${manuscript.nftMint}?cluster=devnet`,
-                            "_blank"
-                          )
-                        }
-                      >
-                        🎯 NFT
-                      </Button>
-                    )}
-                  </div>
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[200px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : error ? (
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-8 text-center">
+                  <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    Error
+                  </h2>
+                  <p className="text-red-600">{error}</p>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+            ) : manuscripts.length === 0 ? (
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-8 text-center">
+                  <FileTextIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    No Manuscripts Found
+                  </h2>
+                  <p className="text-muted-foreground">
+                    There are no published manuscripts available at this time.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {manuscripts.map((manuscript) => (
+                  <Card
+                    key={manuscript.id}
+                    className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex flex-col h-full">
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-4 mb-4">
+                            <h3 className="font-medium text-primary leading-tight">
+                              {manuscript.title}
+                            </h3>
+                          </div>
 
-        {/* Load More Button */}
-        {manuscripts.length > 0 && manuscripts.length < totalCount && (
-          <div className="text-center mt-8">
-            <Button variant="outline" onClick={loadPublishedManuscripts}>
-              Load More Manuscripts
-            </Button>
+                          <div className="space-y-3 mb-4">
+                            <p className="text-sm text-muted-foreground">
+                              By {manuscript.author}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {manuscript.category.map((cat, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="bg-primary/10 text-primary text-xs"
+                                >
+                                  {cat}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          {manuscript.nftMint && (
+                            <div className="mb-4">
+                              <Badge variant="outline" className="text-xs">
+                                🎯 NFT Minted
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <p className="text-xs text-muted-foreground">
+                            Published: {formatDate(manuscript.publishedDate)}
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              window.open(
+                                manuscript.ipfsUrls.manuscript,
+                                "_blank"
+                              )
+                            }
+                            className="text-xs"
+                          >
+                            <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                            View Paper
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

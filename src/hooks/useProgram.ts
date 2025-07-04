@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { SOLANA_CONFIG } from "@/lib/constants/solana";
 import IDL from "@/lib/constants/fronsciers.json";
 
-function isValidSolanaAddress(address: string | undefined): boolean {
+export function isValidSolanaAddress(address: string | undefined): boolean {
   if (!address) return false;
   try {
     new PublicKey(address);

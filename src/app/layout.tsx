@@ -5,7 +5,7 @@ import "./globals.css";
 import PrivyProvider from "@/provider/PrivyProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { CustomCursor } from "@/components/ui/custom-cursor";
-import SidebarProvider from "@/provider/SidebarProvider";
+// import SidebarProvider from "@/provider/SidebarProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -38,7 +38,7 @@ export default function RootLayout({
         <LoadingProvider>
           <PrivyProvider>
             <CustomCursor />
-            <SidebarProvider>{children}</SidebarProvider>
+            {children}
           </PrivyProvider>
         </LoadingProvider>
       </body>
