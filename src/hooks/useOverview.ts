@@ -78,7 +78,7 @@ export function useOverview(
         setLoading(true);
         setError(null);
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
         // Try to fetch real data first
         try {

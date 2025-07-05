@@ -1,9 +1,7 @@
 import { useState, useCallback } from "react";
-import { backendAPI } from "@/lib/api";
-import {
-  ManuscriptSubmissionRequest,
-  ManuscriptSubmissionResponse,
-} from "@/types/backend";
+
+import { ManuscriptSubmissionRequest } from "@/types/backend";
+import axios from "axios";
 
 interface ManuscriptSubmissionProps {
   submitManuscriptSubsidized: any;
@@ -15,6 +13,7 @@ export function useManuscriptSubmission({
   checkCVRegistration,
 }: ManuscriptSubmissionProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submitManuscript = useCallback(
     async (
@@ -26,11 +25,15 @@ export function useManuscriptSubmission({
     ) => {
       try {
         setLoading(true);
+        setError(null);
 
         // Final CV check before submission
         const cvVerified = await checkCVRegistration(walletAddress);
         if (!cvVerified) {
-          alert("CV verification failed. Please ensure your CV is registered.");
+          const errorMsg =
+            "CV verification failed. Please ensure your CV is registered.";
+          setError(errorMsg);
+          alert(errorMsg);
           return;
         }
 
@@ -46,9 +49,12 @@ export function useManuscriptSubmission({
         };
 
         // Submit to backend
-        const result = await backendAPI.submitManuscript(submissionData);
+        const result = await axios.post(
+          `${apiUrl}/submit-manuscript/submit-manuscript`,
+          submissionData
+        );
 
-        if (result.success) {
+        if (result.data.success) {
           console.log("✅ Manuscript submitted successfully:", result);
 
           // Call success callback if provided
@@ -59,26 +65,36 @@ export function useManuscriptSubmission({
           // Show success message
           alert(`Manuscript submitted successfully! 
         
-Manuscript ID: ${result.manuscript.id}
-Status: ${result.manuscript.status}
-IPFS Hash: ${result.manuscript.cid}
+Manuscript ID: ${result.data.manuscript.id}
+Status: ${result.data.manuscript.status}
+IPFS Hash: ${result.data.manuscript.cid}
 
 Your manuscript is now under peer review. You will be notified when the review process is complete.`);
         } else {
           console.error("❌ Manuscript submission failed:", result);
-          alert(`Submission failed: Unknown error`);
+          const errorMsg = "Submission failed: Unknown error";
+          setError(errorMsg);
+          alert(errorMsg);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to submit manuscript:", error);
 
+        let errorMessage =
+          "Network error while submitting manuscript. Please try again.";
+
         // Handle specific backend errors
-        if (backendAPI.isCVRequiredError(error)) {
-          alert("CV registration required. Please upload your CV first.");
-        } else if (backendAPI.isMissingWalletError(error)) {
-          alert("Please provide your wallet address to submit manuscripts.");
-        } else {
-          alert("Network error while submitting manuscript. Please try again.");
+        if (error.response?.data?.error === "CV registration required") {
+          errorMessage =
+            "CV registration required. Please upload your CV first.";
+        } else if (error.response?.data?.error === "Missing wallet address") {
+          errorMessage =
+            "Please provide your wallet address to submit manuscripts.";
+        } else if (error.message) {
+          errorMessage = error.message;
         }
+
+        setError(errorMessage);
+        alert(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -88,6 +104,7 @@ Your manuscript is now under peer review. You will be notified when the review p
 
   return {
     loading,
+    error,
     submitManuscript,
   };
 }

@@ -84,7 +84,7 @@ export default function SubmitReviewPage() {
   const [confidentialComments, setConfidentialComments] = useState("");
   const [recommendation, setRecommendation] = useState("");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
   const fetchReviewData = useCallback(async () => {
     try {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { backendAPI } from "@/lib/api";
+
 import {
   CVStatus,
   CVParseResponse,
@@ -8,6 +8,7 @@ import {
   ProfileUpdateResponse,
 } from "@/types/backend";
 import { useLoading } from "@/context/LoadingContext";
+import axios from "axios";
 
 interface CVData {
   fullName: string;
@@ -17,35 +18,96 @@ interface CVData {
   specialization: string;
   email: string;
   registeredAt: string;
+  photoUrl?: string;
 }
 
-export function useCVRegistration() {
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        const maxDimension = 800;
+        if (width > height && width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("Canvas to Blob conversion failed"));
+              return;
+            }
+
+            const compressedFile = new File([blob], file.name, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          "image/jpeg",
+          0.7
+        );
+      };
+      img.onerror = () => {
+        reject(new Error("Image loading error"));
+      };
+    };
+    reader.onerror = () => {
+      reject(new Error("File reading error"));
+    };
+  });
+};
+
+export function useCVRegistration(walletAddress?: string) {
   const [cvStatus, setCvStatus] = useState<CVStatus | null>(null);
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { isLoading } = useLoading();
+  const { isLoading, setIsLoading } = useLoading();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
   const checkCVRegistration = useCallback(
     async (walletAddress: string): Promise<boolean> => {
       try {
         setError(null);
 
-        const result = await backendAPI.checkCVStatus(walletAddress);
-        setCvStatus(result);
+        const result = await axios.get(
+          `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
+        );
+        console.log(result.data);
+        setCvStatus(result.data as CVStatus);
 
-        if (result.success && result.hasCV && result.userInfo) {
+        if (result.data.success && result.data.hasCV && result.data.userInfo) {
           setCvData({
-            fullName: result.userInfo.fullName,
-            institution: result.userInfo.institution,
-            profession: result.userInfo.profession,
-            field: result.userInfo.profession, // Map profession to field
-            specialization: result.userInfo.profession, // Default mapping
-            email: "", // Will be populated from profile if available
-            registeredAt: result.userInfo.registeredAt,
+            fullName: result.data.userInfo.fullName,
+            institution: result.data.userInfo.institution,
+            profession: result.data.userInfo.profession,
+            field: result.data.userInfo.profession,
+            specialization: result.data.userInfo.profession,
+            email: "",
+            registeredAt: result.data.userInfo.registeredAt,
           });
-          return result.canSubmitManuscripts;
+          return result.data.canSubmitManuscripts;
         } else {
-          setError(result.message || "No CV found for this wallet address");
+          setError(
+            result.data.message || "No CV found for this wallet address"
+          );
           return false;
         }
       } catch (err) {
@@ -66,10 +128,21 @@ export function useCVRegistration() {
       try {
         setError(null);
 
-        const result = await backendAPI.uploadCV(cv, walletAddress);
+        const formData = new FormData();
+        formData.append("cv", cv);
+        formData.append("walletAddress", walletAddress);
 
-        if (result.success) {
-          // Update CV data with parsed information
+        const result = await axios.post(
+          `${apiUrl}/parse-cv/parse-cv`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (result.data.success) {
           setCvData({
             fullName: result.data.selfIdentity.fullName,
             institution: result.data.selfIdentity.institution,
@@ -80,11 +153,10 @@ export function useCVRegistration() {
             registeredAt: new Date().toISOString(),
           });
 
-          // Re-check CV status after successful upload
           await checkCVRegistration(walletAddress);
         }
 
-        return result;
+        return result.data as CVParseResponse;
       } catch (err) {
         console.error("Failed to upload CV:", err);
         setError(err instanceof Error ? err.message : "Failed to upload CV");
@@ -99,23 +171,48 @@ export function useCVRegistration() {
     async (walletAddress: string): Promise<UserProfileResponse | null> => {
       try {
         setError(null);
+        setIsLoading(true);
 
-        const result = await backendAPI.getUserProfile(walletAddress);
+        const result = await axios.get(
+          `${apiUrl}/parse-cv/user/profile/${walletAddress}`
+        );
 
-        if (result.success) {
-          // Update CV data with profile information
+        if (result.data.success) {
+          console.log(
+            "Full profile data from API:",
+            JSON.stringify(result.data.profile, null, 2)
+          );
+
           setCvData({
-            fullName: result.profile.personalInfo.fullName,
-            institution: result.profile.personalInfo.institution,
-            profession: result.profile.personalInfo.profession,
-            field: result.profile.personalInfo.field,
-            specialization: result.profile.personalInfo.specialization,
-            email: result.profile.contact.email,
-            registeredAt: result.profile.createdAt,
+            fullName: result.data.profile.personalInfo.fullName,
+            institution: result.data.profile.personalInfo.institution,
+            profession: result.data.profile.personalInfo.profession,
+            field: result.data.profile.personalInfo.field,
+            specialization: result.data.profile.personalInfo.specialization,
+            email: result.data.profile.contact.email,
+            registeredAt: result.data.profile.createdAt,
+            photoUrl:
+              result.data.profile.profilePhoto ||
+              result.data.profile.personalInfo.photoUrl,
           });
+
+          console.log("Profile data loaded:", result.data.profile);
+          if (result.data.profile.profilePhoto) {
+            console.log(
+              "Profile photo URL found:",
+              result.data.profile.profilePhoto
+            );
+          } else if (result.data.profile.personalInfo.photoUrl) {
+            console.log(
+              "Profile photo URL found in personalInfo:",
+              result.data.profile.personalInfo.photoUrl
+            );
+          } else {
+            console.log("No profile photo URL found in the response");
+          }
         }
 
-        return result;
+        return result.data as UserProfileResponse;
       } catch (err) {
         console.error("Failed to get user profile:", err);
         setError(
@@ -123,6 +220,7 @@ export function useCVRegistration() {
         );
         return null;
       } finally {
+        setIsLoading(false);
       }
     },
     []
@@ -136,27 +234,30 @@ export function useCVRegistration() {
       try {
         setError(null);
 
-        const result = await backendAPI.updateUserProfile(
-          walletAddress,
+        const result = await axios.patch(
+          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
           updateData
         );
+        console.log(result.data);
 
-        if (result.success) {
-          // Update local CV data with updated information
-          if (result.profile) {
+        if (result.data.success) {
+          if (result.data.profile) {
             setCvData({
-              fullName: result.profile.personalInfo.fullName,
-              institution: result.profile.personalInfo.institution,
-              profession: result.profile.personalInfo.profession,
-              field: result.profile.personalInfo.field,
-              specialization: result.profile.personalInfo.specialization,
-              email: result.profile.contact.email,
-              registeredAt: result.profile.createdAt,
+              fullName: result.data.profile.personalInfo.fullName,
+              institution: result.data.profile.personalInfo.institution,
+              profession: result.data.profile.personalInfo.profession,
+              field: result.data.profile.personalInfo.field,
+              specialization: result.data.profile.personalInfo.specialization,
+              email: result.data.profile.contact.email,
+              registeredAt: result.data.profile.createdAt,
+              photoUrl:
+                result.data.profile.profilePhoto ||
+                result.data.profile.personalInfo.photoUrl,
             });
           }
         }
 
-        return result;
+        return result.data as ProfileUpdateResponse;
       } catch (err) {
         console.error("Failed to update user profile:", err);
         setError(
@@ -169,12 +270,90 @@ export function useCVRegistration() {
     []
   );
 
+  const uploadProfilePhoto = useCallback(
+    async (
+      photo: File,
+      walletAddress: string
+    ): Promise<{
+      success: boolean;
+      profilePhoto?: string;
+      message: string;
+    }> => {
+      try {
+        setError(null);
+        setIsLoading(true);
+
+        // Compress the image before uploading
+        const compressedPhoto = await compressImage(photo);
+        console.log(
+          `Original size: ${photo.size / 1024}KB, Compressed size: ${
+            compressedPhoto.size / 1024
+          }KB`
+        );
+
+        const formData = new FormData();
+        formData.append("profilePhoto", compressedPhoto);
+
+        console.log(
+          "Uploading profile photo to:",
+          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`
+        );
+        const response = await axios.post(
+          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log(
+          "Profile photo upload response:",
+          JSON.stringify(response.data, null, 2)
+        );
+
+        if (response.data.success) {
+          console.log(
+            "Profile photo URL from response:",
+            response.data.profilePhoto
+          );
+          return {
+            success: true,
+            profilePhoto: response.data.profilePhoto,
+            message: "Profile photo updated successfully",
+          };
+        } else {
+          setError(response.data.message || "Failed to upload profile photo");
+          return {
+            success: false,
+            message: response.data.message || "Failed to upload profile photo",
+          };
+        }
+      } catch (err) {
+        console.error("Failed to upload profile photo:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to upload profile photo";
+        setError(errorMessage);
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
   const getUserSpecialization = useCallback(
     async (walletAddress: string): Promise<any> => {
       try {
         setError(null);
 
-        const result = await backendAPI.getUserSpecialization(walletAddress);
+        const result = await axios.get(
+          `${apiUrl}/parse-cv/user/specialization/${walletAddress}`
+        );
         return result;
       } catch (err) {
         console.error("Failed to get user specialization:", err);
@@ -200,5 +379,6 @@ export function useCVRegistration() {
     getUserProfile,
     updateUserProfile,
     getUserSpecialization,
+    uploadProfilePhoto,
   };
 }

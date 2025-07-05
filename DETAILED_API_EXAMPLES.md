@@ -1,6 +1,6 @@
 # Detailed API Examples - Peer Review Workflow & NFT Integration
 
-## Base URL: `https://fronsciers-be.azakiyasabrina.workers.dev` (Production) | `https://fronsciers-be.azakiyasabrina.workers.dev` (Development)
+## Base URL: `http://localhost:8787` (Production) | `http://localhost:8787` (Development)
 
 This document provides detailed request/response examples for the **peer review workflow** and **NFT integration** API endpoints.
 
@@ -23,8 +23,8 @@ The NFT creation service is currently disabled in the Cloudflare Workers environ
 
 **URL Usage in Examples:**
 
-- Most curl examples use `localhost:5001` for **development/testing**
-- For **production**, replace with `https://fronsciers-be.azakiyasabrina.workers.dev`
+- Most curl examples use `localhost:8787` for **development/testing**
+- For **production**, replace with `http://localhost:8787`
 - Frontend integrations should use the appropriate URL based on environment
 - Key workflow examples show both development and production URLs
 
@@ -71,18 +71,18 @@ The NFT creation service is currently disabled in the Cloudflare Workers environ
 
 Check if a user has registered their CV and can submit manuscripts.
 
-> **📝 Note:** The examples below use `localhost:5001` for development. For production, replace with `https://fronsciers-be.azakiyasabrina.workers.dev`
+> **📝 Note:** The examples below use `localhost:8787` for development. For production, replace with `http://localhost:8787`
 
 **Request (Development):**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
+curl "http://localhost:8787/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
 ```
 
 **Request (Production):**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
+curl "http://localhost:8787/api/manuscripts/check-cv-status/0x1234567890abcdef1234567890abcdef12345678"
 ```
 
 **Response (CV Registered):**
@@ -144,7 +144,7 @@ Manuscripts are now submitted to the review queue, **not immediately published**
 **Request Example:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/submit \
+curl -X POST http://localhost:8787/api/manuscripts/submit \
   -F "manuscript=@research_paper.pdf" \
   -F "title=AI Applications in Healthcare" \
   -F "author=Dr. John Doe" \
@@ -204,7 +204,7 @@ If you already have an IPFS hash, you can save manuscript metadata directly.
 **Request:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/all \
+curl -X POST http://localhost:8787/api/manuscripts/all \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AI Applications in Healthcare",
@@ -255,7 +255,7 @@ For editors/administrators to see manuscripts awaiting review.
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/pending-review?limit=20&category=Artificial Intelligence"
+curl "http://localhost:8787/api/manuscripts/pending-review?limit=20&category=Artificial Intelligence"
 ```
 
 **Response:**
@@ -297,7 +297,7 @@ Public endpoint showing only peer-reviewed, published manuscripts.
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published/Artificial Intelligence?limit=10"
+curl "http://localhost:8787/api/manuscripts/published/Artificial Intelligence?limit=10"
 ```
 
 **Response:**
@@ -335,10 +335,10 @@ Filter manuscripts by their current status.
 
 ```bash
 # Get all manuscripts under review
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/status/under_review?limit=20"
+curl "http://localhost:8787/api/manuscripts/status/under_review?limit=20"
 
 # Get all published manuscripts
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/status/published?limit=10"
+curl "http://localhost:8787/api/manuscripts/status/published?limit=10"
 ```
 
 **Response:**
@@ -371,7 +371,7 @@ Assign minimum 3 reviewers to ensure thorough peer review.
 **Request:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/123/assign-reviewers \
+curl -X POST http://localhost:8787/api/reviews/manuscript/123/assign-reviewers \
   -H "Content-Type: application/json" \
   -d '{
     "reviewers": [
@@ -420,7 +420,7 @@ Reviewers submit their decisions and comments.
 **Request:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/501/submit-review \
+curl -X POST http://localhost:8787/api/reviews/501/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -468,7 +468,7 @@ Monitor review progress and publication eligibility.
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/123/review-status"
+curl "http://localhost:8787/api/reviews/manuscript/123/review-status"
 ```
 
 **Response (All Reviews Completed):**
@@ -524,7 +524,7 @@ Publish manuscript after successful peer review (requires 2+ accepts from 3+ rev
 **Request:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/123/publish \
+curl -X POST http://localhost:8787/api/manuscripts/123/publish \
   -H "Content-Type: application/json" \
   -d '{
     "publishedBy": "editor@journal.com"
@@ -559,7 +559,7 @@ Upload your CV (PDF or image) and parse it with AI to extract structured data.
 **Request:**
 
 ```bash
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/parse-cv \
+curl -X POST http://localhost:8787/api/parse-cv/parse-cv \
   -F "cv=@john_doe_cv.pdf" \
   -F "walletAddress=0x1234567890abcdef1234567890abcdef12345678"
 ```
@@ -652,7 +652,7 @@ Check that your CV was saved correctly and view your parsed profile.
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/user/profile/0x1234567890abcdef1234567890abcdef12345678"
+curl "http://localhost:8787/api/parse-cv/user/profile/0x1234567890abcdef1234567890abcdef12345678"
 ```
 
 **Response:**
@@ -699,7 +699,7 @@ Get detailed information about the user's extracted field and specialization.
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/user/specialization/0x1234567890abcdef1234567890abcdef12345678"
+curl "http://localhost:8787/api/parse-cv/user/specialization/0x1234567890abcdef1234567890abcdef12345678"
 ```
 
 **Response:**
@@ -744,7 +744,7 @@ Update user profile information after initial CV registration.
 **Request:**
 
 ```bash
-curl -X PATCH "https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/user/profile/0x1234567890abcdef1234567890abcdef12345678" \
+curl -X PATCH "http://localhost:8787/api/parse-cv/user/profile/0x1234567890abcdef1234567890abcdef12345678" \
   -H "Content-Type: application/json" \
   -d '{
     "personalInfo": {
@@ -841,17 +841,17 @@ curl -X PATCH "https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/use
 
 ```bash
 # 0. MANDATORY FIRST STEP: Register CV
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/parse-cv \
+curl -X POST http://localhost:8787/api/parse-cv/parse-cv \
   -F "cv=@alice_johnson_cv.pdf" \
   -F "walletAddress=0xAliceWallet123..."
 # Response: CV parsed and saved successfully
 
 # 0.1. Verify CV registration
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0xAliceWallet123..."
+curl "http://localhost:8787/api/manuscripts/check-cv-status/0xAliceWallet123..."
 # Response: { "success": true, "canSubmitManuscripts": true }
 
 # 1. Submit manuscript for peer review (CV required)
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/submit \
+curl -X POST http://localhost:8787/api/manuscripts/submit \
   -F "manuscript=@quantum_research.pdf" \
   -F "title=Quantum Error Correction Methods" \
   -F "author=Dr. Alice Johnson" \
@@ -861,11 +861,11 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/su
 # Response: Manuscript ID 456, Status: "under_review"
 
 # 2. Editor checks pending manuscripts
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/pending-review?limit=10"
+curl "http://localhost:8787/api/manuscripts/pending-review?limit=10"
 # Response: Shows manuscript 456 awaiting review
 
 # 3. Editor assigns 3 reviewers
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/assign-reviewers \
+curl -X POST http://localhost:8787/api/reviews/manuscript/456/assign-reviewers \
   -H "Content-Type: application/json" \
   -d '{
     "reviewers": ["0xExpert1", "0xExpert2", "0xExpert3"],
@@ -874,7 +874,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manusc
 # Response: 3 review records created (IDs: 601, 602, 603)
 
 # 4. Reviewer 1 accepts
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/601/submit-review \
+curl -X POST http://localhost:8787/api/reviews/601/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -883,7 +883,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/601/su
   }'
 
 # 5. Reviewer 2 accepts
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/602/submit-review \
+curl -X POST http://localhost:8787/api/reviews/602/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -892,7 +892,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/602/su
   }'
 
 # 6. Reviewer 3 requests minor revision
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/603/submit-review \
+curl -X POST http://localhost:8787/api/reviews/603/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "minor_revision",
@@ -902,17 +902,17 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/603/su
 # Result: 2 accepts + 1 minor revision = Publication eligible
 
 # 7. Check if ready to publish
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/review-status"
+curl "http://localhost:8787/api/reviews/manuscript/456/review-status"
 # Response: canPublish: true, nextAction: "ready_to_publish"
 
 # 8. Publish the manuscript
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/456/publish \
+curl -X POST http://localhost:8787/api/manuscripts/456/publish \
   -H "Content-Type: application/json" \
   -d '{"publishedBy": "editor@quantumjournal.com"}'
 # Response: Status changed to "published"
 
 # 9. Manuscript now appears in public listings
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published/Quantum Computing"
+curl "http://localhost:8787/api/manuscripts/published/Quantum Computing"
 # Response: Shows published manuscript in public feed
 ```
 
@@ -927,7 +927,7 @@ curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published
 **Request:**
 
 ```bash
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/recent/Artificial Intelligence?limit=5"
+curl "http://localhost:8787/api/manuscripts/recent/Artificial Intelligence?limit=5"
 ```
 
 **Response:**
@@ -1493,17 +1493,17 @@ When the NFT service is restored, it will provide:
 
 ```bash
 # 0. MANDATORY FIRST STEP: Register CV
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/parse-cv/parse-cv \
+curl -X POST http://localhost:8787/api/parse-cv/parse-cv \
   -F "cv=@alice_johnson_cv.pdf" \
   -F "walletAddress=0xAliceWallet123..."
 # Response: CV parsed and saved successfully
 
 # 0.1. Verify CV registration
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/check-cv-status/0xAliceWallet123..."
+curl "http://localhost:8787/api/manuscripts/check-cv-status/0xAliceWallet123..."
 # Response: { "success": true, "canSubmitManuscripts": true }
 
 # 1. Submit manuscript for peer review (CV required)
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/submit \
+curl -X POST http://localhost:8787/api/manuscripts/submit \
   -F "manuscript=@quantum_research.pdf" \
   -F "title=Quantum Error Correction Methods" \
   -F "author=Dr. Alice Johnson" \
@@ -1513,7 +1513,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/su
 # Response: Manuscript ID 456, Status: "under_review"
 
 # 2. Editor assigns 3 reviewers
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/assign-reviewers \
+curl -X POST http://localhost:8787/api/reviews/manuscript/456/assign-reviewers \
   -H "Content-Type: application/json" \
   -d '{
     "reviewers": ["0xExpert1", "0xExpert2", "0xExpert3"],
@@ -1522,7 +1522,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manusc
 # Response: 3 review records created (IDs: 601, 602, 603)
 
 # 3. All reviewers submit decisions
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/601/submit-review \
+curl -X POST http://localhost:8787/api/reviews/601/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -1530,7 +1530,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/601/su
     "reviewerWallet": "0xExpert1"
   }'
 
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/602/submit-review \
+curl -X POST http://localhost:8787/api/reviews/602/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -1538,7 +1538,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/602/su
     "reviewerWallet": "0xExpert2"
   }'
 
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/603/submit-review \
+curl -X POST http://localhost:8787/api/reviews/603/submit-review \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "accept",
@@ -1547,17 +1547,17 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/603/su
   }'
 
 # 4. Check if ready to publish
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/reviews/manuscript/456/review-status"
+curl "http://localhost:8787/api/reviews/manuscript/456/review-status"
 # Response: canPublish: true, nextAction: "ready_to_publish"
 
 # 5. Publish the manuscript
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/456/publish \
+curl -X POST http://localhost:8787/api/manuscripts/456/publish \
   -H "Content-Type: application/json" \
   -d '{"publishedBy": "editor@quantumjournal.com"}'
 # Response: Status changed to "published"
 
 # 6. ⚠️ NFT Creation (Currently Disabled)
-curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/nft-metadata/create \
+curl -X POST http://localhost:8787/api/nft-metadata/create \
   -H "Content-Type: application/json" \
   -d '{
     "mint": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
@@ -1570,7 +1570,7 @@ curl -X POST https://fronsciers-be.azakiyasabrina.workers.dev/api/nft-metadata/c
 # Response: 503 Service Unavailable - NFT service temporarily disabled
 
 # 7. Manuscript appears in public listings (without NFT for now)
-curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published/Quantum Computing"
+curl "http://localhost:8787/api/manuscripts/published/Quantum Computing"
 # Response: Shows published manuscript in public feed
 ````
 
@@ -1581,13 +1581,13 @@ curl "https://fronsciers-be.azakiyasabrina.workers.dev/api/manuscripts/published
 **Production (Cloudflare Workers):**
 
 ```
-https://fronsciers-be.azakiyasabrina.workers.dev
+http://localhost:8787
 ```
 
 **Local Development:**
 
 ```
-https://fronsciers-be.azakiyasabrina.workers.dev
+http://localhost:8787
 ```
 
 ### Service Status Summary
@@ -1611,11 +1611,11 @@ Update your frontend configuration to use the production URLs:
 // Frontend configuration
 const API_CONFIG = {
   production: {
-    baseURL: "https://fronsciers-be.azakiyasabrina.workers.dev",
+    baseURL: "http://localhost:8787",
     nftEnabled: false, // Currently disabled
   },
   development: {
-    baseURL: "https://fronsciers-be.azakiyasabrina.workers.dev",
+    baseURL: "http://localhost:8787",
     nftEnabled: true, // Available in local development
   },
 };
@@ -1679,7 +1679,7 @@ const handleNFTRequest = async (endpoint, data) => {
 - ✅ Database operations via Supabase
 - ✅ Health monitoring
 
-**Current Production URL:** `https://fronsciers-be.azakiyasabrina.workers.dev`
+**Current Production URL:** `http://localhost:8787`
 
 ### ⚠️ Temporarily Disabled
 
@@ -1696,8 +1696,8 @@ const handleNFTRequest = async (endpoint, data) => {
 const API_CONFIG = {
   baseURL:
     process.env.NODE_ENV === "production"
-      ? "https://fronsciers-be.azakiyasabrina.workers.dev"
-      : "https://fronsciers-be.azakiyasabrina.workers.dev",
+      ? "http://localhost:8787"
+      : "http://localhost:8787",
   nftEnabled: process.env.NODE_ENV !== "production", // Disabled in production
 };
 

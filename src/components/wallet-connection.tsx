@@ -48,7 +48,6 @@ export const WalletConnection = () => {
     }
   }, [user]);
 
-  // Auto-create wallet if user is authenticated but has no wallets
   useEffect(() => {
     if (authenticated && wallets.length === 0 && !isCreatingWallet) {
       handleCreateWallet();
@@ -93,9 +92,8 @@ export const WalletConnection = () => {
 
   if (!connected) {
     return (
-      <Button onClick={login} variant="outline" className="text-sm">
-        <WalletIcon className="h-4 w-4 mr-2" />
-        Connect Wallet
+      <Button onClick={login} className="text-sm  ">
+        Get Started
       </Button>
     );
   }
@@ -104,7 +102,6 @@ export const WalletConnection = () => {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="gap-2">
-          {/* <WalletIcon className="h-4 w-4" /> */}
           <p className="text-xs">{userDisplayName}</p>
           <Badge variant="secondary" className="text-xs ">
             {wallets.length > 0

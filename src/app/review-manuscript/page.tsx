@@ -129,7 +129,7 @@ export default function ReviewManuscriptPage() {
   const [showAssignReviewers, setShowAssignReviewers] = useState(false);
   const [reviewers, setReviewers] = useState<string[]>(["", "", ""]); // Minimum 3 reviewers
   const { showToast } = useToast();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
   const { isLoading } = useLoading();
 
   const parseCategory = (categoryData: any): string => {

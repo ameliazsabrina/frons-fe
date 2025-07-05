@@ -263,6 +263,7 @@ export interface UserProfileResponse {
       location: string;
       field: string;
       specialization: string;
+      photoUrl?: string;
     };
     contact: {
       email: string;
@@ -277,6 +278,8 @@ export interface UserProfileResponse {
       publications: number;
       awards: number;
     };
+    overview?: string;
+    profilePhoto?: string;
   };
   message: string;
 }
@@ -290,6 +293,7 @@ export interface ProfileUpdateRequest {
     location?: string;
     field?: string;
     specialization?: string;
+    photoUrl?: string;
   };
   contact?: {
     email?: string;

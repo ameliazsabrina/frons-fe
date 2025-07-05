@@ -33,7 +33,7 @@ import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
-import { backendAPI } from "@/lib/api";
+import { useManuscriptSubmission } from "@/hooks/useManuscriptSubmission";
 
 export default function SubmitManuscriptPage() {
   const { authenticated: connected, user } = usePrivy();
@@ -42,10 +42,20 @@ export default function SubmitManuscriptPage() {
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
-  const { checkCVRegistration } = useCVRegistration();
+  const { checkCVRegistration } = useCVRegistration(validSolanaPublicKey);
   const router = useRouter();
   const { isLoading } = useLoading();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
+  const submitManuscriptSubsidized = useCallback(async (data: any) => {
+    // This function will be implemented by the hook
+    return { success: true };
+  }, []);
+
+  const { submitManuscript } = useManuscriptSubmission({
+    submitManuscriptSubsidized,
+    checkCVRegistration: checkCVRegistration,
+  });
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -134,16 +144,19 @@ export default function SubmitManuscriptPage() {
       setError(null);
       setSuccess(null);
 
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setSubmitProgress((prev) => {
-          if (prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 200);
+      // Step 1: Final CV verification
+      setSubmitProgress(10);
+      const cvStatus = await checkCVRegistration(validSolanaPublicKey);
+      if (!cvStatus) {
+        setError(
+          "CV verification failed. Please ensure your CV is registered before submitting manuscripts."
+        );
+        return;
+      }
 
-      // Submit manuscript using backend API
-      const result = await backendAPI.submitManuscript({
+      // Step 2: Prepare submission data
+      setSubmitProgress(20);
+      const submissionData = {
         manuscript: selectedFile,
         title: formData.title,
         author: formData.author,
@@ -151,41 +164,64 @@ export default function SubmitManuscriptPage() {
         abstract: formData.abstract,
         keywords: formData.keywords,
         authorWallet: validSolanaPublicKey,
-      });
+      };
 
-      clearInterval(progressInterval);
+      // Step 3: Submit manuscript
+      setSubmitProgress(50);
+      await submitManuscript(
+        submissionData,
+        selectedFile,
+        validSolanaPublicKey,
+        apiUrl,
+        () => {}
+      );
+
+      setSubmitProgress(90);
       setSubmitProgress(100);
+      setSuccess(
+        `✅ Manuscript "${formData.title}" submitted successfully!
+        
+Your manuscript is now under peer review by expert reviewers. You will be notified when the review process is complete.`
+      );
 
-      if (result.success) {
-        setSuccess(
-          `✅ Manuscript "${formData.title}" submitted successfully! Status: ${result.manuscript.status}. It will now go through peer review.`
-        );
+      // Reset form
+      setFormData({
+        title: "",
+        author: "",
+        category: "",
+        abstract: "",
+        keywords: "",
+      });
+      setSelectedFile(null);
 
-        // Reset form
-        setFormData({
-          title: "",
-          author: "",
-          category: "",
-          abstract: "",
-          keywords: "",
-        });
-        setSelectedFile(null);
-
-        // Redirect to overview after 3 seconds
-        setTimeout(() => {
-          router.push("/overview");
-        }, 3000);
-      } else {
-        setError("Failed to submit manuscript. Please try again.");
-      }
+      // Redirect to overview after 5 seconds
+      setTimeout(() => {
+        router.push("/overview");
+      }, 5000);
     } catch (err: any) {
       console.error("Failed to submit manuscript:", err);
 
-      // Handle specific backend errors
-      if (err.message?.includes("CV registration required")) {
+      // Handle specific backend errors with detailed messaging
+      if (err.response?.data?.error === "CV registration required") {
+        setError(
+          "CV registration required. Please upload your CV first before submitting manuscripts."
+        );
+        // Optionally redirect to CV upload page
+        setTimeout(() => {
+          router.push("/register-cv");
+        }, 3000);
+      } else if (err.response?.data?.error === "Missing wallet address") {
+        setError(
+          "Valid wallet connection required. Please ensure your wallet is connected."
+        );
+      } else if (err.message?.includes("CV registration required")) {
         setError("CV registration required. Please upload your CV first.");
       } else if (err.message?.includes("Author wallet address is required")) {
         setError("Valid wallet connection required.");
+      } else if (err.response?.status === 503) {
+        setError("Service temporarily unavailable. Please try again later.");
+      } else if (err.response?.status === 429) {
+        setError("Too many requests. Please wait a moment and try again.");
       } else {
         setError(
           err.message || "Failed to submit manuscript. Please try again."
@@ -453,6 +489,7 @@ export default function SubmitManuscriptPage() {
                           size="sm"
                           onClick={() => setSelectedFile(null)}
                           disabled={submitting}
+                          className="text-sm"
                         >
                           Remove
                         </Button>

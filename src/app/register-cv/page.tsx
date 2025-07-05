@@ -22,7 +22,7 @@ import {
   BriefcaseIcon,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { Header } from "@/components/header";
 import { WalletConnection } from "@/components/wallet-connection";
@@ -35,8 +35,8 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function RegisterCVPage() {
   const { authenticated: connected, user } = usePrivy();
-  const { wallets } = useWallets();
-  const publicKey = wallets[0]?.address;
+  const { wallets: solanaWallets } = useSolanaWallets();
+  const publicKey = solanaWallets[0]?.address;
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -49,7 +49,7 @@ export default function RegisterCVPage() {
     checkCVRegistration,
     uploadCV,
     getUserProfile,
-  } = useCVRegistration();
+  } = useCVRegistration(validSolanaPublicKey);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -57,18 +57,15 @@ export default function RegisterCVPage() {
   const [showProfile, setShowProfile] = useState(false);
   const { isLoading } = useLoading();
 
-  // Check CV status when wallet connects
   useEffect(() => {
     if (connected && validSolanaPublicKey) {
       checkCVRegistration(validSolanaPublicKey);
     }
   }, [connected, validSolanaPublicKey, checkCVRegistration]);
 
-  // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       const validTypes = [
         "application/pdf",
         "image/jpeg",
@@ -80,7 +77,6 @@ export default function RegisterCVPage() {
         return;
       }
 
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         alert("File size must be less than 10MB");
         return;
@@ -111,9 +107,9 @@ export default function RegisterCVPage() {
 
       if (result?.success) {
         alert(
-          "CV uploaded and parsed successfully! You can now submit manuscripts."
+          "CV uploaded and parsed successfully! Redirecting to your profile..."
         );
-        setShowProfile(true);
+        router.push("/your-profile");
       } else {
         alert("Failed to upload CV. Please try again.");
       }
@@ -126,7 +122,6 @@ export default function RegisterCVPage() {
     }
   };
 
-  // Load detailed profile
   const handleLoadProfile = async () => {
     if (!validSolanaPublicKey) return;
 
@@ -154,7 +149,7 @@ export default function RegisterCVPage() {
             </div>
             <div className="container max-w-4xl mx-auto px-4 py-8">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  -bold tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
                   CV Registration
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
@@ -164,16 +159,18 @@ export default function RegisterCVPage() {
               </div>
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader>
-                  <CardTitle className="text-xl text-primary">
+                  <CardTitle className="text-xl text-primary justify-center text-center">
                     CV Registration Required
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground mb-6 text-center">
                     Please connect your wallet to register your CV and submit
                     manuscripts.
                   </p>
-                  <WalletConnection />
+                  <div className="flex justify-center items-center">
+                    <WalletConnection />
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -196,8 +193,8 @@ export default function RegisterCVPage() {
           </div>
           <div className="container max-w-4xl mx-auto px-4 py-8">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  text-bold tracking-tight">
-                CV Registration
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
+                Register Your Profile
               </h1>
               <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
                 Register your academic credentials to participate in our
@@ -206,13 +203,11 @@ export default function RegisterCVPage() {
             </div>
             <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
               <CardHeader>
-                <CardTitle className="text-xl text-primary flex items-center space-x-2">
-                  <FileTextIcon className="h-6 w-6" />
-                  <span>CV Registration</span>
+                <CardTitle className="text-xl text-primary flex items-center space-x-2 justify-center">
+                  <span>Register Your Profile</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* CV Status */}
                 {cvStatus && (
                   <Alert
                     className={
@@ -237,7 +232,6 @@ export default function RegisterCVPage() {
                   </Alert>
                 )}
 
-                {/* Error Display */}
                 {error && (
                   <Alert className="border-red-200 bg-red-50">
                     <AlertCircleIcon className="h-4 w-4" />
@@ -247,14 +241,13 @@ export default function RegisterCVPage() {
                   </Alert>
                 )}
 
-                {/* CV Upload Section */}
                 {(!cvStatus?.hasCV || !showProfile) && (
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-primary">
+                      <Label className="text-sm font-medium text-primary text-center block">
                         Upload Your CV (PDF or Image)
                       </Label>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground mt-1 text-center">
                         Upload your academic CV to verify your credentials and
                         enable manuscript submission.
                       </p>
@@ -301,6 +294,7 @@ export default function RegisterCVPage() {
                           size="sm"
                           onClick={() => setSelectedFile(null)}
                           disabled={uploading}
+                          className="text-sm"
                         >
                           Remove
                         </Button>
@@ -320,14 +314,13 @@ export default function RegisterCVPage() {
                     <Button
                       onClick={handleUploadCV}
                       disabled={!selectedFile || uploading}
-                      className="w-full"
+                      className="w-full text-sm"
                     >
                       {uploading ? "Uploading..." : "Upload and Parse CV"}
                     </Button>
                   </div>
                 )}
 
-                {/* CV Profile Display */}
                 {cvData && showProfile && (
                   <div className="space-y-6">
                     <Separator />
@@ -339,7 +332,6 @@ export default function RegisterCVPage() {
                       </h3>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Personal Information */}
                         <div className="space-y-4">
                           <div className="flex items-center space-x-2">
                             <UserIcon className="h-4 w-4 text-primary" />
@@ -347,7 +339,9 @@ export default function RegisterCVPage() {
                               Name
                             </span>
                           </div>
-                          <p className="text-foreground">{cvData.fullName}</p>
+                          <p className="text-foreground text-center">
+                            {cvData.fullName}
+                          </p>
 
                           <div className="flex items-center space-x-2">
                             <BuildingIcon className="h-4 w-4 text-primary" />
@@ -355,7 +349,7 @@ export default function RegisterCVPage() {
                               Institution
                             </span>
                           </div>
-                          <p className="text-foreground">
+                          <p className="text-foreground text-center">
                             {cvData.institution}
                           </p>
 
@@ -365,7 +359,9 @@ export default function RegisterCVPage() {
                               Field
                             </span>
                           </div>
-                          <p className="text-foreground">{cvData.field}</p>
+                          <p className="text-foreground text-center">
+                            {cvData.field}
+                          </p>
 
                           <div className="flex items-center space-x-2">
                             <BookOpenIcon className="h-4 w-4 text-primary" />
@@ -373,12 +369,11 @@ export default function RegisterCVPage() {
                               Specialization
                             </span>
                           </div>
-                          <p className="text-foreground">
+                          <p className="text-foreground text-center">
                             {cvData.specialization}
                           </p>
                         </div>
 
-                        {/* Contact Information */}
                         <div className="space-y-4">
                           <div className="flex items-center space-x-2">
                             <MailIcon className="h-4 w-4 text-primary" />
@@ -386,7 +381,7 @@ export default function RegisterCVPage() {
                               Email
                             </span>
                           </div>
-                          <p className="text-foreground">
+                          <p className="text-foreground text-center">
                             {cvData.email || "Not provided"}
                           </p>
 
@@ -396,7 +391,9 @@ export default function RegisterCVPage() {
                               Profession
                             </span>
                           </div>
-                          <p className="text-foreground">{cvData.profession}</p>
+                          <p className="text-foreground text-center">
+                            {cvData.profession}
+                          </p>
 
                           <div className="flex items-center space-x-2">
                             <AwardIcon className="h-4 w-4 text-primary" />
@@ -404,7 +401,7 @@ export default function RegisterCVPage() {
                               Registered
                             </span>
                           </div>
-                          <p className="text-foreground">
+                          <p className="text-foreground text-center">
                             {new Date(cvData.registeredAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -413,7 +410,6 @@ export default function RegisterCVPage() {
 
                     <Separator />
 
-                    {/* Action Buttons */}
                     <div className="flex space-x-4">
                       <Button
                         onClick={() => router.push("/submit-manuscript")}
@@ -425,16 +421,19 @@ export default function RegisterCVPage() {
                         variant="outline"
                         onClick={() => router.push("/your-profile")}
                       >
-                        Edit Profile
+                        View Profile
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {/* Load Profile Button (if CV exists but profile not shown) */}
                 {cvStatus?.hasCV && !showProfile && (
                   <div className="text-center">
-                    <Button onClick={handleLoadProfile} disabled={isLoading}>
+                    <Button
+                      onClick={handleLoadProfile}
+                      disabled={isLoading}
+                      className="w-full "
+                    >
                       {isLoading ? "Loading..." : "View Profile Details"}
                     </Button>
                   </div>

@@ -47,9 +47,8 @@ export function CVRegistrationGuard({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
-  // Check CV registration status
   const checkCVStatus = useCallback(async () => {
     try {
       setCvStatus("checking");
@@ -78,11 +77,9 @@ export function CVRegistrationGuard({
     }
   }, [walletAddress, checkCVStatus]);
 
-  // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       const validTypes = [
         "application/pdf",
         "image/jpeg",
@@ -94,7 +91,6 @@ export function CVRegistrationGuard({
         return;
       }
 
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         setError("File size must be less than 10MB");
         return;
@@ -105,7 +101,6 @@ export function CVRegistrationGuard({
     }
   };
 
-  // Upload CV
   const uploadCV = async () => {
     if (!selectedFile) return;
 
@@ -127,7 +122,6 @@ export function CVRegistrationGuard({
 
       if (result.success) {
         setUploadProgress(100);
-        // Re-check CV status after successful upload
         setTimeout(() => {
           checkCVStatus();
         }, 1000);
@@ -143,7 +137,6 @@ export function CVRegistrationGuard({
     }
   };
 
-  // Simulate upload progress
   useEffect(() => {
     if (uploading) {
       const interval = setInterval(() => {
@@ -162,7 +155,7 @@ export function CVRegistrationGuard({
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking CV registration status...</p>
+          <p className="text-gray-600">Checking your profile status...</p>
         </div>
       </div>
     );
