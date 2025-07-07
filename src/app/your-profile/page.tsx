@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,10 @@ import {
   BookOpenIcon,
   CheckCircleIcon,
   UploadIcon,
-  ImageIcon,
+  GraduationCapIcon,
+  BriefcaseIcon,
+  AwardIcon,
+  FileTextIcon,
 } from "lucide-react";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
@@ -97,7 +101,6 @@ export default function YourProfilePage() {
       console.log("CV status:", cvStatus);
 
       if (cvStatus) {
-        // Get the full user profile which includes the profile photo
         const result = await getUserProfile(validSolanaPublicKey);
         console.log("User profile result:", result);
 
@@ -113,7 +116,6 @@ export default function YourProfilePage() {
             overview: result.profile.overview || "",
           });
 
-          // Set profile photo if available
           if (result.profile.profilePhoto) {
             console.log(
               "Profile photo URL found at profile.profilePhoto:",
@@ -309,7 +311,6 @@ export default function YourProfilePage() {
 
           console.log("Photo uploaded successfully:", photoResult.profilePhoto);
         } else {
-          // If photo upload fails, show message but continue with profile update
           setMessage(
             `⚠️ Photo upload: ${photoResult.message}. Continuing with profile update...`
           );
@@ -368,32 +369,38 @@ export default function YourProfilePage() {
   if (!connected) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-primary/5 flex w-full">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <SidebarTrigger className="w-10 h-10" />
+            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+              <div className="flex items-center gap-3 px-6 py-4">
+                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-primary">Profile</span>
+                </div>
               </div>
             </div>
-            <div className="container max-w-4xl mx-auto px-4 py-8">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
+            <div className="container max-w-5xl mx-auto px-6 py-12">
+              <div className="mb-12 text-center space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
                   Your Profile
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                  Manage your academic profile and credentials
+                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
+                  Manage your academic profile and credentials with ease
                 </p>
               </div>
-              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                <CardHeader>
-                  <CardTitle className="text-xl text-primary text-center">
-                    Profile Access
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm  transition-all duration-300">
+                <CardHeader className="text-center py-8">
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                    <UserIcon className="h-8 w-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl text-primary">
+                    Profile Access Required
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-6 text-center">
+                <CardContent className="pb-8">
+                  <p className="text-muted-foreground mb-8 text-center text-lg">
                     Please connect your wallet to view and manage your profile.
                   </p>
                   <div className="flex justify-center items-center">
@@ -411,35 +418,42 @@ export default function YourProfilePage() {
   if (!hasCV) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-primary/5 flex w-full">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <SidebarTrigger className="w-10 h-10" />
+            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+              <div className="flex items-center gap-3 px-6 py-4">
+                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-primary">Profile</span>
+                </div>
               </div>
             </div>
-            <div className="container max-w-4xl mx-auto px-4 py-8">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
+            <div className="container max-w-5xl mx-auto px-6 py-12">
+              <div className="mb-12 text-center space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
                   Your Profile
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                  Manage your academic profile and credentials
+                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
+                  Manage your academic profile and credentials with ease
                 </p>
               </div>
-              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                <CardHeader>
-                  <CardTitle className="text-xl text-primary text-center">
-                    CV Registration Required
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm  transition-all duration-300">
+                <CardHeader className="text-center py-8">
+                  <CardTitle className="text-2xl text-primary">
+                    Register Your Profile
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center">
-                  <p className="text-muted-foreground mb-6">
+                <CardContent className="flex flex-col items-center justify-center pb-8">
+                  <p className="text-muted-foreground mb-8 text-center text-lg">
                     Please register your CV to create and view your profile.
                   </p>
-                  <Button onClick={() => router.push("/register-cv")}>
+                  <Button
+                    onClick={() => router.push("/register-cv")}
+                    size="lg"
+                    className="px-8 py-3 text-lg"
+                  >
                     Register CV
                   </Button>
                 </CardContent>
@@ -453,39 +467,45 @@ export default function YourProfilePage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-primary/5 flex w-full ">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
-              <SidebarTrigger className="w-10 h-10" />
+          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+            <div className="flex items-center gap-3 px-6 py-4">
+              <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
               <Separator orientation="vertical" className="h-6" />
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-primary">Profile</span>
+              </div>
             </div>
           </div>
-          <div className="container max-w-4xl mx-auto px-4 py-8">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
+          <div className="container max-w-6xl mx-auto px-6 py-12">
+            <div className="mb-12 text-center space-y-4">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
                 Your Profile
               </h1>
-              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                Manage your academic profile and credentials
+              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
+                Manage your academic profile and credentials with ease
               </p>
             </div>
 
             {/* Loading State */}
             {isLoading && (
-              <div className="flex justify-center items-center py-12 text-center">
-                <div className="flex flex-col items-center justify-center">
+              <div className="flex justify-center items-center py-16 text-center">
+                <div className="flex flex-col items-center justify-center space-y-4">
                   <Loading />
+                  <p className="text-muted-foreground text-lg">
+                    Loading your profile...
+                  </p>
                 </div>
               </div>
             )}
 
             {/* Error State */}
             {error && (
-              <Alert className="border-red-200 bg-red-50 mb-6">
-                <AlertCircleIcon className="h-4 w-4" />
-                <AlertDescription className="text-red-800">
+              <Alert className="border-red-200 bg-red-50/80 mb-8 rounded-xl shadow-sm">
+                <AlertCircleIcon className="h-5 w-5" />
+                <AlertDescription className="text-red-800 text-lg">
                   {error}
                 </AlertDescription>
               </Alert>
@@ -496,14 +516,16 @@ export default function YourProfilePage() {
               <Alert
                 className={
                   message.includes("✅")
-                    ? "border-green-200 bg-green-50 mb-6"
-                    : "border-red-200 bg-red-50 mb-6"
+                    ? "border-green-200 bg-green-50/80 mb-8 rounded-xl shadow-sm"
+                    : "border-red-200 bg-red-50/80 mb-8 rounded-xl shadow-sm"
                 }
               >
-                <CheckCircleIcon className="h-4 w-4" />
+                <CheckCircleIcon className="h-5 w-5" />
                 <AlertDescription
                   className={
-                    message.includes("✅") ? "text-green-800" : "text-red-800"
+                    message.includes("✅")
+                      ? "text-green-800 text-lg"
+                      : "text-red-800 text-lg"
                   }
                 >
                   {message}
@@ -511,20 +533,17 @@ export default function YourProfilePage() {
               </Alert>
             )}
 
-            {/* Profile Content */}
             {profileData && (
-              <div className="space-y-6">
-                {/* Profile Header and Main Content in a grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                  {/* Left: Photo and Main Info */}
-                  <Card className="shadow-md border border-gray-100 rounded-xl bg-white/95 transition-all duration-300 md:col-span-1 overflow-hidden">
-                    <div className="h-24 bg-gradient-to-r from-primary/80 to-primary/60"></div>
-                    <CardHeader className="flex flex-col items-center justify-center -mt-12 pt-0 border-0">
-                      <div className="relative group mb-4">
-                        <div className="h-32 w-32 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center border-4 border-white shadow-md">
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                  <Card className="lg:col-span-1 shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300  overflow-hidden">
+                    <div className="h-32 bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40"></div>
+                    <CardHeader className="flex flex-col items-center justify-center -mt-16 pt-0 border-0 pb-6">
+                      <div className="relative group mb-6">
+                        <div className="h-32 w-32 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center border-4 border-white shadow-xl">
                           {photoPreview ? (
                             <img
-                              src={photoPreview}
+                              src={photoPreview || "/placeholder.svg"}
                               alt="Profile"
                               className="h-full w-full object-cover"
                             />
@@ -535,10 +554,10 @@ export default function YourProfilePage() {
                         {isEditing ? (
                           <label
                             htmlFor="photo-upload"
-                            className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                            className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
                           >
                             <UploadIcon className="h-6 w-6 text-white" />
-                            <span className="text-white text-xs mt-1">
+                            <span className="text-white text-xs mt-1 font-medium">
                               Change Photo
                             </span>
                             <input
@@ -550,138 +569,122 @@ export default function YourProfilePage() {
                             />
                           </label>
                         ) : (
-                          <div className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1.5 shadow-md">
+                          <div className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg">
                             <UserIcon className="h-4 w-4" />
                           </div>
                         )}
                       </div>
-                      <div className="text-center">
-                        <h2 className="text-2xl font-bold text-primary">
+                      <div className="text-center space-y-2">
+                        <h2 className="text-2xl font-bold text-primary leading-tight">
                           {profileData.personalInfo.fullName}
                         </h2>
-                        <p className="text-muted-foreground">
-                          {profileData.personalInfo.title} at{" "}
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          {profileData.personalInfo.title}
+                        </p>
+                        <p className="text-muted-foreground text-sm font-medium">
                           {profileData.personalInfo.institution}
                         </p>
                       </div>
-                      <div className="flex space-x-2 mt-6 w-full justify-center">
+                      <div className="flex flex-col space-y-3 mt-8 w-full">
                         {!isEditing ? (
-                          <Button
-                            onClick={handleEditStart}
-                            variant="outline"
-                            className="transition-all duration-300 hover:bg-primary/10"
-                          >
+                          <Button onClick={handleEditStart} variant="outline">
                             <EditIcon className="h-4 w-4 mr-2" />
                             Edit Profile
                           </Button>
                         ) : (
-                          <>
+                          <div className="flex flex-col space-y-2 w-full">
                             <Button
                               onClick={handleSave}
                               disabled={saving || uploading}
                               className="transition-all duration-300"
                             >
                               <SaveIcon className="h-4 w-4 mr-2" />
-                              {saving ? "Saving..." : "Save"}
+                              {saving ? "Saving..." : "Save Changes"}
                             </Button>
                             <Button
                               onClick={handleEditCancel}
                               variant="outline"
-                              className="transition-all duration-300"
+                              className="transition-all duration-300 "
                             >
                               <XIcon className="h-4 w-4 mr-2" />
                               Cancel
                             </Button>
-                          </>
+                          </div>
                         )}
                       </div>
                       {uploading && (
-                        <div className="w-full mt-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Uploading photo...</span>
-                              <span>{uploadProgress}%</span>
-                            </div>
-                            <Progress
-                              value={uploadProgress}
-                              className="w-full h-2 rounded-full bg-primary/10"
-                            />
+                        <div className="w-full mt-6 space-y-3">
+                          <div className="flex justify-between text-sm font-medium">
+                            <span className="text-primary">
+                              Uploading photo...
+                            </span>
+                            <span className="text-primary">
+                              {uploadProgress}%
+                            </span>
                           </div>
+                          <Progress
+                            value={uploadProgress}
+                            className="w-full h-3 rounded-full bg-primary/10"
+                          />
                         </div>
                       )}
                     </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex justify-center space-x-4 mt-4 text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="text-xl font-bold text-primary">
-                            {profileData.summary?.publications || 0}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            Publications
-                          </span>
-                        </div>
-                        <div className="w-px h-10 bg-gray-200"></div>
-                        <div className="flex flex-col items-center">
-                          <span className="text-xl font-bold text-primary">
-                            {profileData.summary?.experience || 0}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            Experience
-                          </span>
-                        </div>
-                        <div className="w-px h-10 bg-gray-200"></div>
-                        <div className="flex flex-col items-center">
-                          <span className="text-xl font-bold text-primary">
-                            {profileData.summary?.awards || 0}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            Awards
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
                   </Card>
 
-                  {/* Right: Main Profile Content */}
-                  <div className="md:col-span-2 space-y-6">
-                    {/* Profile Stats */}
-                    <Card className="shadow-md border border-gray-100 rounded-xl bg-white/95 transition-all duration-300">
-                      <CardHeader className="border-b-0">
-                        <CardTitle className="text-lg text-primary">
+                  <div className="lg:col-span-3 space-y-8">
+                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
+                      <CardHeader className="border-b border-gray-100/50 pb-6">
+                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
+                          <GraduationCapIcon className="h-6 w-6 mr-3" />
                           Academic Impact
                         </CardTitle>
+                        <p className="text-muted-foreground mt-2">
+                          Your academic achievements at a glance
+                        </p>
                       </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="text-center p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg transition-all duration-300">
-                            <div className="text-2xl font-bold text-primary">
+                      <CardContent className="pt-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
+                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <GraduationCapIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-3xl font-bold text-primary mb-1">
                               {profileData.summary?.education || 0}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-sm text-muted-foreground font-medium">
                               Education
                             </div>
                           </div>
-                          <div className="text-center p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg transition-all duration-300">
-                            <div className="text-2xl font-bold text-primary">
+                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
+                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <BriefcaseIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-3xl font-bold text-primary mb-1">
                               {profileData.summary?.experience || 0}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-sm text-muted-foreground font-medium">
                               Experience
                             </div>
                           </div>
-                          <div className="text-center p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg transition-all duration-300">
-                            <div className="text-2xl font-bold text-primary">
+                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
+                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <FileTextIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-3xl font-bold text-primary mb-1">
                               {profileData.summary?.publications || 0}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-sm text-muted-foreground font-medium">
                               Publications
                             </div>
                           </div>
-                          <div className="text-center p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg transition-all duration-300">
-                            <div className="text-2xl font-bold text-primary">
+                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
+                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <AwardIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-3xl font-bold text-primary mb-1">
                               {profileData.summary?.awards || 0}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-sm text-muted-foreground font-medium">
                               Awards
                             </div>
                           </div>
@@ -689,15 +692,17 @@ export default function YourProfilePage() {
                       </CardContent>
                     </Card>
 
-                    {/* Overview */}
-                    <Card className="shadow-md border border-gray-100 rounded-xl bg-white/95 transition-all duration-300">
-                      <CardHeader className="border-b-0">
-                        <CardTitle className="text-lg text-primary flex items-center">
-                          <BookOpenIcon className="h-5 w-5 mr-2" />
-                          Overview
+                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
+                      <CardHeader className="border-b border-gray-100/50 pb-6">
+                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
+                          <BookOpenIcon className="h-6 w-6 mr-3" />
+                          Professional Overview
                         </CardTitle>
+                        <p className="text-muted-foreground mt-2">
+                          Share your research interests and expertise
+                        </p>
                       </CardHeader>
-                      <CardContent className="pt-0">
+                      <CardContent className="pt-8">
                         {isEditing ? (
                           <Textarea
                             value={editData.overview || ""}
@@ -705,31 +710,36 @@ export default function YourProfilePage() {
                               handleOverviewChange(e.target.value)
                             }
                             placeholder="Tell us about your research interests, background, and expertise..."
-                            className="min-h-[120px] border-primary/20 focus:border-primary focus:ring-primary/30"
+                            className="min-h-[150px] border-primary/20 focus:border-primary focus:ring-primary/30 text-base leading-relaxed"
                           />
                         ) : (
-                          <p className="text-foreground leading-relaxed">
-                            {(profileData as any).overview ||
-                              "No overview provided yet."}
-                          </p>
+                          <div className="prose prose-gray max-w-none">
+                            <p className="text-foreground leading-relaxed text-base">
+                              {(profileData as any).overview ||
+                                "No overview provided yet. Click 'Edit Profile' to add your professional summary."}
+                            </p>
+                          </div>
                         )}
                       </CardContent>
                     </Card>
 
                     {/* Personal Information */}
-                    <Card className="shadow-md border border-gray-100 rounded-xl bg-white/95 transition-all duration-300">
-                      <CardHeader className="border-b-0">
-                        <CardTitle className="text-lg text-primary flex items-center">
-                          <UserIcon className="h-5 w-5 mr-2" />
+                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
+                      <CardHeader className="border-b border-gray-100/50 pb-6">
+                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
+                          <UserIcon className="h-6 w-6 mr-3" />
                           Personal Information
                         </CardTitle>
+                        <p className="text-muted-foreground mt-2">
+                          Your basic profile details
+                        </p>
                       </CardHeader>
-                      <CardContent className="pt-0 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
+                      <CardContent className="pt-8 space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          <div className="space-y-2">
                             <Label
                               htmlFor="fullName"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary flex items-center"
                             >
                               Full Name
                             </Label>
@@ -744,19 +754,21 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.fullName}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.fullName}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="title"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
                               Title
                             </Label>
@@ -771,19 +783,21 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.title}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.title}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="profession"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
                               Profession
                             </Label>
@@ -798,19 +812,21 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.profession}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.profession}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="institution"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
                               Institution
                             </Label>
@@ -825,21 +841,23 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.institution}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.institution}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="field"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
-                              Field
+                              Field of Study
                             </Label>
                             {isEditing ? (
                               <Input
@@ -852,19 +870,21 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.field}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.field}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="specialization"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
                               Specialization
                             </Label>
@@ -881,34 +901,38 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.personalInfo.specialization}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.personalInfo.specialization}
+                                </p>
+                              </div>
                             )}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
 
-                    {/* Contact Information */}
-                    <Card className="shadow-md border border-gray-100 rounded-xl bg-white/95 transition-all duration-300">
-                      <CardHeader className="border-b-0">
-                        <CardTitle className="text-lg text-primary flex items-center">
-                          <MailIcon className="h-5 w-5 mr-2" />
+                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
+                      <CardHeader className="border-b border-gray-100/50 pb-6">
+                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
+                          <MailIcon className="h-6 w-6 mr-3" />
                           Contact Information
                         </CardTitle>
+                        <p className="text-muted-foreground mt-2">
+                          How others can reach you
+                        </p>
                       </CardHeader>
-                      <CardContent className="pt-0 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
+                      <CardContent className="pt-8 space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          <div className="space-y-2">
                             <Label
                               htmlFor="email"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
-                              Email
+                              Email Address
                             </Label>
                             {isEditing ? (
                               <Input
@@ -922,22 +946,27 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded flex items-center">
-                                <MailIcon className="h-4 w-4 mr-2 text-primary/70" />
-                                {profileData.contact.email || "Not provided"}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <div className="flex items-center">
+                                  <MailIcon className="h-4 w-4 mr-3 text-primary/70" />
+                                  <p className="text-foreground font-medium">
+                                    {profileData.contact.email ||
+                                      "Not provided"}
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="phone"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
-                              Phone
+                              Phone Number
                             </Label>
                             {isEditing ? (
                               <Input
@@ -950,21 +979,23 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.contact.phone || "Not provided"}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.contact.phone || "Not provided"}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="linkedIn"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
-                              LinkedIn
+                              LinkedIn Profile
                             </Label>
                             {isEditing ? (
                               <Input
@@ -977,21 +1008,24 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.contact.linkedIn || "Not provided"}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.contact.linkedIn ||
+                                    "Not provided"}
+                                </p>
+                              </div>
                             )}
                           </div>
 
-                          <div>
+                          <div className="space-y-2">
                             <Label
                               htmlFor="website"
-                              className="text-sm font-medium text-primary"
+                              className="text-sm font-semibold text-primary"
                             >
-                              Website
+                              Personal Website
                             </Label>
                             {isEditing ? (
                               <Input
@@ -1004,12 +1038,15 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="mt-1 border-primary/20 focus:border-primary focus:ring-primary/30"
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <p className="mt-1 text-foreground bg-primary/5 p-2 rounded">
-                                {profileData.contact.website || "Not provided"}
-                              </p>
+                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
+                                <p className="text-foreground font-medium">
+                                  {profileData.contact.website ||
+                                    "Not provided"}
+                                </p>
+                              </div>
                             )}
                           </div>
                         </div>

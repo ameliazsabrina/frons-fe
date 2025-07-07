@@ -21,7 +21,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             createOnLogin: "all-users",
           },
         },
-
         solanaClusters: [
           {
             name: "devnet",

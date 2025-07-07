@@ -16,7 +16,7 @@ import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWallets } from "@privy-io/react-auth";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DOCIManuscript } from "@/types/fronsciers";

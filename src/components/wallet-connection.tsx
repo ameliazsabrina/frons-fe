@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,11 +21,20 @@ import {
   LoaderIcon,
   RefreshCwIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { PublicKey, Transaction, Connection } from "@solana/web3.js";
 
 export const WalletConnection = () => {
-  const { login, logout, authenticated, user, ready, createWallet } =
-    usePrivy();
-  const { wallets } = useWallets();
+  const {
+    login,
+    logout,
+    authenticated,
+    user,
+    ready: privyReady,
+    createWallet,
+  } = usePrivy();
+  const { wallets, ready: walletsReady } = useSolanaWallets();
+  const router = useRouter();
 
   const [copied, setCopied] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState("Connected User");
@@ -34,7 +43,8 @@ export const WalletConnection = () => {
     null
   );
 
-  const connected = authenticated;
+  const connected = authenticated && walletsReady && wallets.length > 0;
+  const solanaWallet = wallets[0];
 
   useEffect(() => {
     if (user) {
@@ -49,11 +59,15 @@ export const WalletConnection = () => {
   }, [user]);
 
   useEffect(() => {
-    if (authenticated && wallets.length === 0 && !isCreatingWallet) {
+    if (
+      authenticated &&
+      walletsReady &&
+      wallets.length === 0 &&
+      !isCreatingWallet
+    ) {
       handleCreateWallet();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, wallets.length]);
+  }, [authenticated, walletsReady, wallets.length, isCreatingWallet]);
 
   const copyAddress = async (address: string) => {
     try {
@@ -75,13 +89,30 @@ export const WalletConnection = () => {
     try {
       await createWallet();
     } catch (error) {
-      setWalletCreationError("Failed to create wallet. Please try again.");
+      setWalletCreationError(
+        "Failed to create Solana wallet. Please try again."
+      );
     } finally {
       setIsCreatingWallet(false);
     }
   };
 
-  if (!ready) {
+  const handleLogout = async () => {
+    if (solanaWallet) {
+      try {
+        // Perform any necessary cleanup with the Solana wallet
+        await logout();
+        router.push("/");
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    } else {
+      await logout();
+      router.push("/");
+    }
+  };
+
+  if (!privyReady || !walletsReady) {
     return (
       <div className="flex items-center gap-2">
         <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -92,7 +123,7 @@ export const WalletConnection = () => {
 
   if (!connected) {
     return (
-      <Button onClick={login} className="text-sm  ">
+      <Button onClick={login} className="text-sm">
         Get Started
       </Button>
     );
@@ -101,13 +132,8 @@ export const WalletConnection = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline">
           <p className="text-xs">{userDisplayName}</p>
-          <Badge variant="secondary" className="text-xs ">
-            {wallets.length > 0
-              ? `${wallets.length} Wallet${wallets.length > 1 ? "s" : ""}`
-              : "No Wallet"}
-          </Badge>
         </Button>
       </PopoverTrigger>
 
@@ -118,66 +144,56 @@ export const WalletConnection = () => {
               <WalletIcon className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">{userDisplayName}</p>
-              <p className="text-xs text-muted-foreground">
-                {wallets.length > 0
-                  ? `${wallets.length} Wallet${
-                      wallets.length > 1 ? "s" : ""
-                    } Connected`
-                  : "No Wallet"}
+              <p className="text-xs font-medium">{userDisplayName}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {solanaWallet ? " Wallet Connected" : "No Wallet"}
               </p>
             </div>
           </div>
 
           <Separator />
 
-          {wallets.length > 0 ? (
+          {solanaWallet ? (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">Your Wallets</h4>
-              {wallets.map((wallet, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-2">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-mono">
-                      {wallet.address.slice(0, 6)}...
-                      {wallet.address.slice(-4)}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      Solana
-                    </Badge>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyAddress(wallet.address)}
-                  >
-                    {copied ? (
-                      <CheckCircleIcon className="h-4 w-4" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4" />
-                    )}
-                  </Button>
+              <h4 className="text-sm font-medium">Your Solana Wallet</h4>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-mono">
+                    {solanaWallet.address.slice(0, 6)}...
+                    {solanaWallet.address.slice(-4)}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    Solana
+                  </Badge>
                 </div>
-              ))}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyAddress(solanaWallet.address)}
+                >
+                  {copied ? (
+                    <CheckCircleIcon className="h-4 w-4" />
+                  ) : (
+                    <CopyIcon className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">No Wallets</h4>
+              <h4 className="text-sm font-medium">No Solana Wallet</h4>
               <Card className="border-muted">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <AlertCircleIcon className="h-4 w-4 text-muted-foreground" />
-                    No Embedded Wallets
+                    No Solana Wallet
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     A Solana wallet should be created automatically when you log
-                    in. If you don&apos;t see a wallet, try creating one
-                    manually.
+                    in. If you don't see a wallet, try creating one manually.
                   </p>
                   {walletCreationError && (
                     <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
@@ -196,7 +212,7 @@ export const WalletConnection = () => {
                       ) : (
                         <PlusIcon className="h-4 w-4 mr-2" />
                       )}
-                      Create Wallet
+                      Create Solana Wallet
                     </Button>
                     <Button
                       onClick={() => window.location.reload()}
@@ -214,7 +230,7 @@ export const WalletConnection = () => {
           <Separator />
 
           <Button
-            onClick={logout}
+            onClick={handleLogout}
             variant="ghost"
             className="w-full text-destructive hover:text-destructive"
           >

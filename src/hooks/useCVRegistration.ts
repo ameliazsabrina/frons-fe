@@ -105,9 +105,7 @@ export function useCVRegistration(walletAddress?: string) {
           });
           return result.data.canSubmitManuscripts;
         } else {
-          setError(
-            result.data.message || "No CV found for this wallet address"
-          );
+          setError(result.data.message);
           return false;
         }
       } catch (err) {
@@ -143,17 +141,22 @@ export function useCVRegistration(walletAddress?: string) {
         );
 
         if (result.data.success) {
-          setCvData({
-            fullName: result.data.selfIdentity.fullName,
-            institution: result.data.selfIdentity.institution,
-            profession: result.data.selfIdentity.profession,
-            field: result.data.selfIdentity.field,
-            specialization: result.data.selfIdentity.specialization,
-            email: result.data.contact.email,
+          // Set CV data immediately from the upload response
+          const newCvData = {
+            fullName: result.data.selfIdentity?.fullName || "",
+            institution: result.data.selfIdentity?.institution || "",
+            profession: result.data.selfIdentity?.profession || "",
+            field: result.data.selfIdentity?.field || "",
+            specialization: result.data.selfIdentity?.specialization || "",
+            email: result.data.contact?.email || "",
             registeredAt: new Date().toISOString(),
-          });
+          };
+          setCvData(newCvData);
 
-          await checkCVRegistration(walletAddress);
+          // Refresh the CV status but don't let it overwrite our cvData
+          setTimeout(() => {
+            checkCVRegistration(walletAddress);
+          }, 500);
         }
 
         return result.data as CVParseResponse;
@@ -369,6 +372,64 @@ export function useCVRegistration(walletAddress?: string) {
     []
   );
 
+  const createManualProfile = useCallback(
+    async (
+      profileData: {
+        fullName: string;
+        institution: string;
+        profession: string;
+        field: string;
+        specialization: string;
+        email: string;
+      },
+      walletAddress: string
+    ): Promise<{ success: boolean; message: string }> => {
+      try {
+        setError(null);
+        setIsLoading(true);
+
+        const result = await axios.post(`${apiUrl}/parse-cv/manual-profile`, {
+          ...profileData,
+          walletAddress,
+        });
+
+        if (result.data.success) {
+          setCvData({
+            ...profileData,
+            registeredAt: new Date().toISOString(),
+          });
+
+          setTimeout(() => {
+            checkCVRegistration(walletAddress);
+          }, 500);
+
+          return {
+            success: true,
+            message: "Profile created successfully!",
+          };
+        } else {
+          setError(result.data.message || "Failed to create profile");
+          return {
+            success: false,
+            message: result.data.message || "Failed to create profile",
+          };
+        }
+      } catch (err) {
+        console.error("Failed to create manual profile:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to create profile";
+        setError(errorMessage);
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [checkCVRegistration]
+  );
+
   return {
     cvStatus,
     cvData,
@@ -380,5 +441,6 @@ export function useCVRegistration(walletAddress?: string) {
     updateUserProfile,
     getUserSpecialization,
     uploadProfilePhoto,
+    createManualProfile,
   };
 }

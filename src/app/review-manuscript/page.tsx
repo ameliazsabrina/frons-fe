@@ -38,7 +38,7 @@ import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useWallets } from "@privy-io/react-auth";
 import axios from "axios";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/sonner";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 import { Header } from "@/components/header";
 import { PendingReviewManuscript } from "@/types/backend";

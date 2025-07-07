@@ -19,16 +19,26 @@ import {
   BookOpenIcon,
   CheckCircleIcon,
   XCircleIcon,
+  FilePen,
 } from "lucide-react";
 import { WalletConnection } from "./wallet-connection";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function OverviewSidebar({ connected }: { connected: boolean }) {
+  const pathname = usePathname();
+
   const links = [
     {
       label: "Overview",
       href: "/overview",
       icon: <LayoutDashboardIcon className="h-5 w-5" />,
+    },
+    {
+      label: "Author Dashboard ",
+      href: "/author-dashboard",
+      icon: <FilePen className="h-5 w-5" />,
     },
     {
       label: "Submit Manuscript",
@@ -72,10 +82,28 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
               {links.map((link) => (
                 <SidebarMenuItem key={link.href}>
                   <SidebarMenuButton asChild>
-                    <a href={link.href} className="flex items-center gap-3">
-                      {link.icon}
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                        "hover:bg-gray-100 hover:text-gray-900",
+                        pathname === link.href
+                          ? "bg-gray-100 text-gray-900 shadow-sm"
+                          : "text-gray-600"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "transition-colors duration-200",
+                          pathname === link.href
+                            ? "text-primary"
+                            : "text-gray-500"
+                        )}
+                      >
+                        {link.icon}
+                      </span>
                       <span>{link.label}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
