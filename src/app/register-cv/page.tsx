@@ -207,7 +207,6 @@ export default function RegisterCVPage() {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(manualFormData.email)) {
       toast({
@@ -461,7 +460,7 @@ export default function RegisterCVPage() {
                                 className="w-full h-3 rounded-full bg-primary/10"
                               />
                               <p className="text-sm text-muted-foreground text-center">
-                                We're analyzing your CV and extracting your
+                                We&apos;re analyzing your CV and extracting your
                                 academic information
                               </p>
                             </div>

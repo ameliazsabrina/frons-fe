@@ -402,7 +402,7 @@ export default function AuthorsDashboardPage() {
                       No Manuscripts Yet
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      You haven't submitted any manuscripts yet. Start by
+                      You haven&apos;t submitted any manuscripts yet. Start by
                       submitting your first research paper.
                     </p>
                     <Button

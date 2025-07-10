@@ -36,7 +36,7 @@ export default function DocisPage() {
     : undefined;
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
-  const { showToast } = useToast();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -200,7 +200,7 @@ export default function DocisPage() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      showToast("Please enter a search term", "error");
+      toast.error("Please enter a search term");
       return;
     }
 
@@ -209,9 +209,7 @@ export default function DocisPage() {
       setError(null);
       console.log("Searching for DOCI:", searchQuery);
 
-      // TODO: Implement DOCI search functionality
-      // For now, show a placeholder message
-      showToast("DOCI search functionality is coming soon!", "info");
+      toast.info("DOCI search functionality is coming soon!");
 
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -234,24 +232,24 @@ export default function DocisPage() {
       const text = await navigator.clipboard.readText();
       if (text.trim()) {
         setSearchQuery(text.trim());
-        showToast("DOCI ID pasted from clipboard", "success");
+        toast.success("DOCI ID pasted from clipboard");
       } else {
-        showToast("Clipboard is empty", "error");
+        toast.error("Clipboard is empty");
       }
     } catch (error) {
       console.error("Failed to read clipboard:", error);
-      showToast("Failed to read from clipboard", "error");
+      toast.error("Failed to read from clipboard");
     }
   };
 
   const handleScanQR = () => {
     // TODO: Implement QR code scanning
-    showToast("QR code scanning functionality is coming soon!", "info");
+    toast.info("QR code scanning functionality is coming soon!");
   };
 
   const handleExampleSearch = (example: string) => {
     setSearchQuery(example);
-    showToast(`Example search "${example}" selected`, "info");
+    toast.info(`Example search "${example}" selected`);
   };
 
   return (

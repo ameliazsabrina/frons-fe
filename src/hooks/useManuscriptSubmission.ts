@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { isValidSolanaAddress } from "./useProgram";
+import { usePrivy } from "@privy-io/react-auth";
 import axios from "axios";
 
 interface UseManuscriptSubmissionProps {
-  checkCVRegistration: (walletAddress: string) => Promise<boolean>;
+  checkCVRegistration?: (walletAddress: string) => Promise<boolean>;
 }
 
 interface SubmissionResponse {
@@ -50,6 +50,7 @@ export function useManuscriptSubmission({
 }: UseManuscriptSubmissionProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { authenticated, getAccessToken } = usePrivy();
 
   const submitManuscript = useCallback(
     async (
@@ -60,7 +61,7 @@ export function useManuscriptSubmission({
         categories: string[];
         abstract: string;
         keywords: string[];
-        walletAddress: string;
+        walletAddress?: string; // Now optional since we use Privy auth
       },
       apiUrl: string
     ): Promise<SubmissionResponse | null> => {
@@ -68,13 +69,28 @@ export function useManuscriptSubmission({
         setLoading(true);
         setError(null);
 
-        // Verify CV registration first
-        const cvVerified = await checkCVRegistration(metadata.walletAddress);
-        if (!cvVerified) {
-          const errorMsg =
-            "CV verification failed. Please ensure your CV is registered.";
-          setError(errorMsg);
+        // Check if user is authenticated with Privy
+        if (!authenticated) {
+          setError("Please authenticate to submit a manuscript.");
           return null;
+        }
+
+        // Get authentication token
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          setError("Failed to get authentication token. Please login again.");
+          return null;
+        }
+
+        // For legacy support, still check CV registration if function provided
+        if (checkCVRegistration && metadata.walletAddress) {
+          const cvVerified = await checkCVRegistration(metadata.walletAddress);
+          if (!cvVerified) {
+            const errorMsg =
+              "CV verification failed. Please ensure your CV is registered.";
+            setError(errorMsg);
+            return null;
+          }
         }
 
         // Create FormData with all required fields
@@ -88,18 +104,24 @@ export function useManuscriptSubmission({
         formData.append("category", metadata.categories.join(","));
         formData.append("abstract", metadata.abstract || "");
         formData.append("keywords", metadata.keywords.join(","));
-        formData.append("authorWallet", metadata.walletAddress);
+
+        // Optional wallet address for backward compatibility
+        if (metadata.walletAddress) {
+          formData.append("authorWallet", metadata.walletAddress);
+        }
 
         // Optional flags for auto-assignment
         formData.append("autoAssign", "true");
         formData.append("aiAutoAssign", "true");
 
+        // Use Privy-enabled endpoint with authentication
         const result = await axios.post<SubmissionResponse>(
-          `${apiUrl}/manuscripts/submit`,
+          `${apiUrl}/manuscripts/submit/privy`,
           formData,
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${accessToken}`,
             },
           }
         );
@@ -118,6 +140,10 @@ export function useManuscriptSubmission({
 
         if (errorData?.code === "CV_REQUIRED") {
           errorMessage = errorData.message || "CV registration required";
+        } else if (errorData?.code === "ACADEMIC_PERMISSIONS_REQUIRED") {
+          errorMessage = "Academic credentials required for manuscript submission";
+        } else if (errorData?.code === "INVALID_TOKEN") {
+          errorMessage = "Authentication expired. Please login again.";
         } else if (errorData?.code === "MISSING_WALLET") {
           errorMessage = errorData.message || "Wallet address required";
         } else if (errorData?.code === "PINATA_ERROR") {
@@ -133,7 +159,7 @@ export function useManuscriptSubmission({
         setLoading(false);
       }
     },
-    [checkCVRegistration]
+    [authenticated, getAccessToken, checkCVRegistration]
   );
 
   return {

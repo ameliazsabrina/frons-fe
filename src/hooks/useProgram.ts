@@ -5,7 +5,7 @@ import {
   web3,
   utils,
   BN,
-} from "@project-serum/anchor";
+} from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useMemo } from "react";
 import { SOLANA_CONFIG } from "@/lib/constants/solana";

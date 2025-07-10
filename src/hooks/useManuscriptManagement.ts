@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { apiClient } from "@/lib/api";
 import axios from "axios";
 
 interface ReviewInfo {
@@ -43,7 +45,8 @@ interface ManuscriptResponse {
 export function useManuscriptManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const { authenticated, getAccessToken } = usePrivy();
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
   // Get manuscripts by author wallet
   const getAuthorManuscripts = useCallback(
@@ -52,9 +55,23 @@ export function useManuscriptManagement() {
         setIsLoading(true);
         setError(null);
 
-        const response = await axios.get<ManuscriptResponse>(
-          `${apiUrl}/manuscripts/author/${walletAddress}`
-        );
+        const accessToken = authenticated ? await getAccessToken() : undefined;
+        
+        let response: any;
+        if (accessToken) {
+          // Use Privy-authenticated endpoint
+          response = await axios.get<ManuscriptResponse>(
+            `${apiUrl}/manuscripts/author`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            }
+          );
+        } else {
+          // Fall back to legacy endpoint
+          response = await axios.get<ManuscriptResponse>(
+            `${apiUrl}/manuscripts/author/${walletAddress}`
+          );
+        }
 
         if (response.data.success) {
           return response.data.manuscripts;
@@ -71,7 +88,7 @@ export function useManuscriptManagement() {
         setIsLoading(false);
       }
     },
-    [apiUrl]
+    [apiUrl, authenticated, getAccessToken]
   );
 
   // Get manuscripts by status
@@ -155,11 +172,100 @@ export function useManuscriptManagement() {
     [apiUrl]
   );
 
+  // Assign reviewers to a manuscript
+  const assignReviewers = useCallback(
+    async (manuscriptId: string, reviewerCount: number = 3): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const accessToken = authenticated ? await getAccessToken() : undefined;
+        const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+
+        const response = await axios.post(
+          `${apiUrl}/reviews/manuscript/${manuscriptId}/assign-reviewers`,
+          { reviewerCount },
+          { headers }
+        );
+
+        return response.data.success;
+      } catch (err) {
+        console.error("Failed to assign reviewers:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to assign reviewers"
+        );
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [apiUrl, authenticated, getAccessToken]
+  );
+
+  // Get review status for a manuscript
+  const getReviewStatus = useCallback(
+    async (manuscriptId: string): Promise<any> => {
+      try {
+        setError(null);
+
+        const accessToken = authenticated ? await getAccessToken() : undefined;
+        const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+
+        const response = await axios.get(
+          `${apiUrl}/reviews/manuscript/${manuscriptId}/status`,
+          { headers }
+        );
+
+        return response.data;
+      } catch (err) {
+        console.error("Failed to get review status:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to get review status"
+        );
+        return null;
+      }
+    },
+    [apiUrl, authenticated, getAccessToken]
+  );
+
+  // Publish a manuscript
+  const publishManuscript = useCallback(
+    async (manuscriptId: string): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const accessToken = authenticated ? await getAccessToken() : undefined;
+        const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+
+        const response = await axios.post(
+          `${apiUrl}/manuscripts/${manuscriptId}/publish`,
+          {},
+          { headers }
+        );
+
+        return response.data.success;
+      } catch (err) {
+        console.error("Failed to publish manuscript:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to publish manuscript"
+        );
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [apiUrl, authenticated, getAccessToken]
+  );
+
   return {
     isLoading,
     error,
     getAuthorManuscripts,
     getManuscriptsByStatus,
     getPendingReviewManuscripts,
+    assignReviewers,
+    getReviewStatus,
+    publishManuscript,
   };
 }

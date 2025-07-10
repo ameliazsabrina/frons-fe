@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 import {
   CVStatus,
@@ -80,8 +81,10 @@ export function useCVRegistration(walletAddress?: string) {
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isLoading, setIsLoading } = useLoading();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const { authenticated, getAccessToken } = usePrivy();
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
+  // Legacy CV registration check (wallet-based)
   const checkCVRegistration = useCallback(
     async (walletAddress: string): Promise<boolean> => {
       try {
@@ -116,6 +119,59 @@ export function useCVRegistration(walletAddress?: string) {
       }
     },
     []
+  );
+
+  // Privy-enabled CV registration check (token-based)
+  const checkCVRegistrationPrivy = useCallback(
+    async (): Promise<boolean> => {
+      try {
+        setError(null);
+
+        if (!authenticated) {
+          setError("Please authenticate to check CV status");
+          return false;
+        }
+
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          setError("Failed to get authentication token");
+          return false;
+        }
+
+        const result = await axios.get(
+          `${apiUrl}/manuscripts/cv-status`,
+          {
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        console.log(result.data);
+        setCvStatus(result.data as CVStatus);
+
+        if (result.data.success && result.data.hasCV && result.data.userInfo) {
+          setCvData({
+            fullName: result.data.userInfo.fullName,
+            institution: result.data.userInfo.institution,
+            profession: result.data.userInfo.profession,
+            field: result.data.userInfo.profession,
+            specialization: result.data.userInfo.profession,
+            email: result.data.userInfo.email || "",
+            registeredAt: result.data.userInfo.registeredAt,
+          });
+          return result.data.canSubmitManuscripts;
+        } else {
+          setError(result.data.message);
+          return false;
+        }
+      } catch (err) {
+        console.error("Failed to check CV registration with Privy:", err);
+        setError("Network error while checking CV status");
+        return false;
+      }
+    },
+    [authenticated, getAccessToken]
   );
 
   const uploadCV = useCallback(
@@ -435,7 +491,8 @@ export function useCVRegistration(walletAddress?: string) {
     cvData,
     isLoading,
     error,
-    checkCVRegistration,
+    checkCVRegistration, // Legacy wallet-based method
+    checkCVRegistrationPrivy, // New Privy token-based method
     uploadCV,
     getUserProfile,
     updateUserProfile,

@@ -245,9 +245,9 @@ export default function PublishedManuscriptsPage() {
               category,
               20
             );
-            if (result.success && result.manuscripts) {
+            if (result && result.length > 0) {
               // Add real manuscripts with higher IDs to avoid conflicts
-              const realManuscripts = result.manuscripts.map((m: any) => ({
+              const realManuscripts = result.map((m: any) => ({
                 ...m,
                 id: m.id + 1000, // Offset to avoid conflicts with mock data
               }));

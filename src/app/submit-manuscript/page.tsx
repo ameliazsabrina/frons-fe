@@ -63,7 +63,7 @@ export default function SubmitManuscriptPage() {
   const { checkCVRegistration } = useCVRegistration(validSolanaPublicKey);
   const router = useRouter();
   const { isLoading } = useLoading();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
   const { submitManuscript } = useManuscriptSubmission({
     checkCVRegistration: checkCVRegistration,
@@ -448,7 +448,7 @@ export default function SubmitManuscriptPage() {
                 </CardHeader>
                 <CardContent className="pb-8">
                   <p className="text-muted-foreground mb-8 text-center text-lg">
-                    Please connect your wallet to submit manuscripts.
+                    Verify your CV to submit manuscripts.
                   </p>
                   <div className="flex justify-center">
                     <WalletConnection />
@@ -492,7 +492,6 @@ export default function SubmitManuscriptPage() {
                   Share your research with the academic community through our
                   blockchain-powered platform
                 </p>
-                <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
               </div>
 
               <form
@@ -826,14 +825,13 @@ export default function SubmitManuscriptPage() {
                   <Button
                     type="submit"
                     disabled={submitting || !cvVerified || paymentProcessing}
-                    size="lg"
-                    className="min-w-[200px]"
+                    className="min-w-[200px] w-full"
                   >
                     {paymentProcessing
                       ? "Processing Payment..."
                       : submitting
                       ? "Submitting..."
-                      : "Submit Manuscript ($50 USDCF)"}
+                      : "Submit Manuscript "}
                   </Button>
                 </div>
               </form>

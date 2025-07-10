@@ -467,45 +467,47 @@ export function ResearchCategorySelector({
       )}
 
       {/* Category Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.entries(RESEARCH_CATEGORIES).map(
-          ([category, subcategories]) => (
-            <Card key={category} className="border border-gray-200">
-              <CardContent className="p-4">
-                <button
-                  onClick={() => toggleCategory(category)}
-                  className="flex items-center justify-between w-full text-left font-medium text-gray-900 hover:text-blue-600 transition-colors"
-                >
-                  <span className="text-sm">{category}</span>
-                  {isCategoryExpanded(category) ? (
-                    <ChevronDownIcon className="h-4 w-4" />
-                  ) : (
-                    <ChevronRightIcon className="h-4 w-4" />
-                  )}
-                </button>
+      <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.entries(RESEARCH_CATEGORIES).map(
+            ([category, subcategories]) => (
+              <Card key={category} className="border border-gray-200">
+                <CardContent className="p-4">
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="flex items-center justify-between w-full text-left font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                  >
+                    <span className="text-sm">{category}</span>
+                    {isCategoryExpanded(category) ? (
+                      <ChevronDownIcon className="h-4 w-4" />
+                    ) : (
+                      <ChevronRightIcon className="h-4 w-4" />
+                    )}
+                  </button>
 
-                {isCategoryExpanded(category) && (
-                  <div className="mt-3 space-y-2">
-                    {subcategories.map((subcategory) => (
-                      <button
-                        key={subcategory}
-                        onClick={() => toggleSubcategory(subcategory)}
-                        className={cn(
-                          "block w-full text-left text-xs px-2 py-1 rounded transition-colors",
-                          selectedCategories.includes(subcategory)
-                            ? "bg-blue-100 text-blue-800 border border-blue-200"
-                            : "text-gray-600 hover:bg-gray-50"
-                        )}
-                      >
-                        {subcategory}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        )}
+                  {isCategoryExpanded(category) && (
+                    <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                      {subcategories.map((subcategory) => (
+                        <button
+                          key={subcategory}
+                          onClick={() => toggleSubcategory(subcategory)}
+                          className={cn(
+                            "block w-full text-left text-xs px-2 py-1 rounded transition-colors",
+                            selectedCategories.includes(subcategory)
+                              ? "bg-blue-100 text-blue-800 border border-blue-200"
+                              : "text-gray-600 hover:bg-gray-50"
+                          )}
+                        >
+                          {subcategory}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

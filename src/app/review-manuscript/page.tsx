@@ -128,7 +128,7 @@ export default function ReviewManuscriptPage() {
   const [reviewStatus, setReviewStatus] = useState<any>(null);
   const [showAssignReviewers, setShowAssignReviewers] = useState(false);
   const [reviewers, setReviewers] = useState<string[]>(["", "", ""]); // Minimum 3 reviewers
-  const { showToast } = useToast();
+  const { toast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
   const { isLoading } = useLoading();
 
@@ -286,9 +286,23 @@ export default function ReviewManuscriptPage() {
 
     try {
       const result = await getPendingReviewManuscripts(20);
-      if (result?.success && result.manuscripts) {
-        // Combine mock data with real data
-        const combinedManuscripts = [...mockManuscripts, ...result.manuscripts];
+      if (result && result.length > 0) {
+        // Convert API results to match PendingReviewManuscript format
+        const convertedResults = result.map((m: any) => ({
+          ...m,
+          author: m.author || m.authorWallet || 'Unknown',
+          reviewCount: m.reviewCount || 0,
+          averageRating: m.averageRating || 0,
+          deadline: m.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          reviewer: m.reviewer || 'N/A',
+          reviewStatus: m.reviewStatus || 'pending',
+          progress: m.progress || 0,
+          priority: m.priority || 'medium',
+          assignedDate: m.assignedDate || m.submittedAt || m.created_at,
+          reviewId: m.reviewId || `review-${m.id}`,
+          manuscriptId: m.id,
+        }));
+        const combinedManuscripts = [...mockManuscripts, ...convertedResults];
         setManuscripts(combinedManuscripts);
       } else {
         setManuscripts(mockManuscripts);
@@ -309,7 +323,7 @@ export default function ReviewManuscriptPage() {
     setSelectedManuscript(manuscript);
 
     // Load review status
-    const status = await getReviewStatus(manuscript.id);
+    const status = await getReviewStatus(manuscript.id.toString());
     if (status?.success) {
       setReviewStatus(status);
     }
@@ -325,13 +339,12 @@ export default function ReviewManuscriptPage() {
     }
 
     const result = await assignReviewers(
-      selectedManuscript.id,
-      validReviewers,
-      validSolanaPublicKey
+      selectedManuscript.id.toString(),
+      validReviewers.length
     );
 
-    if (result?.success) {
-      alert(`Successfully assigned ${result.reviewersAssigned} reviewers`);
+    if (result) {
+      alert(`Successfully assigned reviewers`);
       setShowAssignReviewers(false);
       setReviewers(["", "", ""]);
       loadPendingManuscripts(); // Refresh list
@@ -348,8 +361,7 @@ export default function ReviewManuscriptPage() {
     if (!confirmed) return;
 
     const result = await publishManuscript(
-      selectedManuscript.id,
-      validSolanaPublicKey
+      selectedManuscript.id.toString()
     );
 
     if (result?.success) {

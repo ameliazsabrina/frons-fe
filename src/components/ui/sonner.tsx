@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Toaster as Sonner } from "sonner";
+import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
@@ -26,6 +26,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       {...props}
     />
   );
+};
+
+// Export useToast hook for backward compatibility
+export const useToast = () => {
+  return {
+    toast: toast,
+    success: toast.success,
+    error: toast.error,
+    info: toast.info,
+    warning: toast.warning,
+  };
 };
 
 export { Toaster };

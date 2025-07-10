@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircleIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useCVRegistration } from "@/hooks/useCVRegistration";
 
 interface CVRegistrationGuardProps {
-  walletAddress: string;
+  walletAddress?: string; // Now optional since we can use Privy
   onCVVerified: () => void;
   children: React.ReactNode;
 }
@@ -30,6 +32,7 @@ export function CVRegistrationGuard({
 }: CVRegistrationGuardProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const { authenticated } = usePrivy();
   const [cvStatus, setCvStatus] = useState<
     "checking" | "registered" | "not_found" | "error"
   >("checking");
@@ -37,19 +40,29 @@ export function CVRegistrationGuard({
   const [error, setError] = useState<string | null>(null);
   const [hasShownToast, setHasShownToast] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  // Use the CV registration hook with both Privy and legacy support
+  const { checkCVRegistration, checkCVRegistrationPrivy } = useCVRegistration(walletAddress);
 
   const checkCVStatus = useCallback(async () => {
     try {
       setCvStatus("checking");
-      const response = await fetch(
-        `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
-      );
-      const result = await response.json();
+      
+      let isVerified = false;
+      
+      if (authenticated) {
+        // Use Privy authentication if available
+        isVerified = await checkCVRegistrationPrivy();
+      } else if (walletAddress) {
+        // Fall back to legacy wallet-based check
+        isVerified = await checkCVRegistration(walletAddress);
+      } else {
+        setCvStatus("error");
+        setError("No authentication method available");
+        return;
+      }
 
-      if (result.success && result.hasCV) {
+      if (isVerified) {
         setCvStatus("registered");
-        setCvData(result.userInfo);
         onCVVerified();
       } else {
         setCvStatus("not_found");
@@ -59,13 +72,13 @@ export function CVRegistrationGuard({
       setCvStatus("error");
       setError("Failed to check CV registration status");
     }
-  }, [apiUrl, walletAddress, onCVVerified]);
+  }, [authenticated, walletAddress, checkCVRegistration, checkCVRegistrationPrivy, onCVVerified]);
 
   useEffect(() => {
-    if (walletAddress) {
+    if (authenticated || walletAddress) {
       checkCVStatus();
     }
-  }, [walletAddress, checkCVStatus]);
+  }, [authenticated, walletAddress, checkCVStatus]);
 
   useEffect(() => {
     if (cvStatus === "registered" && !hasShownToast) {

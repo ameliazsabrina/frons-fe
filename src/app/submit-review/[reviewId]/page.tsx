@@ -70,7 +70,7 @@ export default function SubmitReviewPage() {
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
-  const { showToast } = useToast();
+  const { toast } = useToast();
   const { isLoading } = useLoading();
   const [reviewData, setReviewData] = useState<ReviewData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -137,7 +137,7 @@ export default function SubmitReviewPage() {
           if (review.decision) setDecision(review.decision);
           if (review.recommendation) setRecommendation(review.recommendation);
 
-          showToast("Review data loaded successfully", "success");
+          toast.success("Review data loaded successfully");
           return;
         }
       } catch (directReviewError: any) {
@@ -228,7 +228,7 @@ export default function SubmitReviewPage() {
               if (review.recommendation)
                 setRecommendation(review.recommendation);
 
-              showToast("Review data loaded successfully", "success");
+              toast.success("Review data loaded successfully");
               return;
             }
           } catch (manuscriptError) {
@@ -265,18 +265,18 @@ export default function SubmitReviewPage() {
         existingDecision: "",
       });
 
-      showToast(
+      toast(
         "Using sample data for testing. In production, this would load real review data.",
         "info"
       );
     } catch (error: any) {
       console.error("Error fetching review data:", error);
       setError("Failed to load review data. Please try again.");
-      showToast("Failed to load review data", "error");
+      toast.error("Failed to load review data");
     } finally {
       setLoading(false);
     }
-  }, [reviewId, apiUrl, showToast]);
+  }, [reviewId, apiUrl, toast]);
 
   useEffect(() => {
     if (connected && validSolanaPublicKey && reviewId) {
@@ -310,7 +310,7 @@ export default function SubmitReviewPage() {
       );
 
       if (response.data.success) {
-        showToast("Draft saved successfully", "success");
+        toast.success("Draft saved successfully");
         setSuccess("Draft saved successfully");
       } else {
         throw new Error(response.data.error || "Failed to save draft");
@@ -320,7 +320,7 @@ export default function SubmitReviewPage() {
       const errorMessage =
         error.response?.data?.error || error.message || "Failed to save draft";
       setError(errorMessage);
-      showToast(errorMessage, "error");
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -331,13 +331,13 @@ export default function SubmitReviewPage() {
 
     if (!decision) {
       setError("Please select a decision before submitting");
-      showToast("Please select a decision", "error");
+      toast.error("Please select a decision");
       return;
     }
 
     if (!comments.trim()) {
       setError("Please provide comments for the authors");
-      showToast("Please provide comments for the authors", "error");
+      toast.error("Please provide comments for the authors");
       return;
     }
 
@@ -364,7 +364,7 @@ export default function SubmitReviewPage() {
       );
 
       if (response.data.success) {
-        showToast("Review submitted successfully!", "success");
+        toast.success("Review submitted successfully!");
         setSuccess("Review submitted successfully!");
 
         // Redirect after a short delay
@@ -381,7 +381,7 @@ export default function SubmitReviewPage() {
         error.message ||
         "Failed to submit review";
       setError(errorMessage);
-      showToast(errorMessage, "error");
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }

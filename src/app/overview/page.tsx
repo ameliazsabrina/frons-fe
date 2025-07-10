@@ -22,11 +22,17 @@ import {
   VoteIcon,
   AwardIcon,
   ArrowUpRight,
+  AlertCircleIcon,
 } from "lucide-react";
 import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
 import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
 import { useOverview, ManuscriptStats, UserStats } from "@/hooks/useOverview";
+import {
+  useWalletBalances,
+  TokenBalance,
+  WalletBalances,
+} from "@/hooks/useWalletBalances";
 import { Loading } from "@/components/ui/loading";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
@@ -55,6 +61,8 @@ export default function OverviewPage() {
     connected,
     validSolanaPublicKey
   );
+
+  const walletBalances = useWalletBalances(validSolanaPublicKey);
 
   const [isClient, setIsClient] = useState(false);
   const [program, setProgram] = useState<any>(null);
@@ -262,9 +270,11 @@ export default function OverviewPage() {
   function SidePanel({
     userStats,
     manuscriptStats,
+    walletBalances,
   }: {
     userStats: UserStats;
     manuscriptStats: ManuscriptStats;
+    walletBalances: WalletBalances;
   }) {
     return (
       <div className="space-y-6 sticky top-8">
@@ -272,30 +282,128 @@ export default function OverviewPage() {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center justify-center gap-2">
-              <CoinsIcon className="h-5 w-5 text-primary" />
-              FRONS Balance
+              <WalletIcon className="h-5 w-5 text-primary" />
+              Wallet Balances
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 text-center">
-              <div>
-                <p className="text-3xl font-semibold tracking-tight mb-2">
-                  {userStats.fronsTokens.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Total earnings: ${userStats.totalEarnings.toFixed(2)}
-                </p>
-              </div>
-              <Separator className="opacity-30" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Recent Activity</p>
-                <Badge
-                  className="text-sm text-muted-foreground"
-                  variant="secondary"
-                >
-                  +50 FRONS from completed review
-                </Badge>
-              </div>
+            <div className="space-y-4">
+              {walletBalances.isLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Loading balances...
+                  </p>
+                </div>
+              ) : walletBalances.error ? (
+                <div className="text-center py-4">
+                  <AlertCircleIcon className="h-6 w-6 text-red-500 mx-auto mb-2" />
+                  <p className="text-sm text-red-600">{walletBalances.error}</p>
+                </div>
+              ) : (
+                <>
+                  {/* SOL Balance */}
+                  <div className="p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"></div>
+                        <span className="font-medium text-sm">SOL</span>
+                      </div>
+                      <span className="font-semibold">
+                        {walletBalances.sol.toFixed(4)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Token Balances */}
+                  {walletBalances.tokens.map((token: TokenBalance) => (
+                    <div
+                      key={token.symbol}
+                      className={`p-3 rounded-lg transition-all ${
+                        token.symbol === "FRONS"
+                          ? "bg-primary/10 border border-primary/20 ring-1 ring-primary/10"
+                          : "bg-muted/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              token.symbol === "FRONS"
+                                ? "bg-primary/20"
+                                : token.symbol === "USDCF"
+                                ? "bg-green-100"
+                                : "bg-gray-100"
+                            }`}
+                          >
+                            <CoinsIcon
+                              className={`h-4 w-4 ${
+                                token.symbol === "FRONS"
+                                  ? "text-primary"
+                                  : token.symbol === "USDCF"
+                                  ? "text-green-600"
+                                  : "text-gray-600"
+                              }`}
+                            />
+                          </div>
+                          <div className="flex flex-col">
+                            <span
+                              className={`font-medium text-sm ${
+                                token.symbol === "FRONS" ? "text-primary" : ""
+                              }`}
+                            >
+                              {token.symbol}
+                            </span>
+                            {token.symbol === "FRONS" && (
+                              <Badge
+                                variant="secondary"
+                                className="text-xs w-fit"
+                              >
+                                Featured
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`font-semibold ${
+                              token.symbol === "FRONS"
+                                ? "text-lg text-primary"
+                                : ""
+                            }`}
+                          >
+                            {token.uiAmount.toLocaleString(undefined, {
+                              maximumFractionDigits:
+                                token.symbol === "USDCF" ? 2 : 4,
+                            })}
+                          </span>
+                          {token.symbol === "USDCF" && (
+                            <p className="text-xs text-muted-foreground">
+                              ${token.uiAmount.toFixed(2)} USD
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Separator className="opacity-30" />
+
+                  {/* FRONS Earnings Summary */}
+                  <div className="space-y-2 text-center">
+                    <p className="text-sm font-medium">FRONS Earnings</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total earnings: ${userStats.totalEarnings.toFixed(2)}
+                    </p>
+                    <Badge
+                      className="text-sm text-muted-foreground"
+                      variant="secondary"
+                    >
+                      +50 FRONS from completed review
+                    </Badge>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -474,6 +582,7 @@ export default function OverviewPage() {
                       <SidePanel
                         userStats={userStats}
                         manuscriptStats={manuscriptStats}
+                        walletBalances={walletBalances}
                       />
                     </div>
                   </div>
