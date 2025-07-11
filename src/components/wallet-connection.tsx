@@ -22,7 +22,7 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PublicKey, Transaction, Connection } from "@solana/web3.js";
+import { getPrimaryWallet } from "@/utils/wallet";
 
 export const WalletConnection = () => {
   const {
@@ -43,17 +43,28 @@ export const WalletConnection = () => {
     null
   );
 
+  const solanaWallet = getPrimaryWallet(wallets);
   const connected = authenticated && walletsReady && wallets.length > 0;
-  const solanaWallet = wallets[0];
 
   useEffect(() => {
     if (user) {
-      if (user.email && typeof user.email === "object" && user.email.address) {
+      const emailAccount = user.linkedAccounts?.find(
+        (account) => account.type === "email"
+      );
+      if (emailAccount && "address" in emailAccount) {
+        setUserDisplayName(emailAccount.address);
+      } else if (
+        user.email &&
+        typeof user.email === "object" &&
+        "address" in user.email
+      ) {
         setUserDisplayName(user.email.address);
       } else if (typeof user.email === "string") {
         setUserDisplayName(user.email);
+      } else if (user.google?.email) {
+        setUserDisplayName(user.google.email);
       } else if (user.id) {
-        setUserDisplayName(`User ${user.id.slice(0, 8)}`);
+        setUserDisplayName(`User ${user.id.slice(-8)}`);
       }
     }
   }, [user]);
@@ -100,7 +111,6 @@ export const WalletConnection = () => {
   const handleLogout = async () => {
     if (solanaWallet) {
       try {
-        // Perform any necessary cleanup with the Solana wallet
         await logout();
         router.push("/");
       } catch (error) {
@@ -164,7 +174,9 @@ export const WalletConnection = () => {
                     {solanaWallet.address.slice(-4)}
                   </span>
                   <Badge variant="outline" className="text-[10px]">
-                    Solana
+                    {solanaWallet.walletClientType === "privy"
+                      ? "Embedded"
+                      : "External"}
                   </Badge>
                 </div>
                 <Button
@@ -193,7 +205,8 @@ export const WalletConnection = () => {
                 <CardContent className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     A Solana wallet should be created automatically when you log
-                    in. If you don&apos;t see a wallet, try creating one manually.
+                    in. If you don&apos;t see a wallet, try creating one
+                    manually.
                   </p>
                   {walletCreationError && (
                     <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">

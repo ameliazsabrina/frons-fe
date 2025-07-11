@@ -32,6 +32,7 @@ import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { backendAPI } from "@/lib/api";
+import { getPrimaryWalletAddress } from "@/utils/wallet";
 
 interface PublishedManuscript {
   id: number;
@@ -70,7 +71,7 @@ const RESEARCH_CATEGORIES = [
 export default function PublishedManuscriptsPage() {
   const { authenticated: connected } = usePrivy();
   const { wallets } = useWallets();
-  const publicKey = wallets[0]?.address;
+  const publicKey = getPrimaryWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;

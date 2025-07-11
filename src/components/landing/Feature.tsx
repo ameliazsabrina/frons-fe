@@ -9,11 +9,11 @@ export function Feature() {
       <Separator className="mb-16" />
       <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16">
         <div className="order-1 lg:order-1">
-          <div className="text-center lg:text-left mb-8 lg:mb-16">
+          <div className="text-center lg:text-left mb-12 lg:mb-16 ">
             <h2 className="font-spectral tracking-tight font-semibold text-primary word mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">
               How Fronsciers Works
             </h2>
-            <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto lg:max-w-xl -mb-48 mt-2 lg:mb-0 lg:mt-0 leading-tight">
+            <p className="text-base lg:text-xl text-muted-foreground max-w-3xl mx-auto lg:max-w-xl -mb-48 mt-2 lg:mb-0 lg:mt-0 leading-tight">
               Experience the future of academic publishing with our streamlined
               blockchain-powered platform
             </p>

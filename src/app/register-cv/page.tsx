@@ -24,6 +24,9 @@ import {
   BookOpenIcon,
   BriefcaseIcon,
   ShieldCheckIcon,
+  EditIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
@@ -32,15 +35,17 @@ import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { CVParseResponse } from "@/types/backend";
 
 export default function RegisterCVPage() {
   const { authenticated: connected, user } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const publicKey = solanaWallets[0]?.address;
+  const publicKey = getPrimarySolanaWalletAddress(solanaWallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -69,6 +74,8 @@ export default function RegisterCVPage() {
     field: "",
     specialization: "",
     email: "",
+    orcid: "",
+    googleScholar: "",
   });
   const { isLoading } = useLoading();
   const { toast } = useToast();
@@ -330,7 +337,6 @@ export default function RegisterCVPage() {
                 Register your academic credentials to participate in our
                 platform
               </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
             </div>
 
             <div className="max-w-4xl mx-auto">
@@ -347,12 +353,12 @@ export default function RegisterCVPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-8 pt-8">
+                <CardContent className="space-y-8 ">
                   {error && (
                     <div className="p-4 bg-red-50/80 border border-red-200/80 rounded-xl shadow-sm">
                       <div className="flex items-center space-x-3">
                         <AlertCircleIcon className="h-5 w-5 text-red-600" />
-                        <p className="text-red-800 text-lg font-medium">
+                        <p className="text-red-800 text-md font-medium">
                           {error}
                         </p>
                       </div>
@@ -515,6 +521,52 @@ export default function RegisterCVPage() {
                                 onChange={(e) =>
                                   handleManualFormChange(
                                     "email",
+                                    e.target.value
+                                  )
+                                }
+                                disabled={isSubmittingManual}
+                                className="h-12"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor="orcid"
+                                className="text-sm font-medium text-primary"
+                              >
+                                ORCID ID
+                              </Label>
+                              <Input
+                                id="orcid"
+                                type="url"
+                                placeholder="https://orcid.org/0000-0000-0000-0000"
+                                value={manualFormData.orcid}
+                                onChange={(e) =>
+                                  handleManualFormChange(
+                                    "orcid",
+                                    e.target.value
+                                  )
+                                }
+                                disabled={isSubmittingManual}
+                                className="h-12"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor="googleScholar"
+                                className="text-sm font-medium text-primary"
+                              >
+                                Google Scholar Profile
+                              </Label>
+                              <Input
+                                id="googleScholar"
+                                type="url"
+                                placeholder="https://scholar.google.com/citations?user=..."
+                                value={manualFormData.googleScholar}
+                                onChange={(e) =>
+                                  handleManualFormChange(
+                                    "googleScholar",
                                     e.target.value
                                   )
                                 }

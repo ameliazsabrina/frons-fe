@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { DOCIManuscript } from "@/types/fronsciers";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { PublicKey } from "@solana/web3.js";
+import { getPrimaryWalletAddress } from "@/utils/wallet";
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp * 1000).toLocaleDateString();
@@ -30,7 +31,7 @@ const formatDate = (timestamp: number) => {
 export default function DocisPage() {
   const { authenticated: connected } = usePrivy();
   const { wallets } = useWallets();
-  const publicKey = wallets[0]?.address;
+  const publicKey = getPrimaryWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;

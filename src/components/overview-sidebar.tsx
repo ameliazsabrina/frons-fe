@@ -63,46 +63,47 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
   ];
 
   return (
-    <Sidebar className="bg-white">
+    <Sidebar className="border-r border-gray-100 bg-gray-50/50 bg-white">
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <div className="font-bold text-lg mb-4 flex justify-center mt-16 border-b border-gray-200 pb-4">
-            <Link href="/">
+          <div className="flex justify-center mt-16 mb-8">
+            <Link href="/" className="transition-opacity hover:opacity-80">
               <Image
                 src="/logoname.svg"
                 alt="Fronsciers"
-                width={200}
-                height={200}
+                width={180}
+                height={180}
+                className="object-contain"
               />
             </Link>
           </div>
 
-          <SidebarGroupContent>
-            <SidebarMenu>
+          <SidebarGroupContent className="px-3">
+            <SidebarMenu className="space-y-1">
               {links.map((link) => (
                 <SidebarMenuItem key={link.href}>
                   <SidebarMenuButton asChild>
                     <Link
                       href={link.href}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
-                        "hover:bg-gray-100 hover:text-gray-900",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                        "hover:bg-white hover:shadow-sm",
                         pathname === link.href
-                          ? "bg-gray-100 text-gray-900 shadow-sm"
-                          : "text-gray-600"
+                          ? "bg-white text-gray-900 shadow-sm border border-gray-100"
+                          : "text-gray-600 hover:text-gray-900"
                       )}
                     >
                       <span
                         className={cn(
-                          "transition-colors duration-200",
+                          "transition-colors duration-200 flex-shrink-0",
                           pathname === link.href
                             ? "text-primary"
-                            : "text-gray-500"
+                            : "text-gray-400 group-hover:text-gray-600"
                         )}
                       >
                         {link.icon}
                       </span>
-                      <span>{link.label}</span>
+                      <span className="font-medium text-sm">{link.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,21 +112,23 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="flex bg-white">
-        <div className="text-sm text-gray-600 mb-2 ml-4">
-          {connected ? (
-            <div className="flex items-center gap-2">
-              <CheckCircleIcon className="h-4 w-4 text-green-500" />
-              Connected
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <XCircleIcon className="h-4 w-4 text-red-500" />
-              Not Connected
-            </div>
-          )}
+      <SidebarFooter className="bg-white p-3 border-t border-gray-100">
+        <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
+          <div className="text-xs text-gray-500 mb-3 text-center">
+            {connected ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Connected</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                <span>Not Connected</span>
+              </div>
+            )}
+          </div>
+          <WalletConnection />
         </div>
-        <WalletConnection />
       </SidebarFooter>
     </Sidebar>
   );

@@ -20,6 +20,8 @@ interface CVData {
   email: string;
   registeredAt: string;
   photoUrl?: string;
+  orcid?: string;
+  googleScholar?: string;
 }
 
 const compressImage = (file: File): Promise<File> => {
@@ -82,9 +84,9 @@ export function useCVRegistration(walletAddress?: string) {
   const [error, setError] = useState<string | null>(null);
   const { isLoading, setIsLoading } = useLoading();
   const { authenticated, getAccessToken } = usePrivy();
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
-  // Legacy CV registration check (wallet-based)
   const checkCVRegistration = useCallback(
     async (walletAddress: string): Promise<boolean> => {
       try {
@@ -121,58 +123,51 @@ export function useCVRegistration(walletAddress?: string) {
     []
   );
 
-  // Privy-enabled CV registration check (token-based)
-  const checkCVRegistrationPrivy = useCallback(
-    async (): Promise<boolean> => {
-      try {
-        setError(null);
+  const checkCVRegistrationPrivy = useCallback(async (): Promise<boolean> => {
+    try {
+      setError(null);
 
-        if (!authenticated) {
-          setError("Please authenticate to check CV status");
-          return false;
-        }
-
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          setError("Failed to get authentication token");
-          return false;
-        }
-
-        const result = await axios.get(
-          `${apiUrl}/manuscripts/cv-status`,
-          {
-            headers: {
-              "Authorization": `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        console.log(result.data);
-        setCvStatus(result.data as CVStatus);
-
-        if (result.data.success && result.data.hasCV && result.data.userInfo) {
-          setCvData({
-            fullName: result.data.userInfo.fullName,
-            institution: result.data.userInfo.institution,
-            profession: result.data.userInfo.profession,
-            field: result.data.userInfo.profession,
-            specialization: result.data.userInfo.profession,
-            email: result.data.userInfo.email || "",
-            registeredAt: result.data.userInfo.registeredAt,
-          });
-          return result.data.canSubmitManuscripts;
-        } else {
-          setError(result.data.message);
-          return false;
-        }
-      } catch (err) {
-        console.error("Failed to check CV registration with Privy:", err);
-        setError("Network error while checking CV status");
+      if (!authenticated) {
+        setError("Please authenticate to check CV status");
         return false;
       }
-    },
-    [authenticated, getAccessToken]
-  );
+
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        setError("Failed to get authentication token");
+        return false;
+      }
+
+      const result = await axios.get(`${apiUrl}/manuscripts/cv-status`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      console.log(result.data);
+      setCvStatus(result.data as CVStatus);
+
+      if (result.data.success && result.data.hasCV && result.data.userInfo) {
+        setCvData({
+          fullName: result.data.userInfo.fullName,
+          institution: result.data.userInfo.institution,
+          profession: result.data.userInfo.profession,
+          field: result.data.userInfo.profession,
+          specialization: result.data.userInfo.profession,
+          email: result.data.userInfo.email || "",
+          registeredAt: result.data.userInfo.registeredAt,
+        });
+        return result.data.canSubmitManuscripts;
+      } else {
+        setError(result.data.message);
+        return false;
+      }
+    } catch (err) {
+      console.error("Failed to check CV registration with Privy:", err);
+      setError("Network error while checking CV status");
+      return false;
+    }
+  }, [authenticated, getAccessToken]);
 
   const uploadCV = useCallback(
     async (
@@ -437,6 +432,8 @@ export function useCVRegistration(walletAddress?: string) {
         field: string;
         specialization: string;
         email: string;
+        orcid?: string;
+        googleScholar?: string;
       },
       walletAddress: string
     ): Promise<{ success: boolean; message: string }> => {

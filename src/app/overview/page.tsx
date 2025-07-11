@@ -25,6 +25,7 @@ import {
   AlertCircleIcon,
 } from "lucide-react";
 import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimaryWalletAddress } from "@/utils/wallet";
 import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
 import { useOverview, ManuscriptStats, UserStats } from "@/hooks/useOverview";
@@ -52,7 +53,7 @@ export default function OverviewPage() {
   const { user, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const connected = authenticated;
-  const publicKey = wallets[0]?.address;
+  const publicKey = getPrimaryWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -473,7 +474,7 @@ export default function OverviewPage() {
   if (!isReady) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-primary/5 flex w-full">
+        <div className="min-h-screen bg-gray-50/50 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
             <div className="flex items-center justify-center min-h-screen">
@@ -490,11 +491,11 @@ export default function OverviewPage() {
   if (!connected || !isClient) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-primary/5 flex w-full">
+        <div className="min-h-screen bg-gray-50/50 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
+            <div className="border-b border-gray-100 bg-white sticky top-0 z-40">
+              <div className="flex items-center gap-3 px-6 py-4">
                 <SidebarTrigger className="w-10 h-10" />
                 <Separator orientation="vertical" className="h-6" />
               </div>
@@ -528,22 +529,20 @@ export default function OverviewPage() {
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
           <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
+            <div className="flex items-center gap-2 px-6 py-4">
               <SidebarTrigger className="w-10 h-10" />
               <Separator orientation="vertical" className="h-6" />
             </div>
           </div>
-          <main className="flex items-center justify-center">
-            <div className="w-full py-12 space-y-12 lg:px-16 px-4">
-              <div className="text-center space-y-6">
-                <h1 className="text-5xl font-spectral font-semibold text-primary tracking-tight">
+          <main className="flex-1">
+            <div className="flex-1 p-4 sm:p-6">
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
                   Welcome back, {getUserDisplayName(user)}
                 </h1>
-                <p className="text-lg text-muted-foreground font-medium max-w-3xl mx-auto">
-                  Here&apos;s an overview of your academic publishing activity
-                  and FRONS token balance.
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Your academic publishing dashboard
                 </p>
-                <Separator className="max-w-full mx-auto" />
               </div>
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -556,27 +555,22 @@ export default function OverviewPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-12 max-w-[1400px] mx-auto">
+                <div className="space-y-8">
                   <StatsOverview
                     userStats={userStats}
                     manuscriptStats={manuscriptStats}
                   />
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <div className="lg:col-span-3">
-                      <div className="p-8 bg-primary/10 rounded-xl space-y-8">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-2xl font-semibold">
-                            Quick Actions
-                          </h2>
-                          <Badge
-                            variant="secondary"
-                            className="px-2 py-1.5 text-xs ml-2"
-                          >
-                            {manuscriptStats.pendingReviews} reviews available
-                          </Badge>
-                        </div>
-                        <QuickActions manuscriptStats={manuscriptStats} />
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-3 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Quick Actions
+                        </h2>
+                        <Badge variant="secondary">
+                          {manuscriptStats.pendingReviews} reviews available
+                        </Badge>
                       </div>
+                      <QuickActions manuscriptStats={manuscriptStats} />
                     </div>
                     <div>
                       <SidePanel

@@ -20,6 +20,7 @@ import {
   BriefcaseIcon,
   AwardIcon,
   FileTextIcon,
+  RefreshCcwIcon,
 } from "lucide-react";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
@@ -28,12 +29,19 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { Loading } from "@/components/ui/loading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
+import { useReviewerEligibility } from "@/hooks/useReviewerEligibility";
+import { Badge } from "@/components/ui/badge";
+import {
+  PublicationsManager,
+  type Publication,
+} from "@/components/profile/PublicationsManager";
 
 interface UserProfile {
   personalInfo: {
@@ -52,6 +60,8 @@ interface UserProfile {
     linkedIn?: string;
     github?: string;
     website?: string;
+    orcid?: string;
+    googleScholar?: string;
   };
   summary: {
     education: number;
@@ -64,7 +74,7 @@ interface UserProfile {
 export default function YourProfilePage() {
   const { authenticated: connected } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const publicKey = solanaWallets[0]?.address;
+  const publicKey = getPrimarySolanaWalletAddress(solanaWallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -90,6 +100,13 @@ export default function YourProfilePage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [publications, setPublications] = useState<Publication[]>([]);
+  const {
+    eligibilityResult,
+    isLoading: eligibilityLoading,
+    error: eligibilityError,
+    refreshEligibility,
+  } = useReviewerEligibility(profileData?.summary?.publications || 0);
 
   const loadUserProfile = useCallback(async () => {
     if (!validSolanaPublicKey) return;
@@ -115,6 +132,28 @@ export default function YourProfilePage() {
             contact: { ...result.profile.contact },
             overview: result.profile.overview || "",
           });
+
+          // Load publications if available
+          if (
+            result.profile.summary.publications &&
+            Array.isArray(result.profile.summary.publications)
+          ) {
+            setPublications(
+              result.profile.summary.publications.map(
+                (pub: any, index: number) => ({
+                  id: pub.id || `${index}`,
+                  title: pub.title || "",
+                  journal: pub.journal || "",
+                  year: pub.year || "",
+                  type: pub.type || "Journal Article",
+                  citations: pub.citations || 0,
+                  authors: pub.authors || "",
+                  doi: pub.doi || "",
+                  url: pub.url || "",
+                })
+              )
+            );
+          }
 
           if (result.profile.profilePhoto) {
             console.log(
@@ -317,7 +356,13 @@ export default function YourProfilePage() {
         }
       }
 
-      const result = await updateUserProfile(validSolanaPublicKey, editData);
+      // Include publications in the update data
+      const updateData = {
+        ...editData,
+        publications: publications,
+      };
+
+      const result = await updateUserProfile(validSolanaPublicKey, updateData);
 
       if (result?.success) {
         setProfileData(result.profile);
@@ -391,7 +436,7 @@ export default function YourProfilePage() {
                 </p>
               </div>
               <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm  transition-all duration-300">
-                <CardHeader className="text-center py-8">
+                <CardHeader className="text-center pt-8">
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <UserIcon className="h-8 w-8 text-primary" />
                   </div>
@@ -451,8 +496,7 @@ export default function YourProfilePage() {
                   </p>
                   <Button
                     onClick={() => router.push("/register-cv")}
-                    size="lg"
-                    className="px-8 py-3 text-lg"
+                    className="px-8 py-3 "
                   >
                     Register CV
                   </Button>
@@ -479,13 +523,13 @@ export default function YourProfilePage() {
               </div>
             </div>
           </div>
-          <div className="container max-w-6xl mx-auto px-6 py-12">
-            <div className="mb-12 text-center space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
+          <div className="container max-w-5xl mx-auto px-6 py-8">
+            <div className="mb-8 space-y-2 items-center justify-center">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight text-center">
                 Your Profile
               </h1>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                Manage your academic profile and credentials with ease
+              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-center">
+                Manage your academic profile and credentials
               </p>
             </div>
 
@@ -501,7 +545,6 @@ export default function YourProfilePage() {
               </div>
             )}
 
-            {/* Error State */}
             {error && (
               <Alert className="border-red-200 bg-red-50/80 mb-8 rounded-xl shadow-sm">
                 <AlertCircleIcon className="h-5 w-5" />
@@ -511,7 +554,6 @@ export default function YourProfilePage() {
               </Alert>
             )}
 
-            {/* Success/Error Messages */}
             {message && (
               <Alert
                 className={
@@ -536,11 +578,11 @@ export default function YourProfilePage() {
             {profileData && (
               <div className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                  <Card className="lg:col-span-1 shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300  overflow-hidden">
-                    <div className="h-32 bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40"></div>
-                    <CardHeader className="flex flex-col items-center justify-center -mt-16 pt-0 border-0 pb-6">
-                      <div className="relative group mb-6">
-                        <div className="h-32 w-32 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center border-4 border-white shadow-xl">
+                  <Card className="lg:col-span-1 overflow-hidden">
+                    <div className="h-24 bg-gradient-to-br from-primary/10 to-primary/5"></div>
+                    <CardHeader className="flex flex-col items-center justify-center -mt-12 pt-0 border-0 pb-4">
+                      <div className="relative group mb-4">
+                        <div className="h-24 w-24 rounded-full overflow-hidden bg-white flex items-center justify-center border-3 border-white shadow-lg">
                           {photoPreview ? (
                             <img
                               src={photoPreview || "/placeholder.svg"}
@@ -671,7 +713,9 @@ export default function YourProfilePage() {
                               <FileTextIcon className="h-6 w-6 text-primary" />
                             </div>
                             <div className="text-3xl font-bold text-primary mb-1">
-                              {profileData.summary?.publications || 0}
+                              {publications.length ||
+                                profileData.summary?.publications ||
+                                0}
                             </div>
                             <div className="text-sm text-muted-foreground font-medium">
                               Publications
@@ -692,13 +736,243 @@ export default function YourProfilePage() {
                       </CardContent>
                     </Card>
 
-                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
-                      <CardHeader className="border-b border-gray-100/50 pb-6">
-                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
-                          <BookOpenIcon className="h-6 w-6 mr-3" />
-                          Professional Overview
+                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                      <CardHeader>
+                        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <div className="flex items-center">
+                            <AwardIcon className="h-5 w-5 mr-2" />
+                            <span>Reviewer Status</span>
+                          </div>
+                          {eligibilityResult?.isEligible && (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 w-fit">
+                              Eligible
+                            </Badge>
+                          )}
                         </CardTitle>
-                        <p className="text-muted-foreground mt-2">
+                        <p className="text-muted-foreground text-sm">
+                          Your eligibility to serve as a manuscript reviewer
+                        </p>
+                      </CardHeader>
+                      <CardContent className="pt-8">
+                        {eligibilityLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loading />
+                            <span className="ml-2 text-muted-foreground">
+                              Checking eligibility...
+                            </span>
+                          </div>
+                        ) : eligibilityError ? (
+                          <Alert className="border-red-200 bg-red-50/80">
+                            <AlertCircleIcon className="h-5 w-5" />
+                            <AlertDescription className="text-red-800">
+                              {eligibilityError}
+                            </AlertDescription>
+                          </Alert>
+                        ) : eligibilityResult ? (
+                          <div className="space-y-6">
+                            {/* Overall Status */}
+                            <div
+                              className={`p-4 sm:p-6 rounded-xl border-2 ${
+                                eligibilityResult.isEligible
+                                  ? "bg-green-50 border-green-200"
+                                  : "bg-orange-50 border-orange-200"
+                              }`}
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                <div className="flex-1">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                                    <h3
+                                      className={`text-base sm:text-lg font-semibold ${
+                                        eligibilityResult.isEligible
+                                          ? "text-green-800"
+                                          : "text-orange-800"
+                                      }`}
+                                    >
+                                      {eligibilityResult.isEligible
+                                        ? "🎉 Reviewer Eligible"
+                                        : "📋 Requirements Check"}
+                                    </h3>
+                                    <div className="flex flex-col items-start sm:items-end gap-1">
+                                      <p
+                                        className={`text-xs sm:text-sm font-medium ${
+                                          eligibilityResult.isEligible
+                                            ? "text-green-700"
+                                            : "text-orange-700"
+                                        }`}
+                                      >
+                                        {(() => {
+                                          const req =
+                                            eligibilityResult.requirements;
+                                          const completed = [
+                                            req.hasMinimumEducation,
+                                            req.hasMinimumPublications,
+                                          ].filter(Boolean).length;
+                                          return `${completed}/2 Requirements Met`;
+                                        })()}
+                                      </p>
+                                      <Progress
+                                        value={(() => {
+                                          const req =
+                                            eligibilityResult.requirements;
+                                          const completed = [
+                                            req.hasMinimumEducation,
+                                            req.hasMinimumPublications,
+                                          ].filter(Boolean).length;
+                                          return (completed / 2) * 100;
+                                        })()}
+                                        className="w-24 sm:w-32 h-2"
+                                      />
+                                    </div>
+                                  </div>
+                                  <p
+                                    className={`text-xs sm:text-sm ${
+                                      eligibilityResult.isEligible
+                                        ? "text-green-700"
+                                        : "text-orange-700"
+                                    }`}
+                                  >
+                                    {eligibilityResult.isEligible
+                                      ? "You meet all requirements to serve as a manuscript reviewer"
+                                      : "Complete the requirements below to become eligible for reviewer status"}
+                                  </p>
+                                </div>
+                                <Button
+                                  onClick={refreshEligibility}
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full sm:w-auto"
+                                >
+                                  <RefreshCcwIcon className="h-4 w-4 mr-2" />
+                                  Refresh
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div
+                                className={`p-3 sm:p-4 rounded-lg border ${
+                                  eligibilityResult.requirements
+                                    .hasMinimumEducation
+                                    ? "bg-green-50 border-green-200"
+                                    : "bg-red-50 border-red-200"
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  {eligibilityResult.requirements
+                                    .hasMinimumEducation ? (
+                                    <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
+                                  ) : (
+                                    <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mr-2 sm:mr-3 flex-shrink-0" />
+                                  )}
+                                  <div>
+                                    <p className="font-medium text-xs sm:text-sm">
+                                      Education Level
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Bachelor&apos;s degree or higher required
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div
+                                className={`p-3 sm:p-4 rounded-lg border ${
+                                  eligibilityResult.requirements
+                                    .hasMinimumPublications
+                                    ? "bg-green-50 border-green-200"
+                                    : "bg-red-50 border-red-200"
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  {eligibilityResult.requirements
+                                    .hasMinimumPublications ? (
+                                    <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
+                                  ) : (
+                                    <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mr-2 sm:mr-3 flex-shrink-0" />
+                                  )}
+                                  <div>
+                                    <p className="font-medium text-xs sm:text-sm">
+                                      Publications (First Author)
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {
+                                        eligibilityResult.requirements
+                                          .publishedPapers
+                                      }{" "}
+                                      /{" "}
+                                      {
+                                        eligibilityResult.requirements
+                                          .requiredPapers
+                                      }{" "}
+                                      papers as first author
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Benefits or Issues */}
+                            {eligibilityResult.benefits.length > 0 && (
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-green-800">
+                                  Benefits & Status
+                                </h4>
+                                <div className="space-y-2">
+                                  {eligibilityResult.benefits.map(
+                                    (benefit, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center text-sm text-green-700"
+                                      >
+                                        <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                                        {benefit}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {eligibilityResult.issues.length > 0 && (
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-orange-800">
+                                  Requirements to Complete
+                                </h4>
+                                <div className="space-y-2">
+                                  {eligibilityResult.issues.map(
+                                    (issue, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center text-sm text-orange-700"
+                                      >
+                                        <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                                        {issue}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <AwardIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                            <p>
+                              Complete your profile to check reviewer
+                              eligibility
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpenIcon className="h-5 w-5" />
+                          <span>Professional Overview</span>
+                        </CardTitle>
+                        <p className="text-muted-foreground text-sm">
                           Share your research interests and expertise
                         </p>
                       </CardHeader>
@@ -713,24 +987,33 @@ export default function YourProfilePage() {
                             className="min-h-[150px] border-primary/20 focus:border-primary focus:ring-primary/30 text-base leading-relaxed"
                           />
                         ) : (
-                          <div className="prose prose-gray max-w-none">
-                            <p className="text-foreground leading-relaxed text-base">
-                              {(profileData as any).overview ||
-                                "No overview provided yet. Click 'Edit Profile' to add your professional summary."}
-                            </p>
+                          <div className="space-y-2">
+                            {(profileData as any).overview ? (
+                              <p className="text-foreground leading-relaxed text-sm break-words">
+                                {(profileData as any).overview}
+                              </p>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-muted-foreground"
+                              >
+                                No overview provided yet. Click &apos;Edit
+                                Profile&apos; to add your professional summary.
+                              </Badge>
+                            )}
                           </div>
                         )}
                       </CardContent>
                     </Card>
 
                     {/* Personal Information */}
-                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
-                      <CardHeader className="border-b border-gray-100/50 pb-6">
-                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
-                          <UserIcon className="h-6 w-6 mr-3" />
-                          Personal Information
+                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <UserIcon className="h-5 w-5" />
+                          <span>Personal Information</span>
                         </CardTitle>
-                        <p className="text-muted-foreground mt-2">
+                        <p className="text-muted-foreground text-sm">
                           Your basic profile details
                         </p>
                       </CardHeader>
@@ -757,10 +1040,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.fullName}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="default"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.fullName ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -786,10 +1073,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.title}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.title ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -815,10 +1106,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.profession}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.profession ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -844,10 +1139,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.institution}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.institution ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -873,10 +1172,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.field}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.field ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -904,10 +1207,14 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.personalInfo.specialization}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="break-words max-w-full"
+                                >
+                                  {profileData.personalInfo.specialization ||
+                                    "Not specified"}
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -915,13 +1222,13 @@ export default function YourProfilePage() {
                       </CardContent>
                     </Card>
 
-                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
-                      <CardHeader className="border-b border-gray-100/50 pb-6">
-                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
-                          <MailIcon className="h-6 w-6 mr-3" />
-                          Contact Information
+                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <MailIcon className="h-5 w-5" />
+                          <span>Contact Information</span>
                         </CardTitle>
-                        <p className="text-muted-foreground mt-2">
+                        <p className="text-muted-foreground text-sm">
                           How others can reach you
                         </p>
                       </CardHeader>
@@ -949,14 +1256,17 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <div className="flex items-center">
-                                  <MailIcon className="h-4 w-4 mr-3 text-primary/70" />
-                                  <p className="text-foreground font-medium">
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="flex items-center gap-2 break-all max-w-full"
+                                >
+                                  <MailIcon className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate">
                                     {profileData.contact.email ||
                                       "Not provided"}
-                                  </p>
-                                </div>
+                                  </span>
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -982,10 +1292,13 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="break-words max-w-full"
+                                >
                                   {profileData.contact.phone || "Not provided"}
-                                </p>
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -1011,11 +1324,16 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.contact.linkedIn ||
-                                    "Not provided"}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="break-all max-w-full"
+                                >
+                                  <span className="truncate">
+                                    {profileData.contact.linkedIn ||
+                                      "Not provided"}
+                                  </span>
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -1041,17 +1359,102 @@ export default function YourProfilePage() {
                                 className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
                               />
                             ) : (
-                              <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/10">
-                                <p className="text-foreground font-medium">
-                                  {profileData.contact.website ||
-                                    "Not provided"}
-                                </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="break-all max-w-full"
+                                >
+                                  <span className="truncate">
+                                    {profileData.contact.website ||
+                                      "Not provided"}
+                                  </span>
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="orcid"
+                              className="text-sm font-semibold text-primary"
+                            >
+                              ORCID ID
+                            </Label>
+                            {isEditing ? (
+                              <Input
+                                id="orcid"
+                                placeholder="https://orcid.org/0000-0000-0000-0000"
+                                value={editData.contact?.orcid || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "contact",
+                                    "orcid",
+                                    e.target.value
+                                  )
+                                }
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
+                              />
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="break-all max-w-full"
+                                >
+                                  <span className="truncate">
+                                    {profileData.contact.orcid ||
+                                      "Not provided"}
+                                  </span>
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="googleScholar"
+                              className="text-sm font-semibold text-primary"
+                            >
+                              Google Scholar Profile
+                            </Label>
+                            {isEditing ? (
+                              <Input
+                                id="googleScholar"
+                                placeholder="https://scholar.google.com/citations?user=..."
+                                value={editData.contact?.googleScholar || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "contact",
+                                    "googleScholar",
+                                    e.target.value
+                                  )
+                                }
+                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
+                              />
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className="break-all max-w-full"
+                                >
+                                  <span className="truncate">
+                                    {profileData.contact.googleScholar ||
+                                      "Not provided"}
+                                  </span>
+                                </Badge>
                               </div>
                             )}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Publications Management */}
+                    <PublicationsManager
+                      publications={publications}
+                      onPublicationsChange={setPublications}
+                      isEditing={isEditing}
+                      walletAddress={validSolanaPublicKey}
+                    />
                   </div>
                 </div>
               </div>

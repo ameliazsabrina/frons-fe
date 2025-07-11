@@ -31,6 +31,7 @@ import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimarySolanaWallet } from "@/utils/wallet";
 import { useManuscriptSubmission } from "@/hooks/useManuscriptSubmission";
 import { Toaster } from "@/components/ui/toaster";
 import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
@@ -47,8 +48,7 @@ export default function SubmitManuscriptPage() {
   const { authenticated: connected, user } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
 
-  // Find the first Solana wallet
-  const solanaWallet = solanaWallets[0];
+  const solanaWallet = getPrimarySolanaWallet(solanaWallets);
   const validSolanaPublicKey =
     solanaWallet?.address && isValidSolanaAddress(solanaWallet.address)
       ? solanaWallet.address
@@ -63,7 +63,8 @@ export default function SubmitManuscriptPage() {
   const { checkCVRegistration } = useCVRegistration(validSolanaPublicKey);
   const router = useRouter();
   const { isLoading } = useLoading();
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
   const { submitManuscript } = useManuscriptSubmission({
     checkCVRegistration: checkCVRegistration,
@@ -416,31 +417,25 @@ export default function SubmitManuscriptPage() {
   if (!connected || !validSolanaPublicKey) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+        <div className="min-h-screen bg-primary/5 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-              <div className="flex items-center gap-3 px-6 py-4">
-                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
+            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <div className="flex items-center gap-2 px-6 py-4">
+                <SidebarTrigger className="w-10 h-10" />
                 <Separator orientation="vertical" className="h-6" />
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-primary">
-                    Submit Manuscript
-                  </span>
-                </div>
               </div>
             </div>
-            <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
+            <div className="flex-1 p-4 sm:p-6">
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
                   Submit Manuscript
                 </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Share your research with the academic community through our
-                  blockchain-powered platform
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Share your research with the academic community through our blockchain-powered platform
                 </p>
               </div>
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader className="text-center py-8">
                   <CardTitle className="text-2xl text-primary">
                     Authentication Required
@@ -484,22 +479,21 @@ export default function SubmitManuscriptPage() {
               walletAddress={validSolanaPublicKey || ""}
               onCVVerified={handleCVVerified}
             >
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
+              <div className="mb-8 text-center">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
                   Submit Manuscript
                 </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Share your research with the academic community through our
-                  blockchain-powered platform
+                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                  Share your research with the academic community through our blockchain-powered platform
                 </p>
               </div>
 
               <form
                 onSubmit={handleSubmit}
-                className="space-y-8 max-w-4xl mx-auto"
+                className="space-y-6"
               >
                 {ipfsData && (
-                  <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                  <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                     <CardHeader className="border-b border-gray-100/50 pb-6">
                       <div className="flex items-center space-x-3">
                         <div>
@@ -542,7 +536,7 @@ export default function SubmitManuscriptPage() {
                   </Card>
                 )}
 
-                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardHeader className="border-b border-gray-100/50 pb-6">
                     <div className="flex items-center space-x-3">
                       <div>
@@ -634,7 +628,7 @@ export default function SubmitManuscriptPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardHeader className="border-b border-gray-100/50 pb-6">
                     <div className="flex items-center space-x-3">
                       <div>
@@ -714,7 +708,7 @@ export default function SubmitManuscriptPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardHeader className="border-b border-gray-100/50 pb-6">
                     <div className="flex items-center space-x-3">
                       <div>
@@ -797,7 +791,7 @@ export default function SubmitManuscriptPage() {
                 </Card>
 
                 {submitting && (
-                  <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                  <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                     <CardContent className="pt-8 pb-8">
                       <div className="space-y-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
                         <div className="flex justify-between text-base font-medium">

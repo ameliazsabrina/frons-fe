@@ -32,6 +32,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import axios from "axios";
 import { useLoading } from "@/context/LoadingContext";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimaryWalletAddress } from "@/utils/wallet";
 
 interface ReviewData {
   id: string;
@@ -66,7 +67,7 @@ export default function SubmitReviewPage() {
   const reviewId = params.reviewId as string;
   const { authenticated: connected, user } = usePrivy();
   const { wallets } = useWallets();
-  const publicKey = wallets[0]?.address;
+  const publicKey = getPrimaryWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -265,9 +266,8 @@ export default function SubmitReviewPage() {
         existingDecision: "",
       });
 
-      toast(
-        "Using sample data for testing. In production, this would load real review data.",
-        "info"
+      toast.info(
+        "Using sample data for testing. In production, this would load real review data."
       );
     } catch (error: any) {
       console.error("Error fetching review data:", error);

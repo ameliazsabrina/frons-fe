@@ -12,13 +12,13 @@ export function Badge({
   className = "",
 }: BadgeProps) {
   const baseClasses =
-    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors";
 
   const variants = {
-    default: "bg-blue-100 text-blue-800",
-    secondary: "bg-gray-100 text-gray-800",
-    destructive: "bg-red-100 text-red-800",
-    outline: "border border-gray-200 text-gray-700",
+    default: "bg-primary/10 text-primary border border-primary/20",
+    secondary: "bg-gray-100 text-gray-600 border border-gray-200",
+    destructive: "bg-red-50 text-red-600 border border-red-200",
+    outline: "border border-gray-300 text-gray-600 bg-white",
   };
 
   return (

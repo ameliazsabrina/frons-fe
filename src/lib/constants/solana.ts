@@ -11,7 +11,8 @@ export const DEVNET_USDCF_ADDRESS =
   "B4UmZhTkjFJoAFp2r4LcuWaY8aPy4oH7kE9ej1Ctp4Vo";
 export const DEVNET_FRONS_ADDRESS =
   "2MjhRY9M2qL3PxAa5jCw4hqkpjbebLwq7EkLHtowDkUL";
-export const ESCROW_ADDRESS = "5KpNaznowuAnjgvT56aghxT8rpPHCcpUmupSdgtA923H";
+export const ESCROW_ADDRESS = "D9e8ZsmdfMtCnQsbe1SQmkK2Kd1jSw5Thxh4LJprSFiX";
+export const DOCI_REGISTRY_ADDRESS = "95E4ip51CThHfugWdU8uVCk6st6qgTnLJEGnmafkMRWo";
 
 export const PDA_SEEDS = {
   USER: "user",

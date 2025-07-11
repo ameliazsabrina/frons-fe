@@ -6,7 +6,6 @@ import PrivyProvider from "@/provider/PrivyProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { Toaster } from "@/components/ui/toaster";
-// import SidebarProvider from "@/provider/SidebarProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],

@@ -28,6 +28,7 @@ import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 
@@ -127,7 +128,7 @@ const getStatusText = (status: string) => {
 export default function AuthorsDashboardPage() {
   const { authenticated: connected } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const publicKey = solanaWallets[0]?.address;
+  const publicKey = getPrimarySolanaWalletAddress(solanaWallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -179,7 +180,7 @@ export default function AuthorsDashboardPage() {
   if (!connected || !validSolanaPublicKey) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+        <div className="min-h-screen bg-primary/5 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
             <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
@@ -203,7 +204,7 @@ export default function AuthorsDashboardPage() {
                   Track your manuscript submissions and publication progress
                 </p>
               </div>
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader className="text-center py-8">
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <UsersIcon className="h-8 w-8 text-primary" />
@@ -238,7 +239,6 @@ export default function AuthorsDashboardPage() {
               <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center space-x-2">
-                <BarChart3Icon className="h-5 w-5 text-primary" />
                 <span className="font-medium text-primary">
                   Author Dashboard
                 </span>
@@ -253,12 +253,10 @@ export default function AuthorsDashboardPage() {
               <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
                 Track your manuscript submissions and publication progress
               </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
             </div>
 
-            {/* Statistics Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -276,7 +274,7 @@ export default function AuthorsDashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -294,7 +292,7 @@ export default function AuthorsDashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -312,7 +310,7 @@ export default function AuthorsDashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -333,7 +331,7 @@ export default function AuthorsDashboardPage() {
 
             {/* Quick Actions */}
             <div className="mb-12">
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader className="border-b border-gray-100/50 pb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -396,7 +394,7 @@ export default function AuthorsDashboardPage() {
               </div>
 
               {manuscripts.length === 0 ? (
-                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardContent className="py-16 text-center">
                     <h3 className="text-xl font-semibold text-primary mb-2">
                       No Manuscripts Yet

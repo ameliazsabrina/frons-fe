@@ -105,9 +105,9 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/register-cv" className="flex items-center">
+                      <Link href="/your-profile" className="flex items-center">
                         <UserIcon className="mr-2 h-4 w-4" />
-                        Register CV
+                        Register Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

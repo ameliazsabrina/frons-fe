@@ -46,6 +46,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLoading } from "@/context/LoadingContext";
 import { WalletConnection } from "@/components/wallet-connection";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { getPrimaryWalletAddress } from "@/utils/wallet";
 
 interface ReviewManuscript {
   id: string;
@@ -105,7 +106,7 @@ export default function ReviewManuscriptPage() {
   const router = useRouter();
   const { authenticated: connected, user } = usePrivy();
   const { wallets } = useWallets();
-  const publicKey = wallets[0]?.address;
+  const publicKey = getPrimaryWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -287,17 +288,18 @@ export default function ReviewManuscriptPage() {
     try {
       const result = await getPendingReviewManuscripts(20);
       if (result && result.length > 0) {
-        // Convert API results to match PendingReviewManuscript format
         const convertedResults = result.map((m: any) => ({
           ...m,
-          author: m.author || m.authorWallet || 'Unknown',
+          author: m.author || m.authorWallet || "Unknown",
           reviewCount: m.reviewCount || 0,
           averageRating: m.averageRating || 0,
-          deadline: m.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          reviewer: m.reviewer || 'N/A',
-          reviewStatus: m.reviewStatus || 'pending',
+          deadline:
+            m.deadline ||
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          reviewer: m.reviewer || "N/A",
+          reviewStatus: m.reviewStatus || "pending",
           progress: m.progress || 0,
-          priority: m.priority || 'medium',
+          priority: m.priority || "medium",
           assignedDate: m.assignedDate || m.submittedAt || m.created_at,
           reviewId: m.reviewId || `review-${m.id}`,
           manuscriptId: m.id,
@@ -360,11 +362,9 @@ export default function ReviewManuscriptPage() {
 
     if (!confirmed) return;
 
-    const result = await publishManuscript(
-      selectedManuscript.id.toString()
-    );
+    const result = await publishManuscript(selectedManuscript.id.toString());
 
-    if (result?.success) {
+    if (result) {
       alert("Manuscript published successfully!");
       setSelectedManuscript(null);
       setReviewStatus(null);
@@ -528,15 +528,15 @@ export default function ReviewManuscriptPage() {
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
           <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
+            <div className="flex items-center gap-2 px-6 py-4">
               <SidebarTrigger className="w-10 h-10" />
               <Separator orientation="vertical" className="h-6" />
             </div>
           </div>
           <div className="flex-1 p-4 sm:p-6">
             {/* Header Section */}
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  text-bold tracking-tight">
+            <div className="mb-8 text-center pv">
+              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
                 Review Manuscripts
               </h1>
               <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
@@ -570,7 +570,10 @@ export default function ReviewManuscriptPage() {
                   onValueChange={setSelectedCategory}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue
+                      className="text-sm"
+                      placeholder="Select a category"
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
