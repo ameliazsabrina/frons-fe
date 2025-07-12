@@ -19,19 +19,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             createOnLogin: "users-without-wallets",
           },
         },
-        externalWallets: {
-          solana: {
-            connectors: toSolanaWalletConnectors({
-              shouldAutoConnect: true,
-              // metadata: {
-              //   name: "Fronsciers",
-              //   description: "Academic Publishing Platform",
-              //   url: "https://fronsciers.com",
-              //   icons: ["/Logo.png"],
-              // },
-            }),
-          },
-        },
+        // externalWallets: {
+        //   solana: {
+        //     connectors: toSolanaWalletConnectors({
+        //       shouldAutoConnect: true,
+        //       // metadata: {
+        //       //   name: "Fronsciers",
+        //       //   description: "Academic Publishing Platform",
+        //       //   url: "https://fronsciers.com",
+        //       //   icons: ["/Logo.png"],
+        //       // },
+        //     }),
+        //   },
+        // },
       }}
     >
       {children}

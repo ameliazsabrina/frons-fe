@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { toast } from "sonner";
 
 import {
   CVStatus,
@@ -22,6 +23,38 @@ interface CVData {
   photoUrl?: string;
   orcid?: string;
   googleScholar?: string;
+  education?: Array<{
+    institution?: string;
+    degree?: string;
+    field?: string;
+    startDate?: string;
+    endDate?: string;
+    gpa?: string;
+    location?: string;
+  }>;
+  experience?: Array<{
+    company?: string;
+    position?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    location?: string;
+    type?: string;
+  }>;
+  publications?: Array<{
+    title?: string;
+    authors?: string[];
+    venue?: string;
+    date?: string;
+    doi?: string;
+    url?: string;
+  }>;
+  awards?: Array<{
+    name?: string;
+    issuer?: string;
+    date?: string;
+    description?: string;
+  }>;
 }
 
 const compressImage = (file: File): Promise<File> => {
@@ -82,6 +115,7 @@ export function useCVRegistration(walletAddress?: string) {
   const [cvStatus, setCvStatus] = useState<CVStatus | null>(null);
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { isLoading, setIsLoading } = useLoading();
   const { authenticated, getAccessToken } = usePrivy();
   const apiUrl =
@@ -105,8 +139,15 @@ export function useCVRegistration(walletAddress?: string) {
             profession: result.data.userInfo.profession,
             field: result.data.userInfo.profession,
             specialization: result.data.userInfo.profession,
-            email: "",
-            registeredAt: result.data.userInfo.registeredAt,
+            email: result.data.userInfo.email,
+            registeredAt: result.data.userInfo.createdAt,
+            photoUrl: result.data.userInfo.profilePhoto,
+            orcid: result.data.userInfo.orcid,
+            googleScholar: result.data.userInfo.googleScholar,
+            education: result.data.userInfo.education,
+            experience: result.data.userInfo.experience,
+            publications: result.data.userInfo.publications,
+            awards: result.data.userInfo.awards,
           });
           return result.data.canSubmitManuscripts;
         } else {
@@ -115,7 +156,25 @@ export function useCVRegistration(walletAddress?: string) {
         }
       } catch (err) {
         console.error("Failed to check CV registration:", err);
-        setError("Network error while checking CV status");
+
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            // Don't show toast for 404 on CV check - this is expected for new users
+            setError("No CV found");
+          } else {
+            toast.error("Check Failed", {
+              description: "Failed to check CV status. Please try again.",
+              duration: 3000,
+            });
+            setError("Network error while checking CV status");
+          }
+        } else {
+          toast.error("Network Error", {
+            description: "Failed to connect to server.",
+            duration: 3000,
+          });
+          setError("Network error while checking CV status");
+        }
         return false;
       } finally {
       }
@@ -177,6 +236,19 @@ export function useCVRegistration(walletAddress?: string) {
       try {
         setError(null);
 
+        let headers: any = { "Content-Type": "multipart/form-data" };
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers.Authorization = `Bearer ${accessToken}`;
+              console.log("✅ Using Privy authentication token for uploadCV");
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
         const formData = new FormData();
         formData.append("cv", cv);
         formData.append("walletAddress", walletAddress);
@@ -184,15 +256,10 @@ export function useCVRegistration(walletAddress?: string) {
         const result = await axios.post(
           `${apiUrl}/parse-cv/parse-cv`,
           formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
+          { headers }
         );
 
         if (result.data.success) {
-          // Set CV data immediately from the upload response
           const newCvData = {
             fullName: result.data.selfIdentity?.fullName || "",
             institution: result.data.selfIdentity?.institution || "",
@@ -204,7 +271,6 @@ export function useCVRegistration(walletAddress?: string) {
           };
           setCvData(newCvData);
 
-          // Refresh the CV status but don't let it overwrite our cvData
           setTimeout(() => {
             checkCVRegistration(walletAddress);
           }, 500);
@@ -218,7 +284,146 @@ export function useCVRegistration(walletAddress?: string) {
       } finally {
       }
     },
-    [checkCVRegistration]
+    [checkCVRegistration, authenticated, getAccessToken, apiUrl]
+  );
+
+  const parseCV = useCallback(
+    async (
+      file: File
+    ): Promise<{
+      success: boolean;
+      data?: any;
+      message?: string;
+      savedToDatabase?: boolean;
+    }> => {
+      if (!file) {
+        return { success: false, message: "No file selected" };
+      }
+
+      if (!walletAddress) {
+        return { success: false, message: "Wallet address is required" };
+      }
+
+      try {
+        setError(null);
+        setIsLoading(true);
+        setUploadProgress(0);
+
+        const progressInterval = setInterval(() => {
+          setUploadProgress((prev) => {
+            if (prev >= 90) return prev;
+            return prev + 10;
+          });
+        }, 200);
+
+        const formData = new FormData();
+        formData.append("cv", file);
+        formData.append("walletAddress", walletAddress);
+
+        console.log(`Uploading CV for wallet address: ${walletAddress}`);
+
+        const result = await axios.post(`${apiUrl}/cv/upload`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const progress = progressEvent.total
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0;
+            setUploadProgress(Math.min(90, progress));
+          },
+        });
+
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+
+        if (result.data.success && result.data.data) {
+          const parsedData = {
+            fullName: result.data.data.selfIdentity?.fullName || "",
+            title: result.data.data.selfIdentity?.title || "",
+            profession: result.data.data.selfIdentity?.profession || "",
+            institution: result.data.data.selfIdentity?.institution || "",
+            location: result.data.data.selfIdentity?.location || "",
+            field: result.data.data.selfIdentity?.field || "",
+            specialization: result.data.data.selfIdentity?.specialization || "",
+            email: result.data.data.contact?.email || "",
+            phone: result.data.data.contact?.phone || "",
+            linkedIn: result.data.data.contact?.linkedIn || "",
+            github: result.data.data.contact?.github || "",
+            website: result.data.data.contact?.website || "",
+            overview: result.data.data.overview || "",
+            orcid:
+              result.data.data.contact?.orcid ||
+              result.data.data.academicProfile?.orcid ||
+              "",
+            googleScholar:
+              result.data.data.contact?.googleScholar ||
+              result.data.data.academicProfile?.googleScholar ||
+              "",
+            education: result.data.data.education || [],
+            experience: result.data.data.experience || [],
+            publications: result.data.data.publications || [],
+            awards: result.data.data.awards || [],
+          };
+
+          setCvData({
+            fullName: parsedData.fullName,
+            institution: parsedData.institution,
+            profession: parsedData.profession,
+            field: parsedData.field,
+            specialization: parsedData.specialization,
+            email: parsedData.email,
+            registeredAt: new Date().toISOString(),
+            orcid: parsedData.orcid,
+            googleScholar: parsedData.googleScholar,
+            education: result.data.data.education || [],
+            experience: result.data.data.experience || [],
+            publications: result.data.data.publications || [],
+            awards: result.data.data.awards || [],
+          });
+
+          // If the CV was saved to the database, check the registration status
+          if (result.data.savedToDatabase) {
+            setTimeout(() => {
+              checkCVRegistration(walletAddress);
+            }, 500);
+
+            toast.success("CV Saved Successfully", {
+              description: "Your CV has been parsed and saved to your profile.",
+            });
+          } else {
+            toast.success("CV Parsed Successfully", {
+              description: "Please review and edit the extracted information.",
+            });
+          }
+
+          return {
+            success: true,
+            data: parsedData,
+            message: result.data.message || "CV parsed successfully",
+            savedToDatabase: result.data.savedToDatabase,
+          };
+        }
+
+        throw new Error(result.data.message || "Failed to parse CV");
+      } catch (err) {
+        console.error("Failed to parse CV:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to parse CV";
+        setError(errorMessage);
+        toast.error("Parse Failed", {
+          description: "Failed to parse CV. Please try again.",
+        });
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+        setUploadProgress(0);
+      }
+    },
+    [apiUrl, walletAddress, checkCVRegistration]
   );
 
   const getUserProfile = useCallback(
@@ -227,8 +432,24 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
+        let headers = {};
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers = { Authorization: `Bearer ${accessToken}` };
+              console.log(
+                "✅ Using Privy authentication token for getUserProfile"
+              );
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
         const result = await axios.get(
-          `${apiUrl}/parse-cv/user/profile/${walletAddress}`
+          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
+          { headers }
         );
 
         if (result.data.success) {
@@ -237,6 +458,7 @@ export function useCVRegistration(walletAddress?: string) {
             JSON.stringify(result.data.profile, null, 2)
           );
 
+          // Set the complete profile data including arrays
           setCvData({
             fullName: result.data.profile.personalInfo.fullName,
             institution: result.data.profile.personalInfo.institution,
@@ -248,6 +470,13 @@ export function useCVRegistration(walletAddress?: string) {
             photoUrl:
               result.data.profile.profilePhoto ||
               result.data.profile.personalInfo.photoUrl,
+            orcid: result.data.profile.contact.orcid,
+            googleScholar: result.data.profile.contact.googleScholar,
+            // Include all the array data
+            education: result.data.profile.education || [],
+            experience: result.data.profile.experience || [],
+            publications: result.data.profile.publications || [],
+            awards: result.data.profile.awards || [],
           });
 
           console.log("Profile data loaded:", result.data.profile);
@@ -264,20 +493,75 @@ export function useCVRegistration(walletAddress?: string) {
           } else {
             console.log("No profile photo URL found in the response");
           }
+
+          // Show success toast
+          toast.success("Profile Loaded", {
+            description: `Welcome back, ${result.data.profile.personalInfo.fullName}!`,
+            duration: 3000,
+          });
         }
 
         return result.data as UserProfileResponse;
       } catch (err) {
         console.error("Failed to get user profile:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to get user profile"
-        );
+
+        // Handle specific error cases with appropriate toast messages
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            const responseData = err.response.data;
+            if (
+              responseData?.message ===
+              "No CV data found for this wallet address"
+            ) {
+              toast.error("Profile Not Found", {
+                description:
+                  "No CV data found for your wallet. Please upload your CV first to create your profile.",
+                duration: 5000,
+              });
+              setError("No CV data found - please upload your CV first");
+            } else {
+              toast.error("Profile Not Found", {
+                description: "The requested profile could not be found.",
+                duration: 4000,
+              });
+              setError("Profile not found");
+            }
+          } else if (err.response?.status === 401) {
+            toast.error("Authentication Required", {
+              description: "Please log in to access your profile.",
+              duration: 4000,
+            });
+            setError("Authentication required");
+          } else if (err.response?.status && err.response?.status >= 500) {
+            toast.error("Server Error", {
+              description: "Server error occurred. Please try again later.",
+              duration: 4000,
+            });
+            setError("Server error occurred");
+          } else {
+            toast.error("Failed to Load Profile", {
+              description: `Error: ${
+                err.response?.data?.message || err.message
+              }`,
+              duration: 4000,
+            });
+            setError(err.response?.data?.message || err.message);
+          }
+        } else {
+          toast.error("Network Error", {
+            description:
+              "Failed to connect to server. Please check your internet connection.",
+            duration: 4000,
+          });
+          setError("Network error - please check your connection");
+        }
+
         return null;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [authenticated, getAccessToken, apiUrl]
   );
 
   const updateUserProfile = useCallback(
@@ -288,9 +572,26 @@ export function useCVRegistration(walletAddress?: string) {
       try {
         setError(null);
 
+        // Get Privy access token for authentication
+        let headers = {};
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers = { Authorization: `Bearer ${accessToken}` };
+              console.log(
+                "✅ Using Privy authentication token for updateUserProfile"
+              );
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
         const result = await axios.patch(
           `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
-          updateData
+          updateData,
+          { headers }
         );
         console.log(result.data);
 
@@ -309,19 +610,62 @@ export function useCVRegistration(walletAddress?: string) {
                 result.data.profile.personalInfo.photoUrl,
             });
           }
+
+          // Show success toast
+          toast.success("Profile Updated", {
+            description: "Your profile has been successfully updated!",
+            duration: 3000,
+          });
         }
 
         return result.data as ProfileUpdateResponse;
       } catch (err) {
         console.error("Failed to update user profile:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to update user profile"
-        );
+
+        // Handle specific error cases with appropriate toast messages
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            toast.error("Profile Not Found", {
+              description:
+                "Profile not found. Please create your profile first by uploading a CV.",
+              duration: 4000,
+            });
+            setError("Profile not found");
+          } else if (err.response?.status === 401) {
+            toast.error("Authentication Required", {
+              description: "Please log in to update your profile.",
+              duration: 4000,
+            });
+            setError("Authentication required");
+          } else if (err.response?.status === 400) {
+            toast.error("Invalid Data", {
+              description:
+                err.response?.data?.message || "Please check your input data.",
+              duration: 4000,
+            });
+            setError(err.response?.data?.message || "Invalid data");
+          } else {
+            toast.error("Update Failed", {
+              description:
+                err.response?.data?.message ||
+                "Failed to update profile. Please try again.",
+              duration: 4000,
+            });
+            setError(err.response?.data?.message || "Update failed");
+          }
+        } else {
+          toast.error("Network Error", {
+            description: "Failed to connect to server. Please try again.",
+            duration: 4000,
+          });
+          setError("Network error");
+        }
+
         return null;
       } finally {
       }
     },
-    []
+    [authenticated, getAccessToken, apiUrl]
   );
 
   const uploadProfilePhoto = useCallback(
@@ -345,6 +689,22 @@ export function useCVRegistration(walletAddress?: string) {
           }KB`
         );
 
+        // Get Privy access token for authentication
+        let headers: any = { "Content-Type": "multipart/form-data" };
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers.Authorization = `Bearer ${accessToken}`;
+              console.log(
+                "✅ Using Privy authentication token for uploadProfilePhoto"
+              );
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
         const formData = new FormData();
         formData.append("profilePhoto", compressedPhoto);
 
@@ -355,11 +715,7 @@ export function useCVRegistration(walletAddress?: string) {
         const response = await axios.post(
           `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`,
           formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
+          { headers }
         );
 
         console.log(
@@ -372,12 +728,24 @@ export function useCVRegistration(walletAddress?: string) {
             "Profile photo URL from response:",
             response.data.profilePhoto
           );
+
+          // Show success toast
+          toast.success("Photo Updated", {
+            description: "Your profile photo has been updated successfully!",
+            duration: 3000,
+          });
+
           return {
             success: true,
             profilePhoto: response.data.profilePhoto,
             message: "Profile photo updated successfully",
           };
         } else {
+          toast.error("Upload Failed", {
+            description:
+              response.data.message || "Failed to upload profile photo",
+            duration: 4000,
+          });
           setError(response.data.message || "Failed to upload profile photo");
           return {
             success: false,
@@ -386,9 +754,50 @@ export function useCVRegistration(walletAddress?: string) {
         }
       } catch (err) {
         console.error("Failed to upload profile photo:", err);
+
+        // Handle specific error cases with appropriate toast messages
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            toast.error("Profile Not Found", {
+              description:
+                "Profile not found. Please create your profile first.",
+              duration: 4000,
+            });
+            setError("Profile not found");
+          } else if (err.response?.status === 413) {
+            toast.error("File Too Large", {
+              description: "Profile photo must be less than 5MB.",
+              duration: 4000,
+            });
+            setError("File too large");
+          } else if (err.response?.status === 400) {
+            toast.error("Invalid File", {
+              description:
+                err.response?.data?.message ||
+                "Please select a valid image file.",
+              duration: 4000,
+            });
+            setError(err.response?.data?.message || "Invalid file");
+          } else {
+            toast.error("Upload Failed", {
+              description:
+                err.response?.data?.message ||
+                "Failed to upload photo. Please try again.",
+              duration: 4000,
+            });
+            setError(err.response?.data?.message || "Upload failed");
+          }
+        } else {
+          toast.error("Network Error", {
+            description:
+              "Failed to upload photo. Please check your connection.",
+            duration: 4000,
+          });
+          setError("Network error");
+        }
+
         const errorMessage =
           err instanceof Error ? err.message : "Failed to upload profile photo";
-        setError(errorMessage);
         return {
           success: false,
           message: errorMessage,
@@ -397,7 +806,7 @@ export function useCVRegistration(walletAddress?: string) {
         setIsLoading(false);
       }
     },
-    []
+    [authenticated, getAccessToken, apiUrl]
   );
 
   const getUserSpecialization = useCallback(
@@ -405,8 +814,25 @@ export function useCVRegistration(walletAddress?: string) {
       try {
         setError(null);
 
+        // Get Privy access token for authentication
+        let headers = {};
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers = { Authorization: `Bearer ${accessToken}` };
+              console.log(
+                "✅ Using Privy authentication token for getUserSpecialization"
+              );
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
         const result = await axios.get(
-          `${apiUrl}/parse-cv/user/specialization/${walletAddress}`
+          `${apiUrl}/parse-cv/user/specialization/${walletAddress}`,
+          { headers }
         );
         return result;
       } catch (err) {
@@ -420,7 +846,7 @@ export function useCVRegistration(walletAddress?: string) {
       } finally {
       }
     },
-    []
+    [authenticated, getAccessToken, apiUrl]
   );
 
   const createManualProfile = useCallback(
@@ -488,9 +914,11 @@ export function useCVRegistration(walletAddress?: string) {
     cvData,
     isLoading,
     error,
+    uploadProgress,
     checkCVRegistration, // Legacy wallet-based method
     checkCVRegistrationPrivy, // New Privy token-based method
     uploadCV,
+    parseCV, // Add the new function to the returned object
     getUserProfile,
     updateUserProfile,
     getUserSpecialization,

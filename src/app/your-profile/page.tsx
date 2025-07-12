@@ -1,4 +1,5 @@
 "use client";
+
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,13 +15,17 @@ import {
   SaveIcon,
   XIcon,
   BookOpenIcon,
-  CheckCircleIcon,
-  UploadIcon,
   GraduationCapIcon,
   BriefcaseIcon,
   AwardIcon,
   FileTextIcon,
   RefreshCcwIcon,
+  MapPinIcon,
+  PhoneIcon,
+  LinkedinIcon,
+  GithubIcon,
+  GlobeIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
@@ -38,10 +43,9 @@ import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { useReviewerEligibility } from "@/hooks/useReviewerEligibility";
 import { Badge } from "@/components/ui/badge";
-import {
-  PublicationsManager,
-  type Publication,
-} from "@/components/profile/PublicationsManager";
+
+import HeaderImage from "@/components/header-image";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UserProfile {
   personalInfo: {
@@ -63,335 +67,170 @@ interface UserProfile {
     orcid?: string;
     googleScholar?: string;
   };
+  overview?: string;
   summary: {
     education: number;
     experience: number;
     publications: number;
     awards: number;
   };
+  education?: Array<{
+    id?: string;
+    institution: string;
+    degree: string;
+    field: string;
+    startDate: string;
+    endDate: string;
+    gpa?: string;
+    location?: string;
+  }>;
+  experience?: Array<{
+    id?: string;
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+    location?: string;
+    type?: string;
+  }>;
+  publications?: Array<{
+    id?: string;
+    title: string;
+    authors: string[];
+    venue: string;
+    date: string;
+    doi?: string;
+    url?: string;
+  }>;
+  awards?: Array<{
+    id?: string;
+    name: string;
+    issuer: string;
+    date: string;
+    description?: string;
+  }>;
 }
 
-export default function YourProfilePage() {
+const UnconnectedView = () => (
+  <div className="container max-w-5xl mx-auto px-6 py-12">
+    <div className="text-center space-y-6">
+      <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+        <UserIcon className="w-12 h-12 text-primary/40" />
+      </div>
+      <div>
+        <h1 className="text-3xl font-bold text-primary mb-2">Your Profile</h1>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Connect your wallet to view and manage your academic profile
+        </p>
+      </div>
+      <WalletConnection />
+    </div>
+  </div>
+);
+
+export default function YourProfile() {
   const { authenticated: connected } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const publicKey = getPrimarySolanaWalletAddress(solanaWallets);
-  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
-    ? publicKey
-    : undefined;
+
+  const walletAddress = getPrimarySolanaWalletAddress(solanaWallets);
   const router = useRouter();
 
-  const {
-    cvData,
-    updateUserProfile,
-    checkCVRegistration,
-    isLoading,
-    error,
-    uploadProfilePhoto,
-    getUserProfile,
-  } = useCVRegistration(validSolanaPublicKey);
-
-  const [profileData, setProfileData] = useState<any>(null);
-  const [editData, setEditData] = useState<any>({});
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>({});
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [hasCV, setHasCV] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [publications, setPublications] = useState<Publication[]>([]);
-  const {
-    eligibilityResult,
-    isLoading: eligibilityLoading,
-    error: eligibilityError,
-    refreshEligibility,
-  } = useReviewerEligibility(profileData?.summary?.publications || 0);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadUserProfile = useCallback(async () => {
-    if (!validSolanaPublicKey) return;
+  const {
+    getUserProfile,
+    updateUserProfile,
+    error: cvError,
+  } = useCVRegistration(walletAddress);
+
+  const { eligibilityResult: isReviewerEligible } = useReviewerEligibility();
+
+  const loadProfile = useCallback(async () => {
+    if (!walletAddress || !isValidSolanaAddress(walletAddress)) return;
 
     try {
-      console.log("Loading user profile for wallet:", validSolanaPublicKey);
-      const cvStatus = await checkCVRegistration(validSolanaPublicKey);
-      setHasCV(cvStatus);
-      console.log("CV status:", cvStatus);
+      setLoadingProfile(true);
+      setError(null);
 
-      if (cvStatus) {
-        const result = await getUserProfile(validSolanaPublicKey);
-        console.log("User profile result:", result);
+      console.log("📊 Loading profile for wallet:", walletAddress);
+      const result = await getUserProfile(walletAddress);
 
-        if (result?.success) {
-          console.log(
-            "Full profile data structure:",
-            JSON.stringify(result.profile, null, 2)
-          );
-          setProfileData(result.profile);
-          setEditData({
-            personalInfo: { ...result.profile.personalInfo },
-            contact: { ...result.profile.contact },
-            overview: result.profile.overview || "",
-          });
+      if (result?.success && result.profile) {
+        console.log("📊 Profile loaded successfully:", result.profile);
 
-          // Load publications if available
-          if (
-            result.profile.summary.publications &&
-            Array.isArray(result.profile.summary.publications)
-          ) {
-            setPublications(
-              result.profile.summary.publications.map(
-                (pub: any, index: number) => ({
-                  id: pub.id || `${index}`,
-                  title: pub.title || "",
-                  journal: pub.journal || "",
-                  year: pub.year || "",
-                  type: pub.type || "Journal Article",
-                  citations: pub.citations || 0,
-                  authors: pub.authors || "",
-                  doi: pub.doi || "",
-                  url: pub.url || "",
-                })
-              )
-            );
-          }
+        const transformedProfile: UserProfile = {
+          personalInfo: {
+            fullName: result.profile.personalInfo?.fullName || "",
+            title: result.profile.personalInfo?.title || "",
+            profession: result.profile.personalInfo?.profession || "",
+            institution: result.profile.personalInfo?.institution || "",
+            location: result.profile.personalInfo?.location || "",
+            field: result.profile.personalInfo?.field || "",
+            specialization: result.profile.personalInfo?.specialization || "",
+            photoUrl:
+              result.profile.profilePhoto ||
+              result.profile.personalInfo?.photoUrl,
+          },
+          contact: {
+            email: result.profile.contact?.email || "",
+            phone: result.profile.contact?.phone || "",
+            linkedIn: result.profile.contact?.linkedIn || "",
+            github: result.profile.contact?.github || "",
+            website: result.profile.contact?.website || "",
+            orcid: result.profile.contact?.orcid || "",
+            googleScholar: result.profile.contact?.googleScholar || "",
+          },
+          overview: result.profile.overview || "",
+          summary: {
+            education: result.profile.education?.length || 0,
+            experience: result.profile.experience?.length || 0,
+            publications: result.profile.publications?.length || 0,
+            awards: result.profile.awards?.length || 0,
+          },
+          education: result.profile.education || [],
+          experience: result.profile.experience || [],
+          publications: result.profile.publications || [],
+          awards: result.profile.awards || [],
+        };
 
-          if (result.profile.profilePhoto) {
-            console.log(
-              "Profile photo URL found at profile.profilePhoto:",
-              result.profile.profilePhoto
-            );
-            setPhotoPreview(result.profile.profilePhoto);
-          } else if (result.profile.personalInfo.photoUrl) {
-            console.log(
-              "Profile photo URL found at profile.personalInfo.photoUrl:",
-              result.profile.personalInfo.photoUrl
-            );
-            setPhotoPreview(result.profile.personalInfo.photoUrl);
-          } else {
-            console.log("No profile photo found in the response");
-          }
-        } else {
-          console.log("Failed to get user profile:", result?.message);
-        }
+        console.log("📊 Transformed profile:", transformedProfile);
+        console.log("📊 Overview content:", transformedProfile.overview);
+        setProfile(transformedProfile);
+      } else {
+        console.log("📊 No profile found or failed to load");
+        setError("Profile not found. Please register your CV first.");
       }
     } catch (err) {
-      console.error("Failed to load profile:", err);
+      console.error("📊 Failed to load profile:", err);
+      setError("Failed to load profile. Please try again.");
+    } finally {
+      setLoadingProfile(false);
     }
-  }, [validSolanaPublicKey, checkCVRegistration, getUserProfile]);
+  }, [walletAddress, getUserProfile]);
 
   useEffect(() => {
-    if (connected && validSolanaPublicKey) {
-      loadUserProfile();
+    if (connected && walletAddress) {
+      loadProfile();
+    } else {
+      setLoadingProfile(false);
     }
-  }, [connected, validSolanaPublicKey, loadUserProfile]);
+  }, [connected, walletAddress, loadProfile]);
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-      if (!validTypes.includes(file.type)) {
-        setMessage("❌ Please select a valid image file (JPG or PNG)");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage("❌ Image size must be less than 5MB");
-        return;
-      }
-
-      setSelectedPhoto(file);
-      const previewUrl = URL.createObjectURL(file);
-      setPhotoPreview(previewUrl);
-    }
-  };
-
-  const compressImage = (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          let width = img.width;
-          let height = img.height;
-
-          const maxDimension = 800;
-          if (width > height && width > maxDimension) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else if (height > maxDimension) {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error("Canvas to Blob conversion failed"));
-                return;
-              }
-
-              const compressedFile = new File([blob], file.name, {
-                type: "image/jpeg",
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            },
-            "image/jpeg",
-            0.7
-          );
-        };
-        img.onerror = () => {
-          reject(new Error("Image loading error"));
-        };
-      };
-      reader.onerror = () => {
-        reject(new Error("File reading error"));
-      };
-    });
-  };
-
-  const handlePhotoUpload = async () => {
-    if (!selectedPhoto || !validSolanaPublicKey) return;
-
-    try {
-      setUploading(true);
-      setUploadProgress(0);
-      setMessage(null);
-
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 200);
-
-      const result = await uploadProfilePhoto(
-        selectedPhoto,
-        validSolanaPublicKey
-      );
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (result.success) {
-        setMessage("✅ Profile photo updated successfully!");
-        if (result.profilePhoto) {
-          setPhotoPreview(result.profilePhoto);
-          setEditData((prev: any) => ({
-            ...prev,
-            personalInfo: {
-              ...prev.personalInfo,
-              photoUrl: result.profilePhoto,
-            },
-          }));
-        }
-      } else {
-        setMessage(`❌ ${result.message}`);
-      }
-    } catch (err) {
-      console.error("Failed to upload photo:", err);
-      setMessage(
-        `❌ Failed to update profile photo: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
+  // Handle editing
   const handleEditStart = () => {
     setIsEditing(true);
-    setMessage(null);
+    setEditData(JSON.parse(JSON.stringify(profile))); // Deep copy
   };
 
   const handleEditCancel = () => {
     setIsEditing(false);
-    if (profileData) {
-      setEditData({
-        personalInfo: { ...profileData.personalInfo },
-        contact: { ...profileData.contact },
-        overview: (profileData as any).overview || "",
-      });
-      if (profileData.profilePhoto) {
-        setPhotoPreview(profileData.profilePhoto);
-      } else if (profileData.personalInfo.photoUrl) {
-        setPhotoPreview(profileData.personalInfo.photoUrl);
-      }
-    }
-    setMessage(null);
-    setSelectedPhoto(null);
-  };
-
-  const handleSave = async () => {
-    if (!validSolanaPublicKey) return;
-
-    try {
-      setSaving(true);
-      setMessage(null);
-
-      if (selectedPhoto) {
-        const photoResult = await uploadProfilePhoto(
-          selectedPhoto,
-          validSolanaPublicKey
-        );
-        if (photoResult.success && photoResult.profilePhoto) {
-          setPhotoPreview(photoResult.profilePhoto);
-
-          console.log("Photo uploaded successfully:", photoResult.profilePhoto);
-        } else {
-          setMessage(
-            `⚠️ Photo upload: ${photoResult.message}. Continuing with profile update...`
-          );
-        }
-      }
-
-      // Include publications in the update data
-      const updateData = {
-        ...editData,
-        publications: publications,
-      };
-
-      const result = await updateUserProfile(validSolanaPublicKey, updateData);
-
-      if (result?.success) {
-        setProfileData(result.profile);
-        setIsEditing(false);
-        setMessage("✅ Profile updated successfully!");
-        setSelectedPhoto(null);
-
-        if (result.profile.profilePhoto) {
-          console.log(
-            "Profile photo found in update response at profile.profilePhoto:",
-            result.profile.profilePhoto
-          );
-          setPhotoPreview(result.profile.profilePhoto);
-        } else if (result.profile.personalInfo.photoUrl) {
-          console.log(
-            "Profile photo found in update response at profile.personalInfo.photoUrl:",
-            result.profile.personalInfo.photoUrl
-          );
-          setPhotoPreview(result.profile.personalInfo.photoUrl);
-        }
-      } else {
-        setMessage("❌ Failed to update profile. Please try again.");
-      }
-    } catch (err) {
-      console.error("Failed to update profile:", err);
-      setMessage("❌ Failed to update profile. Please try again.");
-    } finally {
-      setSaving(false);
-    }
+    setEditData({});
   };
 
   const handleInputChange = (section: string, field: string, value: string) => {
@@ -411,6 +250,33 @@ export default function YourProfilePage() {
     }));
   };
 
+  const handleSave = async () => {
+    if (!walletAddress) return;
+
+    try {
+      setSaving(true);
+
+      // Transform editData back to API format
+      const updatePayload = {
+        personalInfo: editData.personalInfo,
+        contact: editData.contact,
+        overview: editData.overview,
+      };
+
+      const result = await updateUserProfile(walletAddress, updatePayload);
+
+      if (result?.success) {
+        await loadProfile(); // Reload profile
+        setIsEditing(false);
+        setEditData({});
+      }
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (!connected) {
     return (
       <SidebarProvider>
@@ -422,45 +288,19 @@ export default function YourProfilePage() {
                 <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium text-primary">Profile</span>
+                  <span className="font-medium text-primary">Your Profile</span>
                 </div>
               </div>
             </div>
-            <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                  Your Profile
-                </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Manage your academic profile and credentials with ease
-                </p>
-              </div>
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm  transition-all duration-300">
-                <CardHeader className="text-center pt-8">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <UserIcon className="h-8 w-8 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl text-primary">
-                    Profile Access Required
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-8">
-                  <p className="text-muted-foreground mb-8 text-center text-lg">
-                    Please connect your wallet to view and manage your profile.
-                  </p>
-                  <div className="flex justify-center items-center">
-                    <WalletConnection />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <HeaderImage />
+            <UnconnectedView />
           </SidebarInset>
         </div>
       </SidebarProvider>
     );
   }
 
-  if (!hasCV) {
+  if (loadingProfile) {
     return (
       <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
@@ -471,37 +311,53 @@ export default function YourProfilePage() {
                 <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium text-primary">Profile</span>
+                  <span className="font-medium text-primary">Your Profile</span>
                 </div>
               </div>
             </div>
+            <HeaderImage />
             <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                  Your Profile
-                </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Manage your academic profile and credentials with ease
-                </p>
+              <div className="flex items-center justify-center space-x-3 text-center">
+                <Loading />
+                <span className="text-muted-foreground">
+                  Loading your profile...
+                </span>
               </div>
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm  transition-all duration-300">
-                <CardHeader className="text-center py-8">
-                  <CardTitle className="text-2xl text-primary">
-                    Register Your Profile
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center pb-8">
-                  <p className="text-muted-foreground mb-8 text-center text-lg">
-                    Please register your CV to create and view your profile.
-                  </p>
-                  <Button
-                    onClick={() => router.push("/register-cv")}
-                    className="px-8 py-3 "
-                  >
-                    Register CV
-                  </Button>
-                </CardContent>
-              </Card>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+              <div className="flex items-center gap-3 px-6 py-4">
+                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
+                <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-primary">Your Profile</span>
+                </div>
+              </div>
+            </div>
+            <HeaderImage />
+            <div className="container max-w-5xl mx-auto px-6 py-12">
+              <Alert variant="destructive" className="max-w-md mx-auto">
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertDescription>
+                  {error || "Profile not found. Please register your CV first."}
+                </AlertDescription>
+              </Alert>
+              <div className="flex justify-center mt-6">
+                <Button onClick={() => router.push("/register-cv")}>
+                  Register Your CV
+                </Button>
+              </div>
             </div>
           </SidebarInset>
         </div>
@@ -519,768 +375,209 @@ export default function YourProfilePage() {
               <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">Profile</span>
+                <span className="font-medium text-primary">Your Profile</span>
+                {isReviewerEligible && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800 ml-2"
+                  >
+                    Reviewer Eligible
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
-          <div className="container max-w-5xl mx-auto px-6 py-8">
-            <div className="mb-8 space-y-2 items-center justify-center">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight text-center">
-                Your Profile
-              </h1>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-center">
-                Manage your academic profile and credentials
-              </p>
-            </div>
+          <HeaderImage />
 
-            {/* Loading State */}
-            {isLoading && (
-              <div className="flex justify-center items-center py-16 text-center">
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <Loading />
-                  <p className="text-muted-foreground text-lg">
-                    Loading your profile...
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <Alert className="border-red-200 bg-red-50/80 mb-8 rounded-xl shadow-sm">
-                <AlertCircleIcon className="h-5 w-5" />
-                <AlertDescription className="text-red-800 text-lg">
-                  {error}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {message && (
-              <Alert
-                className={
-                  message.includes("✅")
-                    ? "border-green-200 bg-green-50/80 mb-8 rounded-xl shadow-sm"
-                    : "border-red-200 bg-red-50/80 mb-8 rounded-xl shadow-sm"
-                }
-              >
-                <CheckCircleIcon className="h-5 w-5" />
-                <AlertDescription
-                  className={
-                    message.includes("✅")
-                      ? "text-green-800 text-lg"
-                      : "text-red-800 text-lg"
-                  }
-                >
-                  {message}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {profileData && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                  <Card className="lg:col-span-1 overflow-hidden">
-                    <div className="h-24 bg-gradient-to-br from-primary/10 to-primary/5"></div>
-                    <CardHeader className="flex flex-col items-center justify-center -mt-12 pt-0 border-0 pb-4">
-                      <div className="relative group mb-4">
-                        <div className="h-24 w-24 rounded-full overflow-hidden bg-white flex items-center justify-center border-3 border-white shadow-lg">
-                          {photoPreview ? (
-                            <img
-                              src={photoPreview || "/placeholder.svg"}
-                              alt="Profile"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <UserIcon className="h-16 w-16 text-primary" />
-                          )}
-                        </div>
-                        {isEditing ? (
-                          <label
-                            htmlFor="photo-upload"
-                            className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
-                          >
-                            <UploadIcon className="h-6 w-6 text-white" />
-                            <span className="text-white text-xs mt-1 font-medium">
-                              Change Photo
-                            </span>
-                            <input
-                              id="photo-upload"
-                              type="file"
-                              accept=".jpg,.jpeg,.png"
-                              onChange={handlePhotoChange}
-                              className="hidden"
-                            />
-                          </label>
+          <div className="container max-w-6xl mx-auto px-6 py-8">
+            {/* Profile Header */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+              {/* Profile Picture and Basic Info */}
+              <div className="lg:col-span-1">
+                <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+                        {profile.personalInfo.photoUrl ? (
+                          <img
+                            src={profile.personalInfo.photoUrl}
+                            alt={profile.personalInfo.fullName}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <div className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg">
-                            <UserIcon className="h-4 w-4" />
+                          <UserIcon className="w-16 h-16 text-primary/40" />
+                        )}
+                      </div>
+
+                      <div className="text-center space-y-2">
+                        <h1 className="text-2xl font-bold text-primary">
+                          {profile.personalInfo.fullName}
+                        </h1>
+                        <p className="text-lg text-muted-foreground">
+                          {profile.personalInfo.title ||
+                            profile.personalInfo.profession}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {profile.personalInfo.institution}
+                        </p>
+                        {profile.personalInfo.location && (
+                          <div className="flex items-center justify-center space-x-1 text-sm text-muted-foreground">
+                            <MapPinIcon className="w-4 h-4" />
+                            <span>{profile.personalInfo.location}</span>
                           </div>
                         )}
                       </div>
-                      <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-bold text-primary leading-tight">
-                          {profileData.personalInfo.fullName}
-                        </h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          {profileData.personalInfo.title}
-                        </p>
-                        <p className="text-muted-foreground text-sm font-medium">
-                          {profileData.personalInfo.institution}
-                        </p>
-                      </div>
-                      <div className="flex flex-col space-y-3 mt-8 w-full">
+
+                      {/* Action buttons */}
+                      <div className="flex space-x-2 w-full">
                         {!isEditing ? (
-                          <Button onClick={handleEditStart} variant="outline">
-                            <EditIcon className="h-4 w-4 mr-2" />
+                          <Button
+                            onClick={handleEditStart}
+                            className="flex-1"
+                            variant="outline"
+                          >
+                            <EditIcon className="w-4 h-4 mr-2" />
                             Edit Profile
                           </Button>
                         ) : (
-                          <div className="flex flex-col space-y-2 w-full">
+                          <>
                             <Button
                               onClick={handleSave}
-                              disabled={saving || uploading}
-                              className="transition-all duration-300"
+                              disabled={saving}
+                              className="flex-1"
                             >
-                              <SaveIcon className="h-4 w-4 mr-2" />
-                              {saving ? "Saving..." : "Save Changes"}
+                              {saving ? (
+                                <>
+                                  <Loading />
+                                  <span className="ml-2">Saving...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <SaveIcon className="w-4 h-4 mr-2" />
+                                  Save
+                                </>
+                              )}
                             </Button>
                             <Button
                               onClick={handleEditCancel}
                               variant="outline"
-                              className="transition-all duration-300 "
+                              disabled={saving}
                             >
-                              <XIcon className="h-4 w-4 mr-2" />
-                              Cancel
+                              <XIcon className="w-4 h-4" />
                             </Button>
-                          </div>
+                          </>
                         )}
                       </div>
-                      {uploading && (
-                        <div className="w-full mt-6 space-y-3">
-                          <div className="flex justify-between text-sm font-medium">
-                            <span className="text-primary">
-                              Uploading photo...
-                            </span>
-                            <span className="text-primary">
-                              {uploadProgress}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={uploadProgress}
-                            className="w-full h-3 rounded-full bg-primary/10"
-                          />
-                        </div>
-                      )}
-                    </CardHeader>
-                  </Card>
 
-                  <div className="lg:col-span-3 space-y-8">
-                    <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300 ">
-                      <CardHeader className="border-b border-gray-100/50 pb-6">
-                        <CardTitle className="text-2xl text-primary font-bold flex items-center">
-                          <GraduationCapIcon className="h-6 w-6 mr-3" />
-                          Academic Impact
-                        </CardTitle>
-                        <p className="text-muted-foreground mt-2">
-                          Your academic achievements at a glance
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-8">
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
-                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <GraduationCapIcon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-3xl font-bold text-primary mb-1">
-                              {profileData.summary?.education || 0}
-                            </div>
-                            <div className="text-sm text-muted-foreground font-medium">
-                              Education
-                            </div>
-                          </div>
-                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
-                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <BriefcaseIcon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-3xl font-bold text-primary mb-1">
-                              {profileData.summary?.experience || 0}
-                            </div>
-                            <div className="text-sm text-muted-foreground font-medium">
-                              Experience
-                            </div>
-                          </div>
-                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
-                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <FileTextIcon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-3xl font-bold text-primary mb-1">
-                              {publications.length ||
-                                profileData.summary?.publications ||
-                                0}
-                            </div>
-                            <div className="text-sm text-muted-foreground font-medium">
-                              Publications
-                            </div>
-                          </div>
-                          <div className="text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl transition-all duration-300  border border-primary/10">
-                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <AwardIcon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-3xl font-bold text-primary mb-1">
-                              {profileData.summary?.awards || 0}
-                            </div>
-                            <div className="text-sm text-muted-foreground font-medium">
-                              Awards
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <Button
+                        onClick={loadProfile}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full"
+                      >
+                        <RefreshCcwIcon className="w-4 h-4 mr-2" />
+                        Refresh
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                      <CardHeader>
-                        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <div className="flex items-center">
-                            <AwardIcon className="h-5 w-5 mr-2" />
-                            <span>Reviewer Status</span>
-                          </div>
-                          {eligibilityResult?.isEligible && (
-                            <Badge className="bg-green-100 text-green-800 border-green-200 w-fit">
-                              Eligible
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          Your eligibility to serve as a manuscript reviewer
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-8">
-                        {eligibilityLoading ? (
-                          <div className="flex items-center justify-center py-8">
-                            <Loading />
-                            <span className="ml-2 text-muted-foreground">
-                              Checking eligibility...
-                            </span>
-                          </div>
-                        ) : eligibilityError ? (
-                          <Alert className="border-red-200 bg-red-50/80">
-                            <AlertCircleIcon className="h-5 w-5" />
-                            <AlertDescription className="text-red-800">
-                              {eligibilityError}
-                            </AlertDescription>
-                          </Alert>
-                        ) : eligibilityResult ? (
-                          <div className="space-y-6">
-                            {/* Overall Status */}
-                            <div
-                              className={`p-4 sm:p-6 rounded-xl border-2 ${
-                                eligibilityResult.isEligible
-                                  ? "bg-green-50 border-green-200"
-                                  : "bg-orange-50 border-orange-200"
-                              }`}
-                            >
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                <div className="flex-1">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                                    <h3
-                                      className={`text-base sm:text-lg font-semibold ${
-                                        eligibilityResult.isEligible
-                                          ? "text-green-800"
-                                          : "text-orange-800"
-                                      }`}
-                                    >
-                                      {eligibilityResult.isEligible
-                                        ? "🎉 Reviewer Eligible"
-                                        : "📋 Requirements Check"}
-                                    </h3>
-                                    <div className="flex flex-col items-start sm:items-end gap-1">
-                                      <p
-                                        className={`text-xs sm:text-sm font-medium ${
-                                          eligibilityResult.isEligible
-                                            ? "text-green-700"
-                                            : "text-orange-700"
-                                        }`}
-                                      >
-                                        {(() => {
-                                          const req =
-                                            eligibilityResult.requirements;
-                                          const completed = [
-                                            req.hasMinimumEducation,
-                                            req.hasMinimumPublications,
-                                          ].filter(Boolean).length;
-                                          return `${completed}/2 Requirements Met`;
-                                        })()}
-                                      </p>
-                                      <Progress
-                                        value={(() => {
-                                          const req =
-                                            eligibilityResult.requirements;
-                                          const completed = [
-                                            req.hasMinimumEducation,
-                                            req.hasMinimumPublications,
-                                          ].filter(Boolean).length;
-                                          return (completed / 2) * 100;
-                                        })()}
-                                        className="w-24 sm:w-32 h-2"
-                                      />
-                                    </div>
-                                  </div>
-                                  <p
-                                    className={`text-xs sm:text-sm ${
-                                      eligibilityResult.isEligible
-                                        ? "text-green-700"
-                                        : "text-orange-700"
-                                    }`}
-                                  >
-                                    {eligibilityResult.isEligible
-                                      ? "You meet all requirements to serve as a manuscript reviewer"
-                                      : "Complete the requirements below to become eligible for reviewer status"}
-                                  </p>
-                                </div>
-                                <Button
-                                  onClick={refreshEligibility}
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full sm:w-auto"
-                                >
-                                  <RefreshCcwIcon className="h-4 w-4 mr-2" />
-                                  Refresh
-                                </Button>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                              <div
-                                className={`p-3 sm:p-4 rounded-lg border ${
-                                  eligibilityResult.requirements
-                                    .hasMinimumEducation
-                                    ? "bg-green-50 border-green-200"
-                                    : "bg-red-50 border-red-200"
-                                }`}
-                              >
-                                <div className="flex items-center">
-                                  {eligibilityResult.requirements
-                                    .hasMinimumEducation ? (
-                                    <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
-                                  ) : (
-                                    <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mr-2 sm:mr-3 flex-shrink-0" />
-                                  )}
-                                  <div>
-                                    <p className="font-medium text-xs sm:text-sm">
-                                      Education Level
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      Bachelor&apos;s degree or higher required
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div
-                                className={`p-3 sm:p-4 rounded-lg border ${
-                                  eligibilityResult.requirements
-                                    .hasMinimumPublications
-                                    ? "bg-green-50 border-green-200"
-                                    : "bg-red-50 border-red-200"
-                                }`}
-                              >
-                                <div className="flex items-center">
-                                  {eligibilityResult.requirements
-                                    .hasMinimumPublications ? (
-                                    <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
-                                  ) : (
-                                    <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mr-2 sm:mr-3 flex-shrink-0" />
-                                  )}
-                                  <div>
-                                    <p className="font-medium text-xs sm:text-sm">
-                                      Publications (First Author)
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {
-                                        eligibilityResult.requirements
-                                          .publishedPapers
-                                      }{" "}
-                                      /{" "}
-                                      {
-                                        eligibilityResult.requirements
-                                          .requiredPapers
-                                      }{" "}
-                                      papers as first author
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Benefits or Issues */}
-                            {eligibilityResult.benefits.length > 0 && (
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-green-800">
-                                  Benefits & Status
-                                </h4>
-                                <div className="space-y-2">
-                                  {eligibilityResult.benefits.map(
-                                    (benefit, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center text-sm text-green-700"
-                                      >
-                                        <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                                        {benefit}
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {eligibilityResult.issues.length > 0 && (
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-orange-800">
-                                  Requirements to Complete
-                                </h4>
-                                <div className="space-y-2">
-                                  {eligibilityResult.issues.map(
-                                    (issue, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center text-sm text-orange-700"
-                                      >
-                                        <div className="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
-                                        {issue}
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <AwardIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                            <p>
-                              Complete your profile to check reviewer
-                              eligibility
-                            </p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <BookOpenIcon className="h-5 w-5" />
-                          <span>Professional Overview</span>
-                        </CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          Share your research interests and expertise
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-8">
+              {/* Profile Details and Stats */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Academic Information */}
+                <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-primary">
+                      Academic Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">
+                          Field
+                        </Label>
                         {isEditing ? (
-                          <Textarea
-                            value={editData.overview || ""}
+                          <Input
+                            value={editData.personalInfo?.field || ""}
                             onChange={(e) =>
-                              handleOverviewChange(e.target.value)
+                              handleInputChange(
+                                "personalInfo",
+                                "field",
+                                e.target.value
+                              )
                             }
-                            placeholder="Tell us about your research interests, background, and expertise..."
-                            className="min-h-[150px] border-primary/20 focus:border-primary focus:ring-primary/30 text-base leading-relaxed"
                           />
                         ) : (
-                          <div className="space-y-2">
-                            {(profileData as any).overview ? (
-                              <p className="text-foreground leading-relaxed text-sm break-words">
-                                {(profileData as any).overview}
-                              </p>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="text-muted-foreground"
-                              >
-                                No overview provided yet. Click &apos;Edit
-                                Profile&apos; to add your professional summary.
-                              </Badge>
-                            )}
-                          </div>
+                          <p className="font-medium">
+                            {profile.personalInfo.field}
+                          </p>
                         )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">
+                          Specialization
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            value={editData.personalInfo?.specialization || ""}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "personalInfo",
+                                "specialization",
+                                e.target.value
+                              )
+                            }
+                          />
+                        ) : (
+                          <p className="font-medium">
+                            {profile.personalInfo.specialization}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    {/* Personal Information */}
-                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <UserIcon className="h-5 w-5" />
-                          <span>Personal Information</span>
-                        </CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          Your basic profile details
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-8 space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="fullName"
-                              className="text-sm font-semibold text-primary flex items-center"
-                            >
-                              Full Name
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="fullName"
-                                value={editData.personalInfo?.fullName || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "fullName",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="default"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.fullName ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="title"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Title
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="title"
-                                value={editData.personalInfo?.title || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "title",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.title ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="profession"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Profession
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="profession"
-                                value={editData.personalInfo?.profession || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "profession",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.profession ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="institution"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Institution
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="institution"
-                                value={editData.personalInfo?.institution || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "institution",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.institution ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="field"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Field of Study
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="field"
-                                value={editData.personalInfo?.field || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "field",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.field ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="specialization"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Specialization
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="specialization"
-                                value={
-                                  editData.personalInfo?.specialization || ""
-                                }
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "personalInfo",
-                                    "specialization",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.personalInfo.specialization ||
-                                    "Not specified"}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
+                {/* Contact Information */}
+                <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-primary">
+                      Contact Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <MailIcon className="w-4 h-4 text-muted-foreground" />
+                          {isEditing ? (
+                            <Input
+                              type="email"
+                              value={editData.contact?.email || ""}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "contact",
+                                  "email",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Email address"
+                              className="flex-1"
+                            />
+                          ) : (
+                            <span className="font-medium">
+                              {profile.contact.email}
+                            </span>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
 
-                    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <MailIcon className="h-5 w-5" />
-                          <span>Contact Information</span>
-                        </CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                          How others can reach you
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-8 space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="email"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Email Address
-                            </Label>
+                        {(profile.contact.phone || isEditing) && (
+                          <div className="flex items-center space-x-3">
+                            <PhoneIcon className="w-4 h-4 text-muted-foreground" />
                             {isEditing ? (
                               <Input
-                                id="email"
-                                type="email"
-                                value={editData.contact?.email || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "contact",
-                                    "email",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="flex items-center gap-2 break-all max-w-full"
-                                >
-                                  <MailIcon className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {profileData.contact.email ||
-                                      "Not provided"}
-                                  </span>
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="phone"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Phone Number
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="phone"
                                 value={editData.contact?.phone || ""}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -1289,30 +586,24 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
+                                placeholder="Phone number"
+                                className="flex-1"
                               />
                             ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="break-words max-w-full"
-                                >
-                                  {profileData.contact.phone || "Not provided"}
-                                </Badge>
-                              </div>
+                              <span className="font-medium">
+                                {profile.contact.phone}
+                              </span>
                             )}
                           </div>
+                        )}
+                      </div>
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="linkedIn"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              LinkedIn Profile
-                            </Label>
+                      <div className="space-y-3">
+                        {(profile.contact.linkedIn || isEditing) && (
+                          <div className="flex items-center space-x-3">
+                            <LinkedinIcon className="w-4 h-4 text-muted-foreground" />
                             {isEditing ? (
                               <Input
-                                id="linkedIn"
                                 value={editData.contact?.linkedIn || ""}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -1321,33 +612,58 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
+                                placeholder="LinkedIn profile"
+                                className="flex-1"
                               />
                             ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="break-all max-w-full"
-                                >
-                                  <span className="truncate">
-                                    {profileData.contact.linkedIn ||
-                                      "Not provided"}
-                                  </span>
-                                </Badge>
-                              </div>
+                              <a
+                                href={profile.contact.linkedIn}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
+                              >
+                                <span>LinkedIn</span>
+                                <ExternalLinkIcon className="w-3 h-3" />
+                              </a>
                             )}
                           </div>
+                        )}
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="website"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Personal Website
-                            </Label>
+                        {(profile.contact.github || isEditing) && (
+                          <div className="flex items-center space-x-3">
+                            <GithubIcon className="w-4 h-4 text-muted-foreground" />
                             {isEditing ? (
                               <Input
-                                id="website"
+                                value={editData.contact?.github || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "contact",
+                                    "github",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="GitHub profile"
+                                className="flex-1"
+                              />
+                            ) : (
+                              <a
+                                href={profile.contact.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
+                              >
+                                <span>GitHub</span>
+                                <ExternalLinkIcon className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {(profile.contact.website || isEditing) && (
+                          <div className="flex items-center space-x-3">
+                            <GlobeIcon className="w-4 h-4 text-muted-foreground" />
+                            {isEditing ? (
+                              <Input
                                 value={editData.contact?.website || ""}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -1356,109 +672,416 @@ export default function YourProfilePage() {
                                     e.target.value
                                   )
                                 }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
+                                placeholder="Website URL"
+                                className="flex-1"
                               />
                             ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="break-all max-w-full"
-                                >
-                                  <span className="truncate">
-                                    {profileData.contact.website ||
-                                      "Not provided"}
-                                  </span>
-                                </Badge>
-                              </div>
+                              <a
+                                href={profile.contact.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
+                              >
+                                <span>Website</span>
+                                <ExternalLinkIcon className="w-3 h-3" />
+                              </a>
                             )}
                           </div>
+                        )}
+                      </div>
+                    </div>
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="orcid"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              ORCID ID
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="orcid"
-                                placeholder="https://orcid.org/0000-0000-0000-0000"
-                                value={editData.contact?.orcid || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "contact",
-                                    "orcid",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="break-all max-w-full"
-                                >
-                                  <span className="truncate">
-                                    {profileData.contact.orcid ||
-                                      "Not provided"}
-                                  </span>
-                                </Badge>
-                              </div>
-                            )}
+                    {/* Academic profiles */}
+                    {(profile.contact.orcid ||
+                      profile.contact.googleScholar ||
+                      isEditing) && (
+                      <div className="border-t pt-4 mt-4">
+                        <Label className="text-sm font-medium text-muted-foreground mb-3 block">
+                          Academic Profiles
+                        </Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(profile.contact.orcid || isEditing) && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground">
+                                ORCID
+                              </Label>
+                              {isEditing ? (
+                                <Input
+                                  value={editData.contact?.orcid || ""}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "contact",
+                                      "orcid",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="ORCID ID"
+                                  className="mt-1"
+                                />
+                              ) : (
+                                <p className="font-medium text-sm">
+                                  {profile.contact.orcid}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {(profile.contact.googleScholar || isEditing) && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground">
+                                Google Scholar
+                              </Label>
+                              {isEditing ? (
+                                <Input
+                                  value={editData.contact?.googleScholar || ""}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      "contact",
+                                      "googleScholar",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="Google Scholar URL"
+                                  className="mt-1"
+                                />
+                              ) : (
+                                <p className="font-medium text-sm">
+                                  {profile.contact.googleScholar}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Summary Stats */}
+                <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-primary">
+                      Academic Impact
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <div className="flex items-center justify-center mb-2">
+                          <GraduationCapIcon className="w-5 h-5 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">
+                          {profile.summary.education}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Education
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <div className="flex items-center justify-center mb-2">
+                          <BriefcaseIcon className="w-5 h-5 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">
+                          {profile.summary.experience}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Experience
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <div className="flex items-center justify-center mb-2">
+                          <BookOpenIcon className="w-5 h-5 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">
+                          {profile.summary.publications}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Publications
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <div className="flex items-center justify-center mb-2">
+                          <AwardIcon className="w-5 h-5 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">
+                          {profile.summary.awards}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Awards</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="w-full h-auto grid grid-cols-5 bg-gray-50/50 p-0 rounded-lg">
+                  <TabsTrigger
+                    value="overview"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="education"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Education ({profile.summary.education})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="experience"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Experience ({profile.summary.experience})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="publications"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Publications ({profile.summary.publications})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="awards"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Awards ({profile.summary.awards})
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-primary">
+                        Professional Overview
+                      </h3>
+                      {isEditing && (
+                        <span className="text-sm text-muted-foreground">
+                          Edit your professional summary below
+                        </span>
+                      )}
+                    </div>
+
+                    {isEditing ? (
+                      <Textarea
+                        value={editData.overview || ""}
+                        onChange={(e) => handleOverviewChange(e.target.value)}
+                        placeholder="Write a brief overview of your professional background, research interests, and expertise..."
+                        className="min-h-32"
+                        rows={6}
+                      />
+                    ) : (
+                      <div className="prose max-w-none">
+                        {profile.overview ? (
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {profile.overview}
+                          </p>
+                        ) : (
+                          <div className="text-center py-12">
+                            <FileTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-500 mb-2">
+                              No overview information available
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Click "Edit Profile" to add your professional
+                              overview
+                            </p>
                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
 
+                <TabsContent value="education" className="p-6">
+                  {profile.education && profile.education.length > 0 ? (
+                    <div className="space-y-4">
+                      {profile.education.map((edu, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-gray-50 rounded-lg border"
+                        >
                           <div className="space-y-2">
-                            <Label
-                              htmlFor="googleScholar"
-                              className="text-sm font-semibold text-primary"
-                            >
-                              Google Scholar Profile
-                            </Label>
-                            {isEditing ? (
-                              <Input
-                                id="googleScholar"
-                                placeholder="https://scholar.google.com/citations?user=..."
-                                value={editData.contact?.googleScholar || ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    "contact",
-                                    "googleScholar",
-                                    e.target.value
-                                  )
-                                }
-                                className="border-primary/20 focus:border-primary focus:ring-primary/30 text-base"
-                              />
-                            ) : (
-                              <div className="flex flex-wrap gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="break-all max-w-full"
-                                >
-                                  <span className="truncate">
-                                    {profileData.contact.googleScholar ||
-                                      "Not provided"}
-                                  </span>
-                                </Badge>
+                            <div className="font-medium text-gray-900">
+                              {edu.degree} {edu.field && `in ${edu.field}`}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {edu.institution}{" "}
+                              {edu.location && `• ${edu.location}`}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {edu.startDate && edu.endDate
+                                ? `${edu.startDate} - ${edu.endDate}`
+                                : edu.startDate
+                                ? `Started ${edu.startDate}`
+                                : edu.endDate
+                                ? `Ended ${edu.endDate}`
+                                : ""}
+                              {edu.gpa && ` • GPA: ${edu.gpa}`}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <GraduationCapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">
+                        No education records found
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Upload a detailed CV to populate this section
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="experience" className="p-6">
+                  {profile.experience && profile.experience.length > 0 ? (
+                    <div className="space-y-4">
+                      {profile.experience.map((exp, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-gray-50 rounded-lg border"
+                        >
+                          <div className="space-y-2">
+                            <div className="font-medium text-gray-900">
+                              {exp.position}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {exp.company}{" "}
+                              {exp.location && `• ${exp.location}`}
+                              {exp.type && ` • ${exp.type}`}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {exp.startDate && exp.endDate
+                                ? `${exp.startDate} - ${exp.endDate}`
+                                : exp.startDate
+                                ? `Started ${exp.startDate}`
+                                : exp.endDate
+                                ? `Ended ${exp.endDate}`
+                                : ""}
+                            </div>
+                            {exp.description && (
+                              <div className="text-sm text-gray-700 mt-2">
+                                {exp.description}
                               </div>
                             )}
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <BriefcaseIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">
+                        No work experience records found
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Upload a detailed CV to populate this section
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
 
-                    {/* Publications Management */}
-                    <PublicationsManager
-                      publications={publications}
-                      onPublicationsChange={setPublications}
-                      isEditing={isEditing}
-                      walletAddress={validSolanaPublicKey}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+                <TabsContent value="publications" className="p-6">
+                  {profile.publications && profile.publications.length > 0 ? (
+                    <div className="space-y-4">
+                      {profile.publications.map((pub, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-gray-50 rounded-lg border"
+                        >
+                          <div className="space-y-2">
+                            <div className="font-medium text-gray-900">
+                              {pub.title}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {pub.authors && pub.authors.length > 0 && (
+                                <div>
+                                  Authors:{" "}
+                                  {Array.isArray(pub.authors)
+                                    ? pub.authors.join(", ")
+                                    : pub.authors}
+                                </div>
+                              )}
+                              {pub.venue && (
+                                <div>Published in: {pub.venue}</div>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {pub.date && `Date: ${pub.date}`}
+                              {pub.doi && ` • DOI: ${pub.doi}`}
+                            </div>
+                            {pub.url && (
+                              <div className="text-sm">
+                                <a
+                                  href={pub.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline flex items-center space-x-1"
+                                >
+                                  <span>View Publication</span>
+                                  <ExternalLinkIcon className="w-3 h-3" />
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">
+                        No publications found
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Upload a detailed CV to populate this section
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="awards" className="p-6">
+                  {profile.awards && profile.awards.length > 0 ? (
+                    <div className="space-y-4">
+                      {profile.awards.map((award, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-gray-50 rounded-lg border"
+                        >
+                          <div className="space-y-2">
+                            <div className="font-medium text-gray-900">
+                              {award.name}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {award.issuer && `Issued by: ${award.issuer}`}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {award.date && `Date: ${award.date}`}
+                            </div>
+                            {award.description && (
+                              <div className="text-sm text-gray-700 mt-2">
+                                {award.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <AwardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">No awards found</p>
+                      <p className="text-sm text-gray-400">
+                        Upload a detailed CV to populate this section
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </Card>
           </div>
         </SidebarInset>
       </div>

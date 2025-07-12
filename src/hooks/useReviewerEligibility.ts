@@ -107,7 +107,6 @@ export function useReviewerEligibility(currentPublicationsCount?: number) {
         const apiUrl =
           process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
-        // Try to get user profile for education information
         let profile: UserProfile = {};
         try {
           const profileResponse = await axios.get(
@@ -120,7 +119,6 @@ export function useReviewerEligibility(currentPublicationsCount?: number) {
           }
         } catch (profileError) {
           console.warn("Could not fetch profile:", profileError);
-          // Continue with empty profile - we'll use currentPublicationsCount for publications
         }
 
         const hasMinimumEducation = checkEducationalLevel(
@@ -128,7 +126,6 @@ export function useReviewerEligibility(currentPublicationsCount?: number) {
           profile.education
         );
 
-        // Use the passed publications count (from profile page publications manager)
         const publishedPapers =
           currentPublicationsCount !== undefined
             ? currentPublicationsCount
@@ -149,14 +146,17 @@ export function useReviewerEligibility(currentPublicationsCount?: number) {
           benefits.push("✓ Education requirement satisfied");
         }
 
-
         if (!hasMinimumPublications) {
           const remaining = requiredPapers - publishedPapers;
           issues.push(
-            `${remaining} more publication${remaining > 1 ? 's' : ''} needed (${publishedPapers}/${requiredPapers} required for reviewer eligibility)`
+            `${remaining} more publication${
+              remaining > 1 ? "s" : ""
+            } needed (${publishedPapers}/${requiredPapers} required for reviewer eligibility)`
           );
         } else {
-          benefits.push(`✓ Publication requirement met (${publishedPapers} publications recorded)`);
+          benefits.push(
+            `✓ Publication requirement met (${publishedPapers} publications recorded)`
+          );
         }
 
         if (isEligible) {

@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,75 +17,191 @@ import {
   CheckCircleIcon,
   AlertCircleIcon,
   FileTextIcon,
-  UserIcon,
-  BuildingIcon,
   GraduationCapIcon,
-  MailIcon,
   AwardIcon,
   BookOpenIcon,
   BriefcaseIcon,
   ShieldCheckIcon,
-  EditIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
-import { isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
-import SidebarProvider from "@/provider/SidebarProvider";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { CVParseResponse } from "@/types/backend";
+import { useCVRegistration } from "@/hooks/useCVRegistration";
+import HeaderImage from "@/components/header-image";
 
-export default function RegisterCVPage() {
+interface EditableData {
+  fullName: string;
+  title: string;
+  profession: string;
+  institution: string;
+  location: string;
+  field: string;
+  specialization: string;
+  email: string;
+  phone: string;
+  linkedIn: string;
+  github: string;
+  website: string;
+  overview: string;
+  orcid?: string;
+  googleScholar?: string;
+  education?: Array<{
+    institution?: string;
+    degree?: string;
+    field?: string;
+    startDate?: string;
+    endDate?: string;
+    gpa?: string;
+    location?: string;
+  }>;
+  experience?: Array<{
+    company?: string;
+    position?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    location?: string;
+    type?: string;
+  }>;
+  publications?: Array<{
+    title?: string;
+    authors?: string[];
+    venue?: string;
+    date?: string;
+    doi?: string;
+    url?: string;
+  }>;
+  awards?: Array<{
+    name?: string;
+    issuer?: string;
+    date?: string;
+    description?: string;
+  }>;
+}
+
+const UnconnectedView = () => (
+  <>
+    <HeaderImage />
+    <div className="container max-w-5xl mx-auto px-6 py-12">
+      <div className="mb-12 text-center space-y-4">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
+          CV Registration
+        </h1>
+        <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-tight">
+          Register your academic credentials to participate in our platform
+        </p>
+        <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
+      </div>
+      <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+        <CardHeader className="text-center py-8">
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <ShieldCheckIcon className="h-8 w-8 text-primary" />
+          </div>
+          <CardTitle className="text-2xl text-primary">
+            Authentication Required
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pb-8">
+          <p className="text-muted-foreground mb-8 text-center text-lg">
+            Please connect your wallet to register your CV and submit
+            manuscripts.
+          </p>
+          <div className="flex justify-center items-center">
+            <WalletConnection />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </>
+);
+
+const ConnectedView = () => {
   const { authenticated: connected, user } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const publicKey = getPrimarySolanaWalletAddress(solanaWallets);
-  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
-    ? publicKey
-    : undefined;
+  const walletAddress = solanaWallets?.[0]?.address ?? "";
+  const validSolanaPublicKey = walletAddress || "";
   const router = useRouter();
-  const {
-    cvStatus,
-    cvData,
-    isLoading: loading,
-    error,
-    checkCVRegistration,
-    uploadCV,
-    getUserProfile,
-    createManualProfile,
-  } = useCVRegistration(validSolanaPublicKey);
-
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
-  const [manualFormData, setManualFormData] = useState({
+  const [editableData, setEditableData] = useState<EditableData>({
     fullName: "",
-    institution: "",
+    title: "",
     profession: "",
+    institution: "",
+    location: "",
     field: "",
     specialization: "",
     email: "",
+    phone: "",
+    linkedIn: "",
+    github: "",
+    website: "",
+    overview: "",
     orcid: "",
     googleScholar: "",
+    education: [],
+    experience: [],
+    publications: [],
+    awards: [],
   });
+  const [confirmingRegistration, setConfirmingRegistration] = useState(false);
   const { isLoading } = useLoading();
   const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+
+  const {
+    cvStatus,
+    cvData,
+    parseCV,
+    uploadProgress,
+    getUserProfile,
+    createManualProfile,
+    error: cvError,
+  } = useCVRegistration(validSolanaPublicKey);
 
   useEffect(() => {
-    if (connected && validSolanaPublicKey) {
-      checkCVRegistration(validSolanaPublicKey);
+    if (cvError) {
+      setError(cvError);
     }
-  }, [connected, validSolanaPublicKey, checkCVRegistration]);
+  }, [cvError]);
+
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!validSolanaPublicKey) return;
+
+      try {
+        const result = await getUserProfile(validSolanaPublicKey);
+        if (result?.success) {
+          setShowProfile(true);
+        }
+      } catch (err) {
+        console.error("Failed to get user profile:", err);
+        toast({
+          title: "Error",
+          description: "Failed to load user profile",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (connected && validSolanaPublicKey) {
+      checkProfile();
+    }
+  }, [connected, validSolanaPublicKey, getUserProfile, toast]);
 
   useEffect(() => {
     if (cvStatus?.hasCV) {
@@ -125,49 +242,99 @@ export default function RegisterCVPage() {
     }
   };
 
-  const handleUploadCV = async () => {
-    if (!selectedFile || !validSolanaPublicKey) return;
+  const handleParseCV = async () => {
+    if (!selectedFile) {
+      setError("Please select a file");
+      return;
+    }
+
+    if (!validSolanaPublicKey) {
+      setError("Please connect your wallet");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const result = await parseCV(selectedFile);
+
+      if (result.success && result.data) {
+        console.log(
+          "📄 CV data received in register-cv component:",
+          JSON.stringify(result.data, null, 2)
+        );
+        setEditableData(result.data);
+        setShowPreview(true);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleConfirmRegistration = async () => {
+    if (!validSolanaPublicKey) return;
 
     try {
-      setUploading(true);
-      setUploadProgress(0);
+      setConfirmingRegistration(true);
 
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 200);
+      const finalData = {
+        fullName: editableData.fullName,
+        institution: editableData.institution,
+        profession: editableData.profession,
+        field: editableData.field,
+        specialization: editableData.specialization,
+        email: editableData.email,
+        orcid: "",
+        googleScholar: "",
+      };
 
-      const result = await uploadCV(selectedFile, validSolanaPublicKey);
+      const result = await createManualProfile(finalData, validSolanaPublicKey);
 
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (result?.success) {
+      if (result.success) {
         toast({
-          title: "CV Uploaded Successfully",
+          title: "Profile Registered Successfully",
           description: "Redirecting to your profile...",
         });
         router.push("/your-profile");
       } else {
         toast({
-          title: "Upload Failed",
-          description: "Failed to upload CV. Please try again.",
+          title: "Registration Failed",
+          description:
+            result.message || "Failed to register profile. Please try again.",
           variant: "destructive",
         });
       }
     } catch (err) {
-      console.error("Failed to upload CV:", err);
+      console.error("Failed to register profile:", err);
       toast({
-        title: "Upload Failed",
-        description: "Failed to upload CV. Please try again.",
+        title: "Registration Failed",
+        description: "Failed to register profile. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setUploading(false);
-      setUploadProgress(0);
+      setConfirmingRegistration(false);
     }
+  };
+
+  const handleBackToUpload = () => {
+    setShowPreview(false);
+    setEditableData({
+      fullName: "",
+      title: "",
+      profession: "",
+      institution: "",
+      location: "",
+      field: "",
+      specialization: "",
+      email: "",
+      phone: "",
+      linkedIn: "",
+      github: "",
+      website: "",
+      overview: "",
+      orcid: "",
+      googleScholar: "",
+    });
+    setSelectedFile(null);
   };
 
   const handleLoadProfile = async () => {
@@ -176,7 +343,7 @@ export default function RegisterCVPage() {
     try {
       const result = await getUserProfile(validSolanaPublicKey);
       if (result?.success) {
-        setShowProfile(true);
+        // setShowProfile(true); // This state was removed, so this line is removed
       }
     } catch (err) {
       console.error("Failed to load profile:", err);
@@ -184,7 +351,7 @@ export default function RegisterCVPage() {
   };
 
   const handleManualFormChange = (field: string, value: string) => {
-    setManualFormData((prev) => ({
+    setEditableData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -200,10 +367,11 @@ export default function RegisterCVPage() {
       "field",
       "specialization",
       "email",
-    ];
-    const missingFields = requiredFields.filter(
-      (field) => !manualFormData[field as keyof typeof manualFormData].trim()
-    );
+    ] as const;
+    const missingFields = requiredFields.filter((field) => {
+      const value = editableData[field];
+      return typeof value !== "string" || !value.trim();
+    });
 
     if (missingFields.length > 0) {
       toast({
@@ -215,7 +383,7 @@ export default function RegisterCVPage() {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(manualFormData.email)) {
+    if (!emailRegex.test(editableData.email)) {
       toast({
         title: "Invalid Email",
         description: "Please enter a valid email address",
@@ -225,10 +393,10 @@ export default function RegisterCVPage() {
     }
 
     try {
-      setIsSubmittingManual(true);
+      // setIsSubmittingManual(true); // This state was removed, so this line is removed
 
       const result = await createManualProfile(
-        manualFormData,
+        editableData,
         validSolanaPublicKey
       );
 
@@ -254,66 +422,975 @@ export default function RegisterCVPage() {
         variant: "destructive",
       });
     } finally {
-      setIsSubmittingManual(false);
     }
   };
 
-  if (!connected) {
-    return (
-      <SidebarProvider>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
-          <OverviewSidebar connected={connected} />
-          <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-              <div className="flex items-center gap-3 px-6 py-4">
-                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
-                <Separator orientation="vertical" className="h-6" />
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-primary">
-                    CV Registration
-                  </span>
+  return (
+    <>
+      {" "}
+      <HeaderImage />
+      <div className="container max-w-5xl mx-auto px-6 pb-12">
+        <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+          <CardContent className="space-y-8 ">
+            {error && (
+              <div className="p-4 bg-red-50/80 border border-red-200/80 rounded-xl shadow-sm">
+                <div className="flex items-center space-x-3">
+                  <AlertCircleIcon className="h-5 w-5 text-red-600" />
+                  <p className="text-red-800 text-md font-medium">{error}</p>
                 </div>
               </div>
-            </div>
-            <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                  CV Registration
-                </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Register your academic credentials to participate in our
-                  platform
-                </p>
-                <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
-              </div>
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-                <CardHeader className="text-center py-8">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <ShieldCheckIcon className="h-8 w-8 text-primary" />
+            )}
+
+            {(!cvStatus?.hasCV || !editableData.fullName) && (
+              <div className="space-y-8">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Label className="text-xl font-semibold text-primary">
+                      Create Your Profile
+                    </Label>
                   </div>
-                  <CardTitle className="text-2xl text-primary">
-                    Authentication Required
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-8">
-                  <p className="text-muted-foreground mb-8 text-center text-lg">
-                    Please connect your wallet to register your CV and submit
-                    manuscripts.
+                  <p className="text-muted-foreground text-base max-w-2xl mx-auto leading-tight">
+                    Create your academic profile to verify your credentials and
+                    enable manuscript submission. You can either upload your CV
+                    or fill in your details manually.
                   </p>
-                  <div className="flex justify-center items-center">
-                    <WalletConnection />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    );
-  }
+                </div>
+
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upload">Upload CV</TabsTrigger>
+                    <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="upload" className="space-y-6 mt-6">
+                    {!showPreview ? (
+                      <>
+                        <div className="border-2 border-dashed border-gray-300/80 rounded-xl p-8 text-center hover:border-primary/50 transition-all duration-300 bg-gradient-to-br from-primary/5 to-transparent">
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            id="cv-upload"
+                            disabled={uploading}
+                          />
+                          <label
+                            htmlFor="cv-upload"
+                            className="cursor-pointer flex flex-col items-center space-y-4"
+                          >
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                              <UploadIcon className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <span className="text-lg text-foreground font-medium">
+                                {selectedFile
+                                  ? selectedFile.name
+                                  : "Click to select your CV file"}
+                              </span>
+                              <span className="text-sm text-muted-foreground block">
+                                Supported formats: PDF, JPG, PNG (max 10MB)
+                              </span>
+                            </div>
+                          </label>
+                        </div>
+
+                        {selectedFile && (
+                          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                                <FileTextIcon className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <span className="text-base text-primary font-medium block">
+                                  {selectedFile.name}
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
+                                  MB
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedFile(null)}
+                              disabled={uploading}
+                              className="hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        )}
+
+                        {uploading && (
+                          <div className="space-y-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
+                            <div className="flex justify-between text-base font-medium">
+                              <span className="text-primary">
+                                Processing your CV...
+                              </span>
+                              <span className="text-primary">
+                                {uploadProgress}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={uploadProgress}
+                              className="w-full h-3 rounded-full bg-primary/10"
+                            />
+                            <p className="text-sm text-muted-foreground text-center">
+                              We&apos;re analyzing your CV and extracting your
+                              academic information
+                            </p>
+                          </div>
+                        )}
+
+                        <Button
+                          onClick={handleParseCV}
+                          disabled={!selectedFile || uploading}
+                          className="w-full font-semibold"
+                        >
+                          {uploading ? "Processing..." : "Parse CV"}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-primary">
+                                CV Parsed Successfully
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                Please review and edit the information below
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleBackToUpload}
+                            className="flex items-center space-x-2"
+                          >
+                            <ArrowLeftIcon className="h-4 w-4" />
+                            <span>Back</span>
+                          </Button>
+                        </div>
+
+                        <Tabs defaultValue="overview" className="w-full">
+                          <TabsList className="grid w-full grid-cols-6">
+                            <TabsTrigger value="overview">Overview</TabsTrigger>
+                            <TabsTrigger value="docis">DOCIs</TabsTrigger>
+                            <TabsTrigger value="publications">
+                              Publications
+                            </TabsTrigger>
+                            <TabsTrigger value="experience">
+                              Experience
+                            </TabsTrigger>
+                            <TabsTrigger value="education">
+                              Education
+                            </TabsTrigger>
+                            <TabsTrigger value="awards">Awards</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent
+                            value="overview"
+                            className="space-y-6 mt-6"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-fullName"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Full Name *
+                                </Label>
+                                <Input
+                                  id="preview-fullName"
+                                  value={editableData.fullName}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      fullName: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your full name"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-email"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Email *
+                                </Label>
+                                <Input
+                                  id="preview-email"
+                                  value={editableData.email}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      email: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your email"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-institution"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Institution *
+                                </Label>
+                                <Input
+                                  id="preview-institution"
+                                  value={editableData.institution}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      institution: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your institution"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-profession"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Profession *
+                                </Label>
+                                <Input
+                                  id="preview-profession"
+                                  value={editableData.profession}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      profession: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your profession"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-field"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Field of Study *
+                                </Label>
+                                <Input
+                                  id="preview-field"
+                                  value={editableData.field}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      field: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your field of study"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-specialization"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Specialization *
+                                </Label>
+                                <Input
+                                  id="preview-specialization"
+                                  value={editableData.specialization}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      specialization: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your specialization"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-title"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Title
+                                </Label>
+                                <Input
+                                  id="preview-title"
+                                  value={editableData.title}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      title: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Dr., Prof., etc."
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-location"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Location
+                                </Label>
+                                <Input
+                                  id="preview-location"
+                                  value={editableData.location}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      location: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your location"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-phone"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Phone
+                                </Label>
+                                <Input
+                                  id="preview-phone"
+                                  value={editableData.phone}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      phone: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your phone number"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-website"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Website
+                                </Label>
+                                <Input
+                                  id="preview-website"
+                                  value={editableData.website}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      website: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter your website URL"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor="preview-overview"
+                                className="text-sm font-medium text-primary"
+                              >
+                                Overview
+                              </Label>
+                              <Textarea
+                                id="preview-overview"
+                                value={editableData.overview}
+                                onChange={(e) =>
+                                  setEditableData((prev) => ({
+                                    ...prev,
+                                    overview: e.target.value,
+                                  }))
+                                }
+                                placeholder="Enter a brief overview or summary"
+                                rows={4}
+                              />
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="docis" className="space-y-6 mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-orcid"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  ORCID ID
+                                </Label>
+                                <Input
+                                  id="preview-orcid"
+                                  value={editableData.orcid || ""}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      orcid: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="https://orcid.org/0000-0000-0000-0000"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-googleScholar"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  Google Scholar Profile
+                                </Label>
+                                <Input
+                                  id="preview-googleScholar"
+                                  value={editableData.googleScholar || ""}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      googleScholar: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="https://scholar.google.com/citations?user=..."
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-linkedIn"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  LinkedIn Profile
+                                </Label>
+                                <Input
+                                  id="preview-linkedIn"
+                                  value={editableData.linkedIn}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      linkedIn: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="https://linkedin.com/in/..."
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="preview-github"
+                                  className="text-sm font-medium text-primary"
+                                >
+                                  GitHub Profile
+                                </Label>
+                                <Input
+                                  id="preview-github"
+                                  value={editableData.github}
+                                  onChange={(e) =>
+                                    setEditableData((prev) => ({
+                                      ...prev,
+                                      github: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="https://github.com/..."
+                                />
+                              </div>
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent
+                            value="publications"
+                            className="space-y-6 mt-6"
+                          >
+                            {editableData.publications &&
+                            editableData.publications.length > 0 ? (
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <BookOpenIcon className="h-5 w-5 text-primary" />
+                                  <Label className="text-lg font-semibold text-primary">
+                                    Publications (
+                                    {editableData.publications.length})
+                                  </Label>
+                                </div>
+                                <div className="space-y-3">
+                                  {editableData.publications.map(
+                                    (pub, index) => (
+                                      <div
+                                        key={index}
+                                        className="p-4 bg-gray-50 rounded-lg border"
+                                      >
+                                        <div className="space-y-2">
+                                          <div className="font-medium text-gray-900">
+                                            {pub.title}
+                                          </div>
+                                          <div className="text-sm text-gray-600">
+                                            {pub.authors &&
+                                              pub.authors.length > 0 && (
+                                                <div>
+                                                  Authors:{" "}
+                                                  {Array.isArray(pub.authors)
+                                                    ? pub.authors.join(", ")
+                                                    : pub.authors}
+                                                </div>
+                                              )}
+                                            {pub.venue && (
+                                              <div>
+                                                Published in: {pub.venue}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="text-sm text-gray-500">
+                                            {pub.date && `Date: ${pub.date}`}
+                                            {pub.doi && ` • DOI: ${pub.doi}`}
+                                          </div>
+                                          {pub.url && (
+                                            <div className="text-sm">
+                                              <a
+                                                href={pub.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline"
+                                              >
+                                                View Publication
+                                              </a>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8">
+                                <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-500">
+                                  No publications found in your CV
+                                </p>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent
+                            value="experience"
+                            className="space-y-6 mt-6"
+                          >
+                            {editableData.experience &&
+                            editableData.experience.length > 0 ? (
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <BriefcaseIcon className="h-5 w-5 text-primary" />
+                                  <Label className="text-lg font-semibold text-primary">
+                                    Experience ({editableData.experience.length}
+                                    )
+                                  </Label>
+                                </div>
+                                <div className="space-y-3">
+                                  {editableData.experience.map((exp, index) => (
+                                    <div
+                                      key={index}
+                                      className="p-4 bg-gray-50 rounded-lg border"
+                                    >
+                                      <div className="space-y-2">
+                                        <div className="font-medium text-gray-900">
+                                          {exp.position}
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                          {exp.company}{" "}
+                                          {exp.location && `• ${exp.location}`}
+                                          {exp.type && ` • ${exp.type}`}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                          {exp.startDate && exp.endDate
+                                            ? `${exp.startDate} - ${exp.endDate}`
+                                            : exp.startDate
+                                            ? `Started ${exp.startDate}`
+                                            : exp.endDate
+                                            ? `Ended ${exp.endDate}`
+                                            : ""}
+                                        </div>
+                                        {exp.description && (
+                                          <div className="text-sm text-gray-700 mt-2">
+                                            {exp.description}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8">
+                                <BriefcaseIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-500">
+                                  No experience found in your CV
+                                </p>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent
+                            value="education"
+                            className="space-y-6 mt-6"
+                          >
+                            {editableData.education &&
+                            editableData.education.length > 0 ? (
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <GraduationCapIcon className="h-5 w-5 text-primary" />
+                                  <Label className="text-lg font-semibold text-primary">
+                                    Education ({editableData.education.length})
+                                  </Label>
+                                </div>
+                                <div className="space-y-3">
+                                  {editableData.education.map((edu, index) => (
+                                    <div
+                                      key={index}
+                                      className="p-4 bg-gray-50 rounded-lg border"
+                                    >
+                                      <div className="space-y-2">
+                                        <div className="font-medium text-gray-900">
+                                          {edu.degree}{" "}
+                                          {edu.field && `in ${edu.field}`}
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                          {edu.institution}{" "}
+                                          {edu.location && `• ${edu.location}`}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                          {edu.startDate && edu.endDate
+                                            ? `${edu.startDate} - ${edu.endDate}`
+                                            : edu.startDate
+                                            ? `Started ${edu.startDate}`
+                                            : edu.endDate
+                                            ? `Ended ${edu.endDate}`
+                                            : ""}
+                                          {edu.gpa && ` • GPA: ${edu.gpa}`}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8">
+                                <GraduationCapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-500">
+                                  No education found in your CV
+                                </p>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent
+                            value="awards"
+                            className="space-y-6 mt-6"
+                          >
+                            {editableData.awards &&
+                            editableData.awards.length > 0 ? (
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <AwardIcon className="h-5 w-5 text-primary" />
+                                  <Label className="text-lg font-semibold text-primary">
+                                    Awards & Honors (
+                                    {editableData.awards.length})
+                                  </Label>
+                                </div>
+                                <div className="space-y-3">
+                                  {editableData.awards.map((award, index) => (
+                                    <div
+                                      key={index}
+                                      className="p-4 bg-gray-50 rounded-lg border"
+                                    >
+                                      <div className="space-y-2">
+                                        <div className="font-medium text-gray-900">
+                                          {award.name}
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                          {award.issuer &&
+                                            `Issued by: ${award.issuer}`}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                          {award.date && `Date: ${award.date}`}
+                                        </div>
+                                        {award.description && (
+                                          <div className="text-sm text-gray-700 mt-2">
+                                            {award.description}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8">
+                                <AwardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-500">
+                                  No awards found in your CV
+                                </p>
+                              </div>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+
+                        <div className="flex space-x-4">
+                          <Button
+                            variant="outline"
+                            onClick={handleBackToUpload}
+                            className="flex-1"
+                          >
+                            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                            Back to Upload
+                          </Button>
+                          <Button
+                            onClick={handleConfirmRegistration}
+                            disabled={
+                              confirmingRegistration ||
+                              !editableData.fullName ||
+                              !editableData.email ||
+                              !editableData.institution ||
+                              !editableData.profession ||
+                              !editableData.field ||
+                              !editableData.specialization
+                            }
+                            className="flex-1"
+                          >
+                            {confirmingRegistration
+                              ? "Registering..."
+                              : "Confirm Registration"}
+                            <ArrowRightIcon className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="manual" className="space-y-6 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="fullName"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Full Name *
+                        </Label>
+                        <Input
+                          id="fullName"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={editableData.fullName}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              fullName: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="email"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Email Address *
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={editableData.email}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              email: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="orcid"
+                          className="text-sm font-medium text-primary"
+                        >
+                          ORCID ID
+                        </Label>
+                        <Input
+                          id="orcid"
+                          type="url"
+                          placeholder="https://orcid.org/0000-0000-0000-0000"
+                          value={editableData.orcid}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              orcid: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="googleScholar"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Google Scholar Profile
+                        </Label>
+                        <Input
+                          id="googleScholar"
+                          type="url"
+                          placeholder="https://scholar.google.com/citations?user=..."
+                          value={editableData.googleScholar}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              googleScholar: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="institution"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Institution *
+                        </Label>
+                        <Input
+                          id="institution"
+                          type="text"
+                          placeholder="Enter your institution"
+                          value={editableData.institution}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              institution: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="profession"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Profession *
+                        </Label>
+                        <Input
+                          id="profession"
+                          type="text"
+                          placeholder="e.g., Professor, Researcher, PhD Student"
+                          value={editableData.profession}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              profession: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="field"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Field of Study *
+                        </Label>
+                        <Input
+                          id="field"
+                          type="text"
+                          placeholder="e.g., Computer Science, Biology, Physics"
+                          value={editableData.field}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              field: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="specialization"
+                          className="text-sm font-medium text-primary"
+                        >
+                          Specialization *
+                        </Label>
+                        <Input
+                          id="specialization"
+                          type="text"
+                          placeholder="e.g., Machine Learning, Molecular Biology"
+                          value={editableData.specialization}
+                          onChange={(e) =>
+                            setEditableData((prev) => ({
+                              ...prev,
+                              specialization: e.target.value,
+                            }))
+                          }
+                          disabled={uploading}
+                          className="h-12"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleManualSubmit}
+                      disabled={uploading}
+                      className="w-full"
+                    >
+                      {uploading ? "Creating Profile..." : "Create Profile"}
+                    </Button>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+};
+
+export default function RegisterCV() {
+  const { authenticated: connected } = usePrivy();
+  const { wallets: solanaWallets } = useSolanaWallets();
+  const walletAddress = solanaWallets?.[0]?.address ?? "";
+  const validSolanaPublicKey = walletAddress || "";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -321,516 +1398,9 @@ export default function RegisterCVPage() {
             <div className="flex items-center gap-3 px-6 py-4">
               <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
               <Separator orientation="vertical" className="h-6" />
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">
-                  CV Registration
-                </span>
-              </div>
             </div>
           </div>
-          <div className="container max-w-5xl mx-auto px-6 py-12">
-            <div className="mb-12 text-center space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                Register Your Profile
-              </h1>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                Register your academic credentials to participate in our
-                platform
-              </p>
-            </div>
-
-            <div className="max-w-4xl mx-auto">
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-                <CardHeader className="border-b border-gray-100/50 pb-6">
-                  <div className="flex items-center justify-center space-x-3">
-                    <div className="text-center">
-                      <CardTitle className="text-2xl text-primary font-bold">
-                        Register Your Profile
-                      </CardTitle>
-                      <p className="text-muted-foreground mt-1">
-                        Upload and verify your academic credentials
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-8 ">
-                  {error && (
-                    <div className="p-4 bg-red-50/80 border border-red-200/80 rounded-xl shadow-sm">
-                      <div className="flex items-center space-x-3">
-                        <AlertCircleIcon className="h-5 w-5 text-red-600" />
-                        <p className="text-red-800 text-md font-medium">
-                          {error}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {(!cvStatus?.hasCV || !showProfile) && (
-                    <div className="space-y-8">
-                      <div className="text-center space-y-3">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Label className="text-lg font-semibold text-primary">
-                            Create Your Profile
-                          </Label>
-                        </div>
-                        <p className="text-muted-foreground text-base max-w-2xl mx-auto leading-relaxed">
-                          Create your academic profile to verify your
-                          credentials and enable manuscript submission. You can
-                          either upload your CV or fill in your details
-                          manually.
-                        </p>
-                      </div>
-
-                      <Tabs
-                        value={activeTab}
-                        onValueChange={setActiveTab}
-                        className="w-full"
-                      >
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="upload">Upload CV</TabsTrigger>
-                          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="upload" className="space-y-6 mt-6">
-                          <div className="border-2 border-dashed border-gray-300/80 rounded-xl p-8 text-center hover:border-primary/50 transition-all duration-300 bg-gradient-to-br from-primary/5 to-transparent">
-                            <input
-                              type="file"
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              onChange={handleFileChange}
-                              className="hidden"
-                              id="cv-upload"
-                              disabled={uploading}
-                            />
-                            <label
-                              htmlFor="cv-upload"
-                              className="cursor-pointer flex flex-col items-center space-y-4"
-                            >
-                              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                                <UploadIcon className="h-8 w-8 text-primary" />
-                              </div>
-                              <div className="space-y-2">
-                                <span className="text-lg text-foreground font-medium">
-                                  {selectedFile
-                                    ? selectedFile.name
-                                    : "Click to select your CV file"}
-                                </span>
-                                <span className="text-sm text-muted-foreground block">
-                                  Supported formats: PDF, JPG, PNG (max 10MB)
-                                </span>
-                              </div>
-                            </label>
-                          </div>
-
-                          {selectedFile && (
-                            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                                  <FileTextIcon className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <span className="text-base text-primary font-medium block">
-                                    {selectedFile.name}
-                                  </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {(selectedFile.size / 1024 / 1024).toFixed(
-                                      2
-                                    )}{" "}
-                                    MB
-                                  </span>
-                                </div>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedFile(null)}
-                                disabled={uploading}
-                                className="hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
-                              >
-                                Remove
-                              </Button>
-                            </div>
-                          )}
-
-                          {uploading && (
-                            <div className="space-y-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                              <div className="flex justify-between text-base font-medium">
-                                <span className="text-primary">
-                                  Processing your CV...
-                                </span>
-                                <span className="text-primary">
-                                  {uploadProgress}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={uploadProgress}
-                                className="w-full h-3 rounded-full bg-primary/10"
-                              />
-                              <p className="text-sm text-muted-foreground text-center">
-                                We&apos;re analyzing your CV and extracting your
-                                academic information
-                              </p>
-                            </div>
-                          )}
-
-                          <Button
-                            onClick={handleUploadCV}
-                            disabled={!selectedFile || uploading}
-                            className="w-full"
-                          >
-                            {uploading ? "Uploading..." : "Upload CV"}
-                          </Button>
-                        </TabsContent>
-
-                        <TabsContent value="manual" className="space-y-6 mt-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="fullName"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Full Name *
-                              </Label>
-                              <Input
-                                id="fullName"
-                                type="text"
-                                placeholder="Enter your full name"
-                                value={manualFormData.fullName}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "fullName",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="email"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Email Address *
-                              </Label>
-                              <Input
-                                id="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                value={manualFormData.email}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "email",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="orcid"
-                                className="text-sm font-medium text-primary"
-                              >
-                                ORCID ID
-                              </Label>
-                              <Input
-                                id="orcid"
-                                type="url"
-                                placeholder="https://orcid.org/0000-0000-0000-0000"
-                                value={manualFormData.orcid}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "orcid",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="googleScholar"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Google Scholar Profile
-                              </Label>
-                              <Input
-                                id="googleScholar"
-                                type="url"
-                                placeholder="https://scholar.google.com/citations?user=..."
-                                value={manualFormData.googleScholar}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "googleScholar",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="institution"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Institution *
-                              </Label>
-                              <Input
-                                id="institution"
-                                type="text"
-                                placeholder="Enter your institution"
-                                value={manualFormData.institution}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "institution",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="profession"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Profession *
-                              </Label>
-                              <Input
-                                id="profession"
-                                type="text"
-                                placeholder="e.g., Professor, Researcher, PhD Student"
-                                value={manualFormData.profession}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "profession",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="field"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Field of Study *
-                              </Label>
-                              <Input
-                                id="field"
-                                type="text"
-                                placeholder="e.g., Computer Science, Biology, Physics"
-                                value={manualFormData.field}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "field",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="specialization"
-                                className="text-sm font-medium text-primary"
-                              >
-                                Specialization *
-                              </Label>
-                              <Input
-                                id="specialization"
-                                type="text"
-                                placeholder="e.g., Machine Learning, Molecular Biology"
-                                value={manualFormData.specialization}
-                                onChange={(e) =>
-                                  handleManualFormChange(
-                                    "specialization",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={isSubmittingManual}
-                                className="h-12"
-                              />
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={handleManualSubmit}
-                            disabled={isSubmittingManual}
-                            className="w-full"
-                          >
-                            {isSubmittingManual
-                              ? "Creating Profile..."
-                              : "Create Profile"}
-                          </Button>
-                        </TabsContent>
-                      </Tabs>
-                    </div>
-                  )}
-
-                  {cvData &&
-                    cvData.fullName &&
-                    (cvStatus?.hasCV || showProfile) && (
-                      <div className="space-y-8">
-                        <Separator className="my-8" />
-
-                        <div className="space-y-6">
-                          <div className="text-center space-y-2">
-                            <h3 className="text-2xl font-bold text-primary flex items-center justify-center space-x-3">
-                              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                <UserIcon className="h-5 w-5 text-primary" />
-                              </div>
-                              <span>Your Academic Profile</span>
-                            </h3>
-                            <p className="text-muted-foreground">
-                              Review your extracted profile information
-                            </p>
-                          </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <UserIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Full Name
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.fullName || "Not provided"}
-                                </p>
-                              </div>
-
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <BuildingIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Institution
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.institution || "Not provided"}
-                                </p>
-                              </div>
-
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <GraduationCapIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Field of Study
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.field || "Not provided"}
-                                </p>
-                              </div>
-
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <BookOpenIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Specialization
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.specialization || "Not provided"}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="space-y-6">
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <MailIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Email Address
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData.email || "Not provided"}
-                                </p>
-                              </div>
-
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <BriefcaseIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Profession
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.profession || "Not provided"}
-                                </p>
-                              </div>
-
-                              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                                    <AwardIcon className="h-4 w-4 text-primary" />
-                                  </div>
-                                  <span className="text-sm font-semibold text-primary">
-                                    Registration Date
-                                  </span>
-                                </div>
-                                <p className="text-foreground font-medium text-lg">
-                                  {cvData?.registeredAt
-                                    ? new Date(
-                                        cvData.registeredAt
-                                      ).toLocaleDateString()
-                                    : "Not provided"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Separator className="my-8" />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Button
-                            onClick={() => router.push("/submit-manuscript")}
-                          >
-                            Submit Manuscript
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => router.push("/your-profile")}
-                          >
-                            View Full Profile
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          {!connected ? <UnconnectedView /> : <ConnectedView />}
         </SidebarInset>
       </div>
     </SidebarProvider>

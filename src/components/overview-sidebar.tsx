@@ -66,7 +66,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
     <Sidebar className="border-r border-gray-100 bg-gray-50/50 bg-white">
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <div className="flex justify-center mt-16 mb-8">
+          <div className="flex justify-center mt-20 mb-8">
             <Link href="/" className="transition-opacity hover:opacity-80">
               <Image
                 src="/logoname.svg"
@@ -78,7 +78,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
             </Link>
           </div>
 
-          <SidebarGroupContent className="px-3">
+          <SidebarGroupContent className="px-2">
             <SidebarMenu className="space-y-1">
               {links.map((link) => (
                 <SidebarMenuItem key={link.href}>
@@ -86,7 +86,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
                     <Link
                       href={link.href}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                        "flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-200 group",
                         "hover:bg-white hover:shadow-sm",
                         pathname === link.href
                           ? "bg-white text-gray-900 shadow-sm border border-gray-100"
@@ -112,7 +112,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="bg-white p-3 border-t border-gray-100">
+      <SidebarFooter className="bg-white py-3 px-2 border-t border-gray-100">
         <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
           <div className="text-xs text-gray-500 mb-3 text-center">
             {connected ? (

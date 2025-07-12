@@ -214,34 +214,41 @@ export interface CVParseResponse {
       linkedIn?: string;
       github?: string;
       website?: string;
+      orcid?: string;
+      googleScholar?: string;
     };
     overview: string;
     education: Array<{
-      degree: string;
-      field: string;
-      institution: string;
-      year: string;
-      details?: string;
+      institution?: string;
+      degree?: string;
+      field?: string;
+      startDate?: string;
+      endDate?: string;
+      gpa?: string;
+      location?: string;
     }>;
     experience: Array<{
-      position: string;
-      institution: string;
-      startDate: string;
-      endDate: string;
-      description: string;
+      company?: string;
+      position?: string;
+      startDate?: string;
+      endDate?: string;
+      description?: string;
+      location?: string;
+      type?: string;
     }>;
     publications: Array<{
-      title: string;
-      journal: string;
-      year: string;
-      type: string;
-      citations?: number;
+      title?: string;
+      authors?: string[];
+      venue?: string;
+      date?: string;
+      doi?: string;
+      url?: string;
     }>;
-    skills: string[];
     awards: Array<{
-      name: string;
-      organization: string;
-      year: string;
+      name?: string;
+      issuer?: string;
+      date?: string;
+      description?: string;
     }>;
   };
   extractedText: string;
@@ -271,6 +278,8 @@ export interface UserProfileResponse {
       linkedIn?: string;
       github?: string;
       website?: string;
+      orcid?: string;
+      googleScholar?: string;
     };
     summary: {
       education: number;
@@ -301,6 +310,8 @@ export interface ProfileUpdateRequest {
     linkedIn?: string;
     github?: string;
     website?: string;
+    orcid?: string;
+    googleScholar?: string;
   };
   overview?: string;
 }

@@ -41,14 +41,15 @@ export function CVRegistrationGuard({
   const [hasShownToast, setHasShownToast] = useState(false);
 
   // Use the CV registration hook with both Privy and legacy support
-  const { checkCVRegistration, checkCVRegistrationPrivy } = useCVRegistration(walletAddress);
+  const { checkCVRegistration, checkCVRegistrationPrivy } =
+    useCVRegistration(walletAddress);
 
   const checkCVStatus = useCallback(async () => {
     try {
       setCvStatus("checking");
-      
+
       let isVerified = false;
-      
+
       if (authenticated) {
         // Use Privy authentication if available
         isVerified = await checkCVRegistrationPrivy();
@@ -72,7 +73,13 @@ export function CVRegistrationGuard({
       setCvStatus("error");
       setError("Failed to check CV registration status");
     }
-  }, [authenticated, walletAddress, checkCVRegistration, checkCVRegistrationPrivy, onCVVerified]);
+  }, [
+    authenticated,
+    walletAddress,
+    checkCVRegistration,
+    checkCVRegistrationPrivy,
+    onCVVerified,
+  ]);
 
   useEffect(() => {
     if (authenticated || walletAddress) {
@@ -114,11 +121,13 @@ export function CVRegistrationGuard({
   if (cvStatus === "not_found") {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            Redirecting to profile registration...
-          </p>
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">
+              Redirecting to profile registration...
+            </p>
+          </div>
         </div>
       </div>
     );
