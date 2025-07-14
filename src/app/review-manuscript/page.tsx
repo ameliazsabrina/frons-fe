@@ -47,6 +47,7 @@ import { useLoading } from "@/context/LoadingContext";
 import { WalletConnection } from "@/components/wallet-connection";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimaryWalletAddress } from "@/utils/wallet";
+import HeaderImage from "@/components/header-image";
 
 interface ReviewManuscript {
   id: string;
@@ -169,125 +170,19 @@ export default function ReviewManuscriptPage() {
     setCategories([{ name: "All", count: 0 }]);
   }, []);
 
-  // Mock data for demo purposes
-  const generateMockReviewManuscripts = (): PendingReviewManuscript[] => [
-    {
-      id: 1,
-      title: "Advanced Quantum Computing Applications in Cryptography",
-      author: "Dr. Alice Johnson",
-      abstract:
-        "This paper explores novel applications of quantum computing in modern cryptographic systems, presenting breakthrough algorithms for quantum-resistant encryption.",
-      category: ["Quantum Computing", "Computer Science", "Cryptography"],
-      submissionDate: "2024-03-15",
-      status: "pending_review",
-      cid: "QmX1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0",
-      ipfsUrls: {
-        manuscript:
-          "https://ipfs.io/ipfs/QmX1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0",
-      },
-      reviewInfo: {
-        reviewsCompleted: 2,
-        reviewsRequired: 3,
-        canPublish: false,
-      },
-    },
-    {
-      id: 2,
-      title: "Machine Learning for Climate Change Prediction Models",
-      author: "Prof. Robert Chen",
-      abstract:
-        "We present a comprehensive machine learning framework for predicting climate patterns with unprecedented accuracy using neural networks and satellite data.",
-      category: [
-        "Machine Learning",
-        "Environmental Science",
-        "Climate Science",
-      ],
-      submissionDate: "2024-03-18",
-      status: "ready_for_publication",
-      cid: "QmB1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0",
-      ipfsUrls: {
-        manuscript:
-          "https://ipfs.io/ipfs/QmB1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0",
-      },
-      reviewInfo: {
-        reviewsCompleted: 3,
-        reviewsRequired: 3,
-        canPublish: true,
-      },
-    },
-    {
-      id: 3,
-      title: "Blockchain Technology in Healthcare Data Management",
-      author: "Dr. Maria Santos",
-      abstract:
-        "This research proposes a novel blockchain-based system for secure and efficient healthcare data management, ensuring patient privacy while enabling data sharing.",
-      category: ["Blockchain Technology", "Healthcare", "Data Management"],
-      submissionDate: "2024-03-20",
-      status: "in_review",
-      cid: "QmC2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1",
-      ipfsUrls: {
-        manuscript:
-          "https://ipfs.io/ipfs/QmC2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1",
-      },
-      reviewInfo: {
-        reviewsCompleted: 1,
-        reviewsRequired: 3,
-        canPublish: false,
-      },
-    },
-    {
-      id: 4,
-      title: "Neural Network Optimization for Drug Discovery",
-      author: "Dr. James Wilson",
-      abstract:
-        "We introduce advanced neural network architectures specifically designed for drug discovery, achieving significant improvements in molecular property prediction.",
-      category: ["Artificial Intelligence", "Medicine", "Drug Discovery"],
-      submissionDate: "2024-03-22",
-      status: "awaiting_reviewers",
-      cid: "QmD3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2",
-      ipfsUrls: {
-        manuscript:
-          "https://ipfs.io/ipfs/QmD3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2",
-      },
-      reviewInfo: {
-        reviewsCompleted: 0,
-        reviewsRequired: 3,
-        canPublish: false,
-      },
-    },
-    {
-      id: 5,
-      title: "Sustainable Energy Systems Using AI Optimization",
-      author: "Prof. Sarah Kim",
-      abstract:
-        "This paper presents an AI-driven approach to optimize sustainable energy systems, demonstrating significant improvements in efficiency and cost reduction.",
-      category: [
-        "Artificial Intelligence",
-        "Environmental Science",
-        "Energy Systems",
-      ],
-      submissionDate: "2024-03-25",
-      status: "pending_review",
-      cid: "QmE4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3",
-      ipfsUrls: {
-        manuscript:
-          "https://ipfs.io/ipfs/QmE4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3",
-      },
-      reviewInfo: {
-        reviewsCompleted: 2,
-        reviewsRequired: 3,
-        canPublish: false,
-      },
-    },
-  ];
-
   const loadPendingManuscripts = useCallback(async () => {
-    // Generate mock data for demo
-    const mockManuscripts = generateMockReviewManuscripts();
+    console.log("🔄 Loading pending manuscripts for review...");
 
     try {
-      const result = await getPendingReviewManuscripts(20);
+      const result = await getPendingReviewManuscripts(
+        20,
+        undefined,
+        validSolanaPublicKey
+      );
+
       if (result && result.length > 0) {
+        console.log(`✅ Received ${result.length} manuscripts from API`);
+
         const convertedResults = result.map((m: any) => ({
           ...m,
           author: m.author || m.authorWallet || "Unknown",
@@ -304,16 +199,17 @@ export default function ReviewManuscriptPage() {
           reviewId: m.reviewId || `review-${m.id}`,
           manuscriptId: m.id,
         }));
-        const combinedManuscripts = [...mockManuscripts, ...convertedResults];
-        setManuscripts(combinedManuscripts);
+
+        setManuscripts(convertedResults);
       } else {
-        setManuscripts(mockManuscripts);
+        console.log("⚠️ No manuscripts received from API");
+        setManuscripts([]);
       }
     } catch (error) {
-      console.log("API not available, using mock data");
-      setManuscripts(mockManuscripts);
+      console.error("❌ API call failed:", error);
+      setManuscripts([]);
     }
-  }, [getPendingReviewManuscripts]);
+  }, [getPendingReviewManuscripts, validSolanaPublicKey]);
 
   useEffect(() => {
     if (connected) {
@@ -492,16 +388,8 @@ export default function ReviewManuscriptPage() {
                 <Separator orientation="vertical" className="h-6" />
               </div>
             </div>
+            <HeaderImage />
             <div className="container max-w-6xl mx-auto px-4 py-8 lg:px-16">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
-                  Review Manuscripts
-                </h1>
-                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                  Contribute to academic excellence by reviewing submitted
-                  manuscripts
-                </p>
-              </div>
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader>
                   <CardTitle className="text-xl text-primary">
@@ -533,19 +421,8 @@ export default function ReviewManuscriptPage() {
               <Separator orientation="vertical" className="h-6" />
             </div>
           </div>
-          <div className="flex-1 p-4 sm:p-6">
-            {/* Header Section */}
-            <div className="mb-8 text-center pv">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
-                Review Manuscripts
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                Contribute to academic excellence by reviewing submitted
-                manuscripts
-              </p>
-            </div>
-
-            {/* Search and Filter Section */}
+          <HeaderImage />
+          <div className="flex-1 p-4 sm:p-6 mx-12">
             <div className="mb-8 space-y-4">
               {/* Search Bar */}
               <div className="relative max-w-full">
@@ -709,149 +586,6 @@ export default function ReviewManuscriptPage() {
                     </Card>
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* Manuscript Details */}
-            <div className="lg:col-span-1">
-              {selectedManuscript ? (
-                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200 sticky top-8">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-primary">
-                      Manuscript Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h3 className="font-medium text-primary mb-2">
-                        {selectedManuscript.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        By {selectedManuscript.author}
-                      </p>
-                      <p className="text-sm text-foreground mb-4">
-                        {selectedManuscript.abstract.substring(0, 200)}...
-                      </p>
-                    </div>
-
-                    <Separator />
-
-                    {/* Review Progress */}
-                    {reviewStatus && (
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-primary">
-                          Review Progress
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Reviews Completed:</span>
-                            <span className="font-medium">
-                              {reviewStatus.reviewsCompleted}/
-                              {reviewStatus.requiredReviews}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Can Publish:</span>
-                            <span
-                              className={
-                                reviewStatus.canPublish
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }
-                            >
-                              {reviewStatus.canPublish ? "Yes" : "No"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Next Action:</span>
-                            <span className="text-blue-600">
-                              {reviewStatus.nextAction}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Review Details */}
-                        {reviewStatus.reviews &&
-                          reviewStatus.reviews.length > 0 && (
-                            <div className="mt-4">
-                              <h5 className="font-medium text-primary mb-2">
-                                Review Details
-                              </h5>
-                              <div className="space-y-2">
-                                {reviewStatus.reviews.map((review: any) => (
-                                  <div
-                                    key={review.id}
-                                    className="flex items-center justify-between text-sm"
-                                  >
-                                    <span className="truncate">
-                                      {review.reviewer.substring(0, 8)}...
-                                    </span>
-                                    <Badge
-                                      variant={
-                                        review.status === "completed"
-                                          ? "default"
-                                          : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {review.status}
-                                    </Badge>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    )}
-
-                    <Separator />
-
-                    {/* Actions */}
-                    <div className="space-y-3">
-                      <Button
-                        onClick={() =>
-                          window.open(
-                            selectedManuscript.ipfsUrls.manuscript,
-                            "_blank"
-                          )
-                        }
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                        View Manuscript
-                      </Button>
-
-                      {(!reviewStatus ||
-                        reviewStatus.reviewsCompleted === 0) && (
-                        <Button
-                          onClick={() => setShowAssignReviewers(true)}
-                          className="w-full"
-                        >
-                          <UsersIcon className="h-4 w-4 mr-2" />
-                          Assign Reviewers
-                        </Button>
-                      )}
-
-                      {reviewStatus?.canPublish && (
-                        <Button
-                          onClick={handlePublishManuscript}
-                          className="w-full bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckIcon className="h-4 w-4 mr-2" />
-                          Publish Manuscript
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    <FileTextIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Select a manuscript to view details</p>
-                  </CardContent>
-                </Card>
               )}
             </div>
           </div>

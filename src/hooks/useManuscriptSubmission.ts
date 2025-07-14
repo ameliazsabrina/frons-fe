@@ -76,11 +76,14 @@ export function useManuscriptSubmission({
         }
 
         // Get authentication token
+        console.log("🔐 Getting Privy access token...");
         const accessToken = await getAccessToken();
         if (!accessToken) {
+          console.error("❌ Failed to get access token");
           setError("Failed to get authentication token. Please login again.");
           return null;
         }
+        console.log("✅ Access token obtained:", accessToken.substring(0, 20) + "...");
 
         // For legacy support, still check CV registration if function provided
         if (checkCVRegistration && metadata.walletAddress) {
@@ -94,6 +97,7 @@ export function useManuscriptSubmission({
         }
 
         // Create FormData with all required fields
+        console.log("📝 Creating FormData for submission...");
         const formData = new FormData();
         formData.append("manuscript", file);
         formData.append("title", metadata.title);
@@ -113,10 +117,24 @@ export function useManuscriptSubmission({
         // Optional flags for auto-assignment
         formData.append("autoAssign", "true");
         formData.append("aiAutoAssign", "true");
+        
+        console.log("📋 FormData fields prepared:");
+        console.log("- File:", file.name, "(" + file.size + " bytes)");
+        console.log("- Title:", metadata.title);
+        console.log("- Author:", metadata.authors[0]?.name);
+        console.log("- Categories:", metadata.categories.join(","));
+        console.log("- Wallet:", metadata.walletAddress);
 
         // Use Privy-enabled endpoint with authentication
+        const apiEndpoint = `${apiUrl}/manuscripts/submit/privy`;
+        console.log("🌐 Making API request to:", apiEndpoint);
+        console.log("📡 Request headers:", {
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${accessToken.substring(0, 20)}...`
+        });
+        
         const result = await axios.post<SubmissionResponse>(
-          `${apiUrl}/manuscripts/submit/privy`,
+          apiEndpoint,
           formData,
           {
             headers: {
@@ -126,15 +144,27 @@ export function useManuscriptSubmission({
           }
         );
 
+        console.log("📨 API Response received:");
+        console.log("- Status:", result.status);
+        console.log("- Success:", result.data.success);
+        console.log("- Full response:", result.data);
+
         if (result.data.success) {
+          console.log("✅ Manuscript submission successful!");
           return result.data;
         }
 
-        console.error("Submission error:", result.data);
+        console.error("❌ Submission failed with response:", result.data);
         setError("Submission failed");
         return null;
       } catch (error: any) {
-        console.error("Submission error:", error.response?.data || error);
+        console.error("❌ API Request failed with error:");
+        console.error("- Error type:", error.constructor.name);
+        console.error("- Error message:", error.message);
+        console.error("- HTTP Status:", error.response?.status);
+        console.error("- Response data:", error.response?.data);
+        console.error("- Full error object:", error);
+        
         const errorData = error.response?.data;
         let errorMessage = "Failed to submit manuscript";
 

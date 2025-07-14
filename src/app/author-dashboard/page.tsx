@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   FileTextIcon,
   ClockIcon,
@@ -14,7 +13,6 @@ import {
   EyeIcon,
   AlertCircleIcon,
   TrendingUpIcon,
-  BookOpenIcon,
   UsersIcon,
   CalendarIcon,
   BarChart3Icon,
@@ -31,6 +29,7 @@ import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
+import HeaderImage from "@/components/header-image";
 
 interface ReviewInfo {
   reviewsCompleted: number;
@@ -188,22 +187,14 @@ export default function AuthorsDashboardPage() {
                 <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
                 <div className="flex items-center space-x-2">
-                  <BarChart3Icon className="h-5 w-5 text-primary" />
                   <span className="font-medium text-primary">
                     Author Dashboard
                   </span>
                 </div>
               </div>
             </div>
+            <HeaderImage />
             <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="mb-12 text-center space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                  Author Dashboard
-                </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                  Track your manuscript submissions and publication progress
-                </p>
-              </div>
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader className="text-center py-8">
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -245,16 +236,8 @@ export default function AuthorsDashboardPage() {
               </div>
             </div>
           </div>
+          <HeaderImage />
           <div className="container max-w-7xl mx-auto px-6 py-12">
-            <div className="mb-12 text-center space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-                Author Dashboard
-              </h1>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-                Track your manuscript submissions and publication progress
-              </p>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-6">
@@ -382,10 +365,9 @@ export default function AuthorsDashboardPage() {
               </Card>
             </div>
 
-            {/* Manuscripts List */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-primary">
+                <h2 className="text-3xl font-semibold text-primary">
                   Your Manuscripts
                 </h2>
                 <Badge variant="outline" className="text-base px-4 py-2">

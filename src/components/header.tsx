@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 import { WalletConnection } from "@/components/wallet-connection";
 import { Separator } from "@/components/ui/separator";
@@ -23,8 +24,18 @@ import {
   BookOpenIcon,
 } from "lucide-react";
 
+function ConditionalSidebarTrigger() {
+  try {
+    const { toggleSidebar } = useSidebar();
+    return <SidebarTrigger />;
+  } catch {
+    // If not in SidebarProvider context, don't render anything
+    return null;
+  }
+}
+
 export function Header() {
-  const { user } = usePrivy();
+  const { user, authenticated } = usePrivy();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -53,23 +64,26 @@ export function Header() {
     >
       <div className="container max-w-7xl mx-auto px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-10 h-10 relative">
-              <Image
-                src="/headerlogo.svg"
-                alt="Fronsciers Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-          </Link>
+          <div className="flex items-center space-x-4">
+            {authenticated && <ConditionalSidebarTrigger />}
+            <Link
+              href="/"
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-10 h-10 relative">
+                <Image
+                  src="/headerlogo.svg"
+                  alt="Fronsciers Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
+            </Link>
+          </div>
 
           <div className="flex items-center space-x-4">
-            {user && (
+            {authenticated && (
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

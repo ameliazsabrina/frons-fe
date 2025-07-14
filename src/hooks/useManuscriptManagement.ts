@@ -141,6 +141,8 @@ export function useManuscriptManagement() {
         setIsLoading(true);
         setError(null);
 
+        console.log(`🔍 Fetching pending review manuscripts (limit: ${limit}, category: ${category}, reviewer: ${reviewerWallet})`);
+
         const response = await axios.get<ManuscriptResponse>(
           `${apiUrl}/manuscripts/pending-review`,
           {
@@ -151,6 +153,8 @@ export function useManuscriptManagement() {
             },
           }
         );
+
+        console.log(`📋 Pending review API response:`, response.data);
 
         if (response.data.success) {
           return response.data.manuscripts;

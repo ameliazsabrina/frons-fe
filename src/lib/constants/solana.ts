@@ -11,8 +11,9 @@ export const DEVNET_USDCF_ADDRESS =
   "B4UmZhTkjFJoAFp2r4LcuWaY8aPy4oH7kE9ej1Ctp4Vo";
 export const DEVNET_FRONS_ADDRESS =
   "2MjhRY9M2qL3PxAa5jCw4hqkpjbebLwq7EkLHtowDkUL";
-export const ESCROW_ADDRESS = "D9e8ZsmdfMtCnQsbe1SQmkK2Kd1jSw5Thxh4LJprSFiX";
-export const DOCI_REGISTRY_ADDRESS = "95E4ip51CThHfugWdU8uVCk6st6qgTnLJEGnmafkMRWo";
+export const ESCROW_ADDRESS = "FwnvmuPAfFzbqksKPRnoBcBjHT1NKzvo2fv4uX3iTayk";
+export const DOCI_REGISTRY_ADDRESS =
+  "95E4ip51CThHfugWdU8uVCk6st6qgTnLJEGnmafkMRWo";
 
 export const PDA_SEEDS = {
   USER: "user",
@@ -34,7 +35,6 @@ export const DECISION_TYPES = {
   REJECTED: "Rejected",
 } as const;
 
-// Smart Contract Constants (in lamports - 9 decimals)
 export const CONTRACT_CONSTANTS = {
   SUBMISSION_FEE: 50_000_000_000, // 50 SOL
   FRONS_REWARD: 100_000_000, // 0.1 SOL
@@ -44,7 +44,6 @@ export const CONTRACT_CONSTANTS = {
   DOCI_PREFIX: "10.fronsciers/manuscript",
 } as const;
 
-// Error Codes from Smart Contract
 export const PROGRAM_ERRORS = {
   SUBMISSION_REQUIREMENTS_NOT_MET: "User does not meet submission requirements",
   INVALID_EDUCATION_LEVEL: "Invalid education level",

@@ -93,26 +93,9 @@ const UnconnectedView = () => (
   <>
     <HeaderImage />
     <div className="container max-w-5xl mx-auto px-6 py-12">
-      <div className="mb-12 text-center space-y-4">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl text-primary mb-4 font-spectral font-bold tracking-tight">
-          CV Registration
-        </h1>
-        <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto leading-tight">
-          Register your academic credentials to participate in our platform
-        </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-primary/50 to-primary mx-auto rounded-full"></div>
-      </div>
       <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-        <CardHeader className="text-center py-8">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <ShieldCheckIcon className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl text-primary">
-            Authentication Required
-          </CardTitle>
-        </CardHeader>
         <CardContent className="pb-8">
-          <p className="text-muted-foreground mb-8 text-center text-lg">
+          <p className="text-muted-foreground mb-8 text-center text-base">
             Please connect your wallet to register your CV and submit
             manuscripts.
           </p>
@@ -343,7 +326,7 @@ const ConnectedView = () => {
     try {
       const result = await getUserProfile(validSolanaPublicKey);
       if (result?.success) {
-        // setShowProfile(true); // This state was removed, so this line is removed
+        setShowProfile(true);
       }
     } catch (err) {
       console.error("Failed to load profile:", err);
@@ -393,8 +376,6 @@ const ConnectedView = () => {
     }
 
     try {
-      // setIsSubmittingManual(true); // This state was removed, so this line is removed
-
       const result = await createManualProfile(
         editableData,
         validSolanaPublicKey

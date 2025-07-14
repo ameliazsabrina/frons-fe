@@ -17,8 +17,6 @@ import {
   ClipboardCheckIcon,
   UserIcon,
   BookOpenIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   FilePen,
 } from "lucide-react";
 import { WalletConnection } from "./wallet-connection";
@@ -63,10 +61,10 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
   ];
 
   return (
-    <Sidebar className="border-r border-gray-100 bg-gray-50/50 bg-white">
+    <Sidebar collapsible="offcanvas" className="bg-white">
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <div className="flex justify-center mt-20 mb-8">
+          <div className="flex justify-center mt-20 mb-8 relative">
             <Link href="/" className="transition-opacity hover:opacity-80">
               <Image
                 src="/logoname.svg"

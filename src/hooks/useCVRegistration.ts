@@ -182,28 +182,25 @@ export function useCVRegistration(walletAddress?: string) {
     []
   );
 
-  const checkCVRegistrationPrivy = useCallback(async (): Promise<boolean> => {
+  const checkCVRegistrationPrivy = useCallback(async (walletAddress?: string): Promise<boolean> => {
     try {
       setError(null);
 
-      if (!authenticated) {
-        setError("Please authenticate to check CV status");
+      if (!walletAddress || walletAddress.trim() === '') {
+        console.log("❌ No wallet address provided to checkCVRegistrationPrivy");
+        setError("Wallet address required for CV verification");
         return false;
       }
 
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        setError("Failed to get authentication token");
-        return false;
-      }
+      // For now, just use the working endpoint regardless of Privy auth
+      // TODO: Implement proper Privy authentication once the backend supports it correctly
+      console.log("🔍 Using working CV check endpoint for wallet:", walletAddress);
+      
+      const result = await axios.get(
+        `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
+      );
 
-      const result = await axios.get(`${apiUrl}/manuscripts/cv-status`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      console.log(result.data);
+      console.log("CV Status API Response:", result.data);
       setCvStatus(result.data as CVStatus);
 
       if (result.data.success && result.data.hasCV && result.data.userInfo) {
@@ -217,16 +214,19 @@ export function useCVRegistration(walletAddress?: string) {
           registeredAt: result.data.userInfo.registeredAt,
         });
         return result.data.canSubmitManuscripts;
+      } else if (result.data.hasCV !== undefined) {
+        // Handle case where endpoint returns CV status without full success structure
+        return result.data.hasCV && result.data.canSubmitManuscripts;
       } else {
-        setError(result.data.message);
+        setError(result.data.message || "CV status check failed");
         return false;
       }
     } catch (err) {
-      console.error("Failed to check CV registration with Privy:", err);
+      console.error("Failed to check CV registration:", err);
       setError("Network error while checking CV status");
       return false;
     }
-  }, [authenticated, getAccessToken]);
+  }, [apiUrl]);
 
   const uploadCV = useCallback(
     async (

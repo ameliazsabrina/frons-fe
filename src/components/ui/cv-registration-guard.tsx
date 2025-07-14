@@ -33,77 +33,79 @@ export function CVRegistrationGuard({
   const { toast } = useToast();
   const router = useRouter();
   const { authenticated } = usePrivy();
-  const [cvStatus, setCvStatus] = useState<
-    "checking" | "registered" | "not_found" | "error"
-  >("checking");
-  const [cvData, setCvData] = useState<CVData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [hasShownToast, setHasShownToast] = useState(false);
 
-  // Use the CV registration hook with both Privy and legacy support
-  const { checkCVRegistration, checkCVRegistrationPrivy } =
+  // Use the CV registration hook - it handles all the API calls
+  const { checkCVRegistration, checkCVRegistrationPrivy, cvStatus: hookCvStatus, error: hookError } =
     useCVRegistration(walletAddress);
 
-  const checkCVStatus = useCallback(async () => {
-    try {
-      setCvStatus("checking");
+  // Simple state derived from hook status
+  const [localStatus, setLocalStatus] = useState<"checking" | "registered" | "not_found" | "error">("checking");
 
-      let isVerified = false;
-
-      if (authenticated) {
-        // Use Privy authentication if available
-        isVerified = await checkCVRegistrationPrivy();
-      } else if (walletAddress) {
-        // Fall back to legacy wallet-based check
-        isVerified = await checkCVRegistration(walletAddress);
-      } else {
-        setCvStatus("error");
-        setError("No authentication method available");
+  // Trigger initial check when component mounts
+  useEffect(() => {
+    const performInitialCheck = async () => {
+      if (!authenticated && !walletAddress) {
+        setLocalStatus("error");
         return;
       }
 
-      if (isVerified) {
-        setCvStatus("registered");
-        onCVVerified();
-      } else {
-        setCvStatus("not_found");
+      console.log("🔍 CVRegistrationGuard: Initial check for wallet:", walletAddress);
+      
+      try {
+        if (authenticated && walletAddress) {
+          await checkCVRegistrationPrivy(walletAddress);
+        } else if (walletAddress) {
+          await checkCVRegistration(walletAddress);
+        }
+      } catch (err) {
+        console.error("Initial CV check failed:", err);
+        setLocalStatus("error");
       }
-    } catch (err) {
-      console.error("Failed to check CV status:", err);
-      setCvStatus("error");
-      setError("Failed to check CV registration status");
+    };
+
+    performInitialCheck();
+  }, []); // Only run once on mount
+
+  // Watch for hook status updates and sync local state
+  useEffect(() => {
+    if (hookCvStatus) {
+      console.log("📊 Hook status changed:", hookCvStatus);
+      
+      if (hookCvStatus.hasCV) {
+        setLocalStatus("registered");
+        onCVVerified();
+        console.log("✅ CV verified, showing content");
+      } else if (hookCvStatus.success === false) {
+        setLocalStatus("not_found");
+        console.log("❌ No CV found");
+      } else {
+        setLocalStatus("checking");
+      }
     }
-  }, [
-    authenticated,
-    walletAddress,
-    checkCVRegistration,
-    checkCVRegistrationPrivy,
-    onCVVerified,
-  ]);
+  }, [hookCvStatus, onCVVerified]);
 
   useEffect(() => {
-    if (authenticated || walletAddress) {
-      checkCVStatus();
-    }
-  }, [authenticated, walletAddress, checkCVStatus]);
-
-  useEffect(() => {
-    if (cvStatus === "registered" && !hasShownToast) {
+    if (localStatus === "registered" && !hasShownToast) {
       toast({
         title: "CV Verified!",
         description: "You can now submit manuscripts.",
       });
       setHasShownToast(true);
     }
-  }, [cvStatus, hasShownToast, toast]);
+  }, [localStatus, hasShownToast, toast]);
 
   useEffect(() => {
-    if (cvStatus === "not_found") {
+    // Only redirect if we're sure there's no CV data in the database
+    if (localStatus === "not_found" && hookCvStatus?.success === false && hookCvStatus?.hasCV === false) {
+      console.log("🔄 Redirecting to CV registration page");
       router.push("/register-cv");
     }
-  }, [cvStatus, router]);
+  }, [localStatus, router, hookCvStatus]);
 
-  if (cvStatus === "checking") {
+  console.log("Local Status:", localStatus, "Hook CV Status:", hookCvStatus);
+
+  if (localStatus === "checking") {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
@@ -114,11 +116,12 @@ export function CVRegistrationGuard({
     );
   }
 
-  if (cvStatus === "registered" && cvData) {
+  if (localStatus === "registered") {
+    console.log("✅ Rendering children - CV is registered");
     return <div className="space-y-6">{children}</div>;
   }
 
-  if (cvStatus === "not_found") {
+  if (localStatus === "not_found") {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center justify-center p-8">
@@ -133,7 +136,7 @@ export function CVRegistrationGuard({
     );
   }
 
-  if (cvStatus === "error") {
+  if (localStatus === "error") {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="p-6">
@@ -142,11 +145,11 @@ export function CVRegistrationGuard({
             <div>
               <h3 className="font-medium text-red-800">Error</h3>
               <p className="text-sm text-red-700">
-                {error ||
+                {hookError ||
                   "Failed to check CV registration status. Please try again."}
               </p>
               <Button
-                onClick={checkCVStatus}
+                onClick={() => window.location.reload()}
                 variant="outline"
                 size="sm"
                 className="mt-2"
