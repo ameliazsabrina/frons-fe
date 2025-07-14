@@ -537,10 +537,10 @@ export default function OverviewPage() {
           <main className="flex-1">
             <div className="flex-1 p-4 sm:p-6">
               <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral font-bold tracking-tight">
+                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-bold tracking-tight">
                   Welcome back, {getUserDisplayName(user)}
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
+                <p className="text-muted-foreground text-md max-w-2xl mx-auto">
                   Your academic publishing dashboard
                 </p>
               </div>
