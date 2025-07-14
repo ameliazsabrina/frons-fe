@@ -46,6 +46,7 @@ import { Badge } from "@/components/ui/badge";
 
 import HeaderImage from "@/components/header-image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AcademicCardSection } from "@/components/profile/academic-card/AcademicCardSection";
 
 interface UserProfile {
   personalInfo: {
@@ -256,7 +257,6 @@ export default function YourProfile() {
     try {
       setSaving(true);
 
-      // Transform editData back to API format
       const updatePayload = {
         personalInfo: editData.personalInfo,
         contact: editData.contact,
@@ -816,7 +816,7 @@ export default function YourProfile() {
 
             <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="w-full h-auto grid grid-cols-5 bg-gray-50/50 p-0 rounded-lg">
+                <TabsList className="w-full h-auto grid grid-cols-6 bg-gray-50/50 p-0 rounded-lg">
                   <TabsTrigger
                     value="overview"
                     className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
@@ -847,12 +847,18 @@ export default function YourProfile() {
                   >
                     Awards ({profile.summary.awards})
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="academic-card"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
+                  >
+                    Academic Card
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="p-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-primary">
+                      <h3 className="text-xl font-semibold ">
                         Professional Overview
                       </h3>
                       {isEditing && (
@@ -883,8 +889,8 @@ export default function YourProfile() {
                               No overview information available
                             </p>
                             <p className="text-sm text-gray-400">
-                              Click "Edit Profile" to add your professional
-                              overview
+                              Click &quot;Edit Profile&quot; to add your
+                              professional overview
                             </p>
                           </div>
                         )}
@@ -1079,6 +1085,35 @@ export default function YourProfile() {
                       </p>
                     </div>
                   )}
+                </TabsContent>
+
+                <TabsContent value="academic-card" className="p-6">
+                  <AcademicCardSection
+                    userProfile={{
+                      cv_data: {
+                        selfIdentity: {
+                          fullName: profile.personalInfo.fullName,
+                          title: profile.personalInfo.title,
+                          profession: profile.personalInfo.profession,
+                          institution: profile.personalInfo.institution,
+                          location: profile.personalInfo.location,
+                          field: profile.personalInfo.field,
+                          specialization: profile.personalInfo.specialization,
+                        },
+                        contact: {
+                          email: profile.contact.email,
+                          phone: profile.contact.phone || "",
+                          linkedIn: profile.contact.linkedIn || "",
+                          github: profile.contact.github || "",
+                          website: profile.contact.website || "",
+                          orcid: profile.contact.orcid || "",
+                          googleScholar: profile.contact.googleScholar || "",
+                        },
+                      },
+                      wallet_address: walletAddress,
+                    }}
+                    walletAddress={walletAddress}
+                  />
                 </TabsContent>
               </Tabs>
             </Card>

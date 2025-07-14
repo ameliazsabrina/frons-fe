@@ -56,7 +56,6 @@ export function BasicInformationForm({
             value={formData.title}
             onChange={(e) => onInputChange("title", e.target.value)}
             placeholder="Enter your manuscript title"
-            className="text-base border-primary/20 focus:border-primary focus:ring-primary/30"
             disabled={submitting}
           />
         </div>
@@ -73,7 +72,6 @@ export function BasicInformationForm({
             value={formData.author}
             onChange={(e) => onInputChange("author", e.target.value)}
             placeholder="Enter author names separated by commas"
-            className="text-base border-primary/20 focus:border-primary focus:ring-primary/30"
             disabled={submitting}
           />
           {authors.length > 0 && (

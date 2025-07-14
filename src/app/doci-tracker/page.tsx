@@ -19,10 +19,12 @@ import { useWallets } from "@privy-io/react-auth";
 import { useToast } from "@/components/ui/sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { DOCIManuscript } from "@/types/fronsciers";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { PublicKey } from "@solana/web3.js";
 import { getPrimaryWalletAddress } from "@/utils/wallet";
+import HeaderImage from "@/components/header-image";
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp * 1000).toLocaleDateString();
@@ -42,8 +44,10 @@ export default function DocisPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [manuscripts, setManuscripts] = useState<DOCIManuscript[]>([]);
+  const [filteredManuscripts, setFilteredManuscripts] = useState<
+    DOCIManuscript[]
+  >([]);
 
-  // Generate mock DOCI data for demo purposes (client-side only)
   const generateMockDOCIs = (): DOCIManuscript[] => {
     if (typeof window === "undefined") return []; // Prevent SSR issues
 
@@ -195,9 +199,28 @@ export default function DocisPage() {
   // Initialize mock data on client side
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setManuscripts(generateMockDOCIs());
+      const mockData = generateMockDOCIs();
+      setManuscripts(mockData);
+      setFilteredManuscripts(mockData);
     }
   }, []);
+
+  // Filter manuscripts based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredManuscripts(manuscripts);
+    } else {
+      const filtered = manuscripts.filter(
+        (manuscript) =>
+          manuscript.doci.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          manuscript.mintAddress
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+      );
+      setFilteredManuscripts(filtered);
+    }
+  }, [searchQuery, manuscripts]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -244,7 +267,6 @@ export default function DocisPage() {
   };
 
   const handleScanQR = () => {
-    // TODO: Implement QR code scanning
     toast.info("QR code scanning functionality is coming soon!");
   };
 
@@ -264,15 +286,78 @@ export default function DocisPage() {
               <Separator orientation="vertical" className="h-6" />
             </div>
           </div>
+
+          <HeaderImage />
+
           <div className="container max-w-6xl mx-auto px-4 py-8">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
-                DOCI Tracker
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                Track and manage your Digital Object Certification Identifiers
-                (DOCIs)
-              </p>
+            <div className="mb-8">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl font-semibold text-primary mb-2">
+                  DOCI Tracker
+                </h1>
+                <p className="text-muted-foreground">
+                  Search and explore published DOCIs (Digital Object Citation
+                  Identifiers)
+                </p>
+              </div>
+
+              <div className="max-w-2xl mx-auto">
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search by DOCI ID or mint address..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="pl-10 pr-24 h-12 text-base bg-white/80 border-gray-200 focus:border-primary focus:ring-primary"
+                  />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handlePasteFromClipboard}
+                      className="h-8 w-8 p-0"
+                      title="Paste from clipboard"
+                    >
+                      <ClipboardIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleScanQR}
+                      className="h-8 w-8 p-0"
+                      title="Scan QR code"
+                    >
+                      <ScanIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                  <span className="text-sm text-muted-foreground">
+                    Examples:
+                  </span>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() =>
+                      handleExampleSearch("10.fronsciers/manuscript.2024.001")
+                    }
+                    className="h-auto p-0 text-xs text-primary hover:text-primary/80"
+                  >
+                    10.fronsciers/manuscript.2024.001
+                  </Button>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => handleExampleSearch("manuscript.2024.005")}
+                    className="h-auto p-0 text-xs text-primary hover:text-primary/80"
+                  >
+                    manuscript.2024.005
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {loading ? (
@@ -289,6 +374,19 @@ export default function DocisPage() {
                   <p className="text-red-600">{error}</p>
                 </CardContent>
               </Card>
+            ) : filteredManuscripts.length === 0 && searchQuery.trim() ? (
+              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-8 text-center">
+                  <SearchIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    No Results Found
+                  </h2>
+                  <p className="text-muted-foreground">
+                    No DOCIs found matching &quot;{searchQuery}&quot;. Try a
+                    different search term.
+                  </p>
+                </CardContent>
+              </Card>
             ) : manuscripts.length === 0 ? (
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-8 text-center">
@@ -302,79 +400,98 @@ export default function DocisPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {manuscripts.map((manuscript) => (
-                  <Card
-                    key={manuscript.doci}
-                    className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex flex-col h-full">
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between gap-4 mb-4">
-                            <h3 className="font-medium text-primary leading-tight">
-                              DOCI: {manuscript.doci}
-                            </h3>
-                          </div>
+              <>
+                <div className="mb-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery.trim() ? (
+                      <>
+                        Showing {filteredManuscripts.length} result
+                        {filteredManuscripts.length !== 1 ? "s" : ""} for &quot;
+                        {searchQuery}&quot;
+                      </>
+                    ) : (
+                      <>
+                        Showing {filteredManuscripts.length} published DOCI
+                        {filteredManuscripts.length !== 1 ? "s" : ""}
+                      </>
+                    )}
+                  </p>
+                </div>
 
-                          <div className="space-y-3 mb-4">
-                            <div className="flex flex-wrap gap-2">
-                              <Badge
-                                variant="secondary"
-                                className="bg-primary/10 text-primary text-xs"
-                              >
-                                Citations: {manuscript.citationCount}
-                              </Badge>
-                              <Badge
-                                variant="secondary"
-                                className="bg-primary/10 text-primary text-xs"
-                              >
-                                Access: {manuscript.accessCount}
-                              </Badge>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredManuscripts.map((manuscript) => (
+                    <Card
+                      key={manuscript.doci}
+                      className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col h-full">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                              <h3 className="font-medium text-primary leading-tight">
+                                DOCI: {manuscript.doci}
+                              </h3>
+                            </div>
+
+                            <div className="space-y-3 mb-4">
+                              <div className="flex flex-wrap gap-2">
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-primary/10 text-primary text-xs"
+                                >
+                                  Citations: {manuscript.citationCount}
+                                </Badge>
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-primary/10 text-primary text-xs"
+                                >
+                                  Access: {manuscript.accessCount}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 text-sm text-muted-foreground">
+                              <p>Version: {manuscript.version}</p>
+                              <p>
+                                Published:{" "}
+                                {formatDate(manuscript.publicationDate)}
+                              </p>
                             </div>
                           </div>
 
-                          <div className="space-y-2 text-sm text-muted-foreground">
-                            <p>Version: {manuscript.version}</p>
-                            <p>
-                              Published:{" "}
-                              {formatDate(manuscript.publicationDate)}
-                            </p>
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                window.open(manuscript.metadataUri, "_blank")
+                              }
+                              className="text-xs"
+                            >
+                              <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                              View Metadata
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                window.open(
+                                  `https://explorer.solana.com/address/${manuscript.mintAddress}?cluster=devnet`,
+                                  "_blank"
+                                )
+                              }
+                              className="text-xs"
+                            >
+                              <ExternalLinkIcon className="h-3 w-3 mr-1" />
+                              View NFT
+                            </Button>
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              window.open(manuscript.metadataUri, "_blank")
-                            }
-                            className="text-xs"
-                          >
-                            <ExternalLinkIcon className="h-3 w-3 mr-1" />
-                            View Metadata
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              window.open(
-                                `https://explorer.solana.com/address/${manuscript.mintAddress}?cluster=devnet`,
-                                "_blank"
-                              )
-                            }
-                            className="text-xs"
-                          >
-                            <ExternalLinkIcon className="h-3 w-3 mr-1" />
-                            View NFT
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </SidebarInset>

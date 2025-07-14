@@ -53,7 +53,6 @@ export function AbstractKeywordsForm({
             value={formData.abstract}
             onChange={(e) => onInputChange("abstract", e.target.value)}
             placeholder="Enter your manuscript abstract"
-            className="min-h-[150px] text-base border-primary/20 focus:border-primary focus:ring-primary/30 leading-relaxed"
             disabled={submitting}
           />
         </div>
@@ -70,7 +69,6 @@ export function AbstractKeywordsForm({
             value={formData.keywords}
             onChange={(e) => onInputChange("keywords", e.target.value)}
             placeholder="Enter keywords separated by commas"
-            className="text-base border-primary/20 focus:border-primary focus:ring-primary/30"
             disabled={submitting}
           />
           {keywords.length > 0 && (
