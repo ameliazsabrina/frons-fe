@@ -455,7 +455,12 @@ export function ResearchCategorySelector({
               >
                 {category}
                 <button
-                  onClick={() => removeCategory(category)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeCategory(category);
+                  }}
                   className="ml-1 hover:text-red-600 transition-colors"
                 >
                   <XIcon className="h-3 w-3" />
@@ -474,7 +479,12 @@ export function ResearchCategorySelector({
               <Card key={category} className="border border-gray-200">
                 <CardContent className="p-4">
                   <button
-                    onClick={() => toggleCategory(category)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleCategory(category);
+                    }}
                     className="flex items-center justify-between w-full text-left font-medium text-gray-900 hover:text-blue-600 transition-colors"
                   >
                     <span className="text-sm">{category}</span>
@@ -489,8 +499,13 @@ export function ResearchCategorySelector({
                     <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
                       {subcategories.map((subcategory) => (
                         <button
+                          type="button"
                           key={subcategory}
-                          onClick={() => toggleSubcategory(subcategory)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleSubcategory(subcategory);
+                          }}
                           className={cn(
                             "block w-full text-left text-xs px-2 py-1 rounded transition-colors",
                             selectedCategories.includes(subcategory)

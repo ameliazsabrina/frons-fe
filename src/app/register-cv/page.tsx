@@ -177,6 +177,8 @@ const ConnectedView = () => {
           title: "Error",
           description: "Failed to load user profile",
           variant: "destructive",
+          className: "bg-white text-red-600 border-red-500 shadow-lg",
+          duration: 5000,
         });
       }
     };
@@ -284,6 +286,8 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to register profile. Please try again.",
           variant: "destructive",
+          className: "bg-white text-red-600 border-red-500 shadow-lg",
+          duration: 5000,
         });
       }
     } catch (err) {
@@ -292,6 +296,8 @@ const ConnectedView = () => {
         title: "Registration Failed",
         description: "Failed to register profile. Please try again.",
         variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
     } finally {
       setConfirmingRegistration(false);
@@ -361,6 +367,8 @@ const ConnectedView = () => {
         title: "Missing Required Fields",
         description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
       return;
     }
@@ -371,6 +379,8 @@ const ConnectedView = () => {
         title: "Invalid Email",
         description: "Please enter a valid email address",
         variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
       return;
     }
@@ -393,6 +403,8 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to create profile. Please try again.",
           variant: "destructive",
+          className: "bg-white text-red-600 border-red-500 shadow-lg",
+          duration: 5000,
         });
       }
     } catch (err) {
@@ -401,6 +413,8 @@ const ConnectedView = () => {
         title: "Profile Creation Failed",
         description: "Failed to create profile. Please try again.",
         variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
     } finally {
     }

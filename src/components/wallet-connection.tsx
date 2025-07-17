@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getPrimaryWallet } from "@/utils/wallet";
+import { Loading } from "@/components/ui/loading";
 
 export const WalletConnection = () => {
   const {
@@ -123,12 +124,7 @@ export const WalletConnection = () => {
   };
 
   if (!privyReady || !walletsReady) {
-    return (
-      <div className="flex items-center gap-2">
-        <LoaderIcon className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Loading...</span>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!connected) {

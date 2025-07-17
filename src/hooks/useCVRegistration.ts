@@ -182,51 +182,59 @@ export function useCVRegistration(walletAddress?: string) {
     []
   );
 
-  const checkCVRegistrationPrivy = useCallback(async (walletAddress?: string): Promise<boolean> => {
-    try {
-      setError(null);
+  const checkCVRegistrationPrivy = useCallback(
+    async (walletAddress?: string): Promise<boolean> => {
+      try {
+        setError(null);
 
-      if (!walletAddress || walletAddress.trim() === '') {
-        console.log("❌ No wallet address provided to checkCVRegistrationPrivy");
-        setError("Wallet address required for CV verification");
+        if (!walletAddress || walletAddress.trim() === "") {
+          console.log(
+            "❌ No wallet address provided to checkCVRegistrationPrivy"
+          );
+          setError("Wallet address required for CV verification");
+          return false;
+        }
+
+        // For now, just use the working endpoint regardless of Privy auth
+        // TODO: Implement proper Privy authentication once the backend supports it correctly
+        console.log(
+          "🔍 Using working CV check endpoint for wallet:",
+          walletAddress
+        );
+
+        const result = await axios.get(
+          `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
+        );
+
+        console.log("CV Status API Response:", result.data);
+        setCvStatus(result.data as CVStatus);
+
+        if (result.data.success && result.data.hasCV && result.data.userInfo) {
+          setCvData({
+            fullName: result.data.userInfo.fullName,
+            institution: result.data.userInfo.institution,
+            profession: result.data.userInfo.profession,
+            field: result.data.userInfo.profession,
+            specialization: result.data.userInfo.profession,
+            email: result.data.userInfo.email || "",
+            registeredAt: result.data.userInfo.registeredAt,
+          });
+          return result.data.canSubmitManuscripts;
+        } else if (result.data.hasCV !== undefined) {
+          // Handle case where endpoint returns CV status without full success structure
+          return result.data.hasCV && result.data.canSubmitManuscripts;
+        } else {
+          setError(result.data.message || "CV status check failed");
+          return false;
+        }
+      } catch (err) {
+        console.error("Failed to check CV registration:", err);
+        setError("Network error while checking CV status");
         return false;
       }
-
-      // For now, just use the working endpoint regardless of Privy auth
-      // TODO: Implement proper Privy authentication once the backend supports it correctly
-      console.log("🔍 Using working CV check endpoint for wallet:", walletAddress);
-      
-      const result = await axios.get(
-        `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
-      );
-
-      console.log("CV Status API Response:", result.data);
-      setCvStatus(result.data as CVStatus);
-
-      if (result.data.success && result.data.hasCV && result.data.userInfo) {
-        setCvData({
-          fullName: result.data.userInfo.fullName,
-          institution: result.data.userInfo.institution,
-          profession: result.data.userInfo.profession,
-          field: result.data.userInfo.profession,
-          specialization: result.data.userInfo.profession,
-          email: result.data.userInfo.email || "",
-          registeredAt: result.data.userInfo.registeredAt,
-        });
-        return result.data.canSubmitManuscripts;
-      } else if (result.data.hasCV !== undefined) {
-        // Handle case where endpoint returns CV status without full success structure
-        return result.data.hasCV && result.data.canSubmitManuscripts;
-      } else {
-        setError(result.data.message || "CV status check failed");
-        return false;
-      }
-    } catch (err) {
-      console.error("Failed to check CV registration:", err);
-      setError("Network error while checking CV status");
-      return false;
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   const uploadCV = useCallback(
     async (
@@ -518,7 +526,6 @@ export function useCVRegistration(walletAddress?: string) {
                   "No CV data found for your wallet. Please upload your CV first to create your profile.",
                 duration: 5000,
               });
-              setError("No CV data found - please upload your CV first");
             } else {
               toast.error("Profile Not Found", {
                 description: "The requested profile could not be found.",

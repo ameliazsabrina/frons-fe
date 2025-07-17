@@ -25,6 +25,7 @@ import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { PublicKey } from "@solana/web3.js";
 import { getPrimaryWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
+import { Loading } from "@/components/ui/loading";
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp * 1000).toLocaleDateString();
@@ -361,9 +362,7 @@ export default function DocisPage() {
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center min-h-[200px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
+              <Loading />
             ) : error ? (
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardContent className="p-8 text-center">

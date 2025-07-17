@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Loading } from "@/components/ui/loading";
 
 function RefreshPageContent() {
   const { getAccessToken, authenticated, ready } = usePrivy();
@@ -31,28 +32,12 @@ function RefreshPageContent() {
     handleRefresh();
   }, [ready, getAccessToken, router, searchParams]);
 
-  return (
-    <div className="min-h-screen bg-primary/5 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Refreshing your session...</p>
-      </div>
-    </div>
-  );
+  return <Loading />;
 }
 
 export default function RefreshPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-primary/5 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading />}>
       <RefreshPageContent />
     </Suspense>
   );

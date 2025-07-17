@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircleIcon } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
@@ -36,11 +37,17 @@ export function CVRegistrationGuard({
   const [hasShownToast, setHasShownToast] = useState(false);
 
   // Use the CV registration hook - it handles all the API calls
-  const { checkCVRegistration, checkCVRegistrationPrivy, cvStatus: hookCvStatus, error: hookError } =
-    useCVRegistration(walletAddress);
+  const {
+    checkCVRegistration,
+    checkCVRegistrationPrivy,
+    cvStatus: hookCvStatus,
+    error: hookError,
+  } = useCVRegistration(walletAddress);
 
   // Simple state derived from hook status
-  const [localStatus, setLocalStatus] = useState<"checking" | "registered" | "not_found" | "error">("checking");
+  const [localStatus, setLocalStatus] = useState<
+    "checking" | "registered" | "not_found" | "error"
+  >("checking");
 
   // Trigger initial check when component mounts
   useEffect(() => {
@@ -50,8 +57,11 @@ export function CVRegistrationGuard({
         return;
       }
 
-      console.log("🔍 CVRegistrationGuard: Initial check for wallet:", walletAddress);
-      
+      console.log(
+        "🔍 CVRegistrationGuard: Initial check for wallet:",
+        walletAddress
+      );
+
       try {
         if (authenticated && walletAddress) {
           await checkCVRegistrationPrivy(walletAddress);
@@ -71,7 +81,7 @@ export function CVRegistrationGuard({
   useEffect(() => {
     if (hookCvStatus) {
       console.log("📊 Hook status changed:", hookCvStatus);
-      
+
       if (hookCvStatus.hasCV) {
         setLocalStatus("registered");
         onCVVerified();
@@ -92,12 +102,17 @@ export function CVRegistrationGuard({
         description: "You can now submit manuscripts.",
       });
       setHasShownToast(true);
+      router.push("/author-dashboard");
     }
   }, [localStatus, hasShownToast, toast]);
 
   useEffect(() => {
     // Only redirect if we're sure there's no CV data in the database
-    if (localStatus === "not_found" && hookCvStatus?.success === false && hookCvStatus?.hasCV === false) {
+    if (
+      localStatus === "not_found" &&
+      hookCvStatus?.success === false &&
+      hookCvStatus?.hasCV === false
+    ) {
       console.log("🔄 Redirecting to CV registration page");
       router.push("/register-cv");
     }
@@ -106,14 +121,7 @@ export function CVRegistrationGuard({
   console.log("Local Status:", localStatus, "Hook CV Status:", hookCvStatus);
 
   if (localStatus === "checking") {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking your profile status...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (localStatus === "registered") {
@@ -122,18 +130,7 @@ export function CVRegistrationGuard({
   }
 
   if (localStatus === "not_found") {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">
-              Redirecting to profile registration...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (localStatus === "error") {

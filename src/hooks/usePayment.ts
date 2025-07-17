@@ -7,16 +7,21 @@ import {
 } from "@solana/spl-token";
 import { DEVNET_USDCF_ADDRESS, ESCROW_ADDRESS } from "@/lib/constants/solana";
 import { useProgram } from "./useProgram";
+import { useGasSponsorship, TransactionType } from "./useGasSponsorship";
 
 interface UsePaymentProps {
   walletAddress?: string;
-  wallet?: any; // Privy wallet instance
+  wallet?: any;
 }
 
 export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const { connection } = useProgram();
+  const { sponsorTransaction, isSponsoring, sponsorshipError } =
+    useGasSponsorship({
+      walletAddress,
+    });
 
   const processPayment = useCallback(
     async (amount: number = 50): Promise<string> => {
@@ -27,49 +32,32 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
       setPaymentProcessing(true);
       setPaymentError(null);
 
-      const maxAttempts = 3;
-      let lastError: Error | null = null;
-
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-          console.log(`💳 Payment attempt ${attempt}/${maxAttempts}`);
-          return await executePayment(amount);
-        } catch (error) {
-          lastError = error instanceof Error ? error : new Error(String(error));
-          console.warn(
-            `⚠️ Payment attempt ${attempt} failed:`,
-            lastError.message
-          );
-
-          // Check if it's a blockhash-related error that might benefit from retry
-          const isRetryableError =
-            lastError.message.includes("blockhash") ||
-            lastError.message.includes("Blockhash not found") ||
-            lastError.message.includes("Transaction simulation failed");
-
-          if (!isRetryableError || attempt === maxAttempts) {
-            break;
-          }
-
-          // Wait a bit before retrying to let blockhash refresh
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
+      try {
+        console.log(
+          `💳 Processing $${amount} USDC payment with gas sponsorship`
+        );
+        return await executePaymentWithSponsorship(amount);
+      } catch (error) {
+        console.error("❌ Payment failed:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Payment failed";
+        setPaymentError(errorMessage);
+        throw error;
+      } finally {
+        setPaymentProcessing(false);
       }
-
-      // If we get here, all attempts failed
-      console.error("❌ All payment attempts failed:", lastError);
-      const errorMessage =
-        lastError?.message || "Payment failed after multiple attempts";
-      setPaymentError(errorMessage);
-      throw lastError || new Error(errorMessage);
     },
-    [wallet, walletAddress, connection]
+    [wallet, walletAddress]
   );
 
-  const executePayment = async (amount: number): Promise<string> => {
+  const executePaymentWithSponsorship = async (
+    amount: number
+  ): Promise<string> => {
     const userPublicKey = new PublicKey(walletAddress!);
     const usdcfMint = new PublicKey(DEVNET_USDCF_ADDRESS);
     const escrowPublicKey = new PublicKey(ESCROW_ADDRESS);
+
+    console.log("🔧 Preparing USDC transfer transaction");
 
     const userTokenAccount = await getAssociatedTokenAddress(
       usdcfMint,
@@ -82,8 +70,10 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
 
     const transaction = new Transaction();
 
+    // Check if user token account exists
     const userAccountInfo = await connection.getAccountInfo(userTokenAccount);
     if (!userAccountInfo) {
+      console.log("📦 Adding create user token account instruction");
       transaction.add(
         createAssociatedTokenAccountInstruction(
           userPublicKey,
@@ -94,10 +84,12 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
       );
     }
 
+    // Check if escrow token account exists
     const escrowAccountInfo = await connection.getAccountInfo(
       escrowTokenAccount
     );
     if (!escrowAccountInfo) {
+      console.log("📦 Adding create escrow token account instruction");
       transaction.add(
         createAssociatedTokenAccountInstruction(
           userPublicKey,
@@ -108,7 +100,11 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
       );
     }
 
-    const transferAmount = amount * Math.pow(10, 6);
+    // Add USDC transfer instruction
+    const transferAmount = amount * Math.pow(10, 6); // Convert to microUSDC
+    console.log(
+      `💰 Adding transfer instruction: ${amount} USDC (${transferAmount} microUSDC)`
+    );
     transaction.add(
       createTransferInstruction(
         userTokenAccount,
@@ -118,35 +114,43 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
       )
     );
 
+    // Set user as fee payer (will be changed to platform fee payer in backend)
     transaction.feePayer = userPublicKey;
 
+    // Get fresh blockhash
     console.log("🔄 Getting fresh blockhash...");
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash();
+    const { blockhash } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
 
-    console.log("📡 Transaction prepared with fresh blockhash");
-    console.log("🔧 Instructions:", transaction.instructions.length);
-    console.log("🏗️ Blockhash:", blockhash.substring(0, 8) + "...");
-    console.log("📊 Last valid block height:", lastValidBlockHeight);
+    console.log("✍️ User signing transaction...");
+    // User signs the transaction
+    const signedTransaction = await wallet.signTransaction(transaction);
 
-    console.log("💳 Sending transaction via Privy wallet...");
-    const signature = await wallet.sendTransaction(transaction, connection);
-
-    console.log("⏳ Waiting for transaction confirmation...");
-    const confirmation = await connection.confirmTransaction(
-      signature,
-      "confirmed"
+    console.log("🎯 Sponsoring transaction through backend...");
+    // Sponsor the transaction through backend
+    const sponsorshipResult = await sponsorTransaction(
+      signedTransaction,
+      TransactionType.MANUSCRIPT_SUBMISSION,
+      {
+        amount,
+        type: "usdc_transfer",
+        userWallet: walletAddress,
+      }
     );
 
-    if (confirmation.value.err) {
+    if (!sponsorshipResult.success) {
       throw new Error(
-        `Transaction failed: ${JSON.stringify(confirmation.value.err)}`
+        sponsorshipResult.error || "Transaction sponsorship failed"
       );
     }
 
-    console.log("✅ Payment successful:", signature);
-    return signature;
+    console.log(
+      "✅ Payment successful with gas sponsorship:",
+      sponsorshipResult.signature
+    );
+    console.log("💰 Gas used:", sponsorshipResult.gasUsed);
+
+    return sponsorshipResult.signature!;
   };
 
   const processUSDCPayment = useCallback(async (): Promise<string> => {
@@ -154,8 +158,8 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
   }, [processPayment]);
 
   return {
-    paymentProcessing,
-    paymentError,
+    paymentProcessing: paymentProcessing || isSponsoring,
+    paymentError: paymentError || sponsorshipError,
     processPayment,
     processUSDCPayment,
   };

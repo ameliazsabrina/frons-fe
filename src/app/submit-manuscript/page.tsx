@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
+import { Loading } from "@/components/ui/loading";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import {
@@ -76,7 +77,7 @@ export default function SubmitManuscriptPage() {
     selectedFile,
     authors,
     keywords,
-    error,
+
     handleInputChange,
     handleRemoveItem,
     handleCategoriesChange,
@@ -87,7 +88,7 @@ export default function SubmitManuscriptPage() {
     getArrayFromCommaString,
   } = useSubmissionForm();
 
-  const { cvVerified, cvChecking, verificationError } = useCVVerification({
+  const { cvVerified, cvChecking } = useCVVerification({
     walletAddress: validSolanaPublicKey,
     connected,
     authenticated,
@@ -111,8 +112,13 @@ export default function SubmitManuscriptPage() {
   } | null>(null);
 
   const [activeTab, setActiveTab] = useState("basic-info");
-
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setShowValidationErrors(false);
+  };
 
   useEffect(() => {
     const newCompletedTabs = new Set<string>();
@@ -132,18 +138,59 @@ export default function SubmitManuscriptPage() {
     setCompletedTabs(newCompletedTabs);
   }, [formData, selectedFile]);
 
+  const navigateToErrorTab = (errorMessage: string) => {
+    if (
+      errorMessage.includes("Title") ||
+      errorMessage.includes("Author") ||
+      errorMessage.includes("Category")
+    ) {
+      setActiveTab("basic-info");
+    } else if (
+      errorMessage.includes("Abstract") ||
+      errorMessage.includes("Keywords")
+    ) {
+      setActiveTab("authors-keywords");
+    } else if (errorMessage.includes("file")) {
+      setActiveTab("manuscript-file");
+    }
+  };
+
+  const validateFormWithTabs = useCallback((): string | null => {
+    if (!formData.title.trim())
+      return "Title is required (Basic Information tab)";
+    if (!formData.author.trim())
+      return "Author is required (Basic Information tab)";
+    if (!formData.category.trim())
+      return "Category is required (Basic Information tab)";
+
+    if (!formData.abstract.trim())
+      return "Abstract is required (Abstract & Keywords tab)";
+    if (!formData.keywords.trim())
+      return "Keywords are required (Abstract & Keywords tab)";
+
+    if (!selectedFile)
+      return "Manuscript file is required (Manuscript File tab)";
+
+    return null;
+  }, [formData, selectedFile]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("handleSubmit called");
 
-    const validationError = validateForm();
+    setShowValidationErrors(true);
+
+    const validationError = validateFormWithTabs();
     if (validationError) {
       console.log("Validation error:", validationError);
+      navigateToErrorTab(validationError);
+
       toast({
-        title: "Error",
+        title: "Validation Error",
         description: validationError,
         variant: "destructive",
-        className: "bg-red-500 text-white border-none",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
       return;
     }
@@ -152,18 +199,19 @@ export default function SubmitManuscriptPage() {
       console.log("Wallet/CV check failed:", {
         validSolanaPublicKey,
         cvVerified,
-      }); // Debug log
+      });
       toast({
         title: "Error",
         description: "Wallet connection and CV verification required",
         variant: "destructive",
-        className: "bg-red-500 text-white border-none",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
       return;
     }
 
     try {
-      console.log("Starting submission process..."); // Debug log
+      console.log("Starting submission process...");
       setSubmitting(true);
       setSubmitProgress(0);
       setSuccess(null);
@@ -171,7 +219,10 @@ export default function SubmitManuscriptPage() {
 
       setSubmitProgress(10);
       console.log("About to process payment...");
-      console.log("Payment context:", { walletAddress: validSolanaPublicKey, wallet: solanaWallet }); // Debug log
+      console.log("Payment context:", {
+        walletAddress: validSolanaPublicKey,
+        wallet: solanaWallet,
+      });
       toast({
         title: "Processing Payment",
         description: "Please approve the $50 USDCF payment to escrow...",
@@ -179,7 +230,7 @@ export default function SubmitManuscriptPage() {
       });
 
       const paymentSignature = await processUSDCPayment();
-      console.log("Payment signature received:", paymentSignature); // Debug log
+      console.log("Payment signature received:", paymentSignature);
 
       setSubmitProgress(30);
       toast({
@@ -189,16 +240,15 @@ export default function SubmitManuscriptPage() {
       });
 
       setSubmitProgress(50);
-      
-      // Detailed logging before submission
+
       console.log("📋 Submitting manuscript with details:");
       console.log("📁 File info:", {
         name: selectedFile!.name,
         size: selectedFile!.size,
         type: selectedFile!.type,
-        lastModified: selectedFile!.lastModified
+        lastModified: selectedFile!.lastModified,
       });
-      
+
       const submissionMetadata = {
         title: formData.title,
         authors: getArrayFromCommaString(formData.author).map((name) => ({
@@ -209,17 +259,17 @@ export default function SubmitManuscriptPage() {
         keywords: getArrayFromCommaString(formData.keywords),
         walletAddress: validSolanaPublicKey,
       };
-      
+
       console.log("📋 Submission metadata:", submissionMetadata);
       console.log("🌐 API URL:", apiUrl);
       console.log("🔄 About to call submitManuscript...");
-      
+
       const result = await submitManuscript(
         selectedFile!,
         submissionMetadata,
         apiUrl
       );
-      
+
       console.log("✅ submitManuscript returned result:", result);
 
       if (!result) {
@@ -272,8 +322,8 @@ export default function SubmitManuscriptPage() {
         message: err.message,
         stack: err.stack,
         paymentError: paymentError,
-        errorObject: err
-      }); // Debug log
+        errorObject: err,
+      });
 
       let errorMsg = "Failed to submit manuscript. Please try again.";
       if (paymentError || err.message?.includes("Payment failed")) {
@@ -296,7 +346,8 @@ export default function SubmitManuscriptPage() {
         title: "Error",
         description: errorMsg,
         variant: "destructive",
-        className: "bg-red-500 text-white border-none",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
@@ -353,16 +404,7 @@ export default function SubmitManuscriptPage() {
             </div>
             <HeaderImage />
             <div className="flex-1 p-4 sm:p-6">
-              <div className="text-center py-8">
-                <div className="flex items-center justify-center p-8">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">
-                      Checking your CV registration status...
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <Loading />
             </div>
           </SidebarInset>
           <Toaster />
@@ -397,7 +439,7 @@ export default function SubmitManuscriptPage() {
                 <CardContent className="p-0">
                   <Tabs
                     value={activeTab}
-                    onValueChange={setActiveTab}
+                    onValueChange={handleTabChange}
                     className="w-full"
                   >
                     <div className="border-b border-gray-100">
@@ -447,7 +489,7 @@ export default function SubmitManuscriptPage() {
                       <div className="flex justify-end pt-6">
                         <Button
                           type="button"
-                          onClick={() => setActiveTab("authors-keywords")}
+                          onClick={() => handleTabChange("authors-keywords")}
                           disabled={!completedTabs.has("basic-info")}
                           className="min-w-[120px]"
                         >
@@ -474,14 +516,14 @@ export default function SubmitManuscriptPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setActiveTab("basic-info")}
+                          onClick={() => handleTabChange("basic-info")}
                           className="min-w-[120px]"
                         >
                           Previous: Basic Info
                         </Button>
                         <Button
                           type="button"
-                          onClick={() => setActiveTab("manuscript-file")}
+                          onClick={() => handleTabChange("manuscript-file")}
                           disabled={!completedTabs.has("authors-keywords")}
                           className="min-w-[120px]"
                         >
@@ -504,7 +546,7 @@ export default function SubmitManuscriptPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setActiveTab("authors-keywords")}
+                          onClick={() => handleTabChange("authors-keywords")}
                           className="min-w-[120px]"
                         >
                           Previous: Authors & Keywords

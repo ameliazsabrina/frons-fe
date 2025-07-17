@@ -48,6 +48,7 @@ import { WalletConnection } from "@/components/wallet-connection";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimaryWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
+import { Loading } from "@/components/ui/loading";
 
 interface ReviewManuscript {
   id: string;
@@ -486,9 +487,7 @@ export default function ReviewManuscriptPage() {
             {/* Manuscripts List */}
             <div className="space-y-6">
               {loading ? (
-                <div className="flex items-center justify-center min-h-[200px]">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
+                <Loading />
               ) : error ? (
                 <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardContent className="p-8 text-center">

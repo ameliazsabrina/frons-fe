@@ -84,9 +84,13 @@ export function BasicInformationForm({
                 >
                   {author}
                   <button
-                    onClick={() => onRemoveItem("author", author)}
-                    className="hover:text-red-600 transition-colors focus:outline-none"
                     type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onRemoveItem("author", author);
+                    }}
+                    className="hover:text-red-600 transition-colors focus:outline-none"
                   >
                     <XIcon className="h-3 w-3" />
                   </button>

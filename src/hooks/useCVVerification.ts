@@ -21,7 +21,9 @@ export function useCVVerification({
 
   const [cvVerified, setCvVerified] = useState(false);
   const [cvChecking, setCvChecking] = useState(true);
-  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null
+  );
 
   const handleCVVerified = useCallback(() => {
     setCvVerified(true);
@@ -60,11 +62,12 @@ export function useCVVerification({
           title: "CV Required",
           description: "Please register your CV before submitting manuscripts.",
           variant: "destructive",
+          className: "bg-white text-red-600 border-red-500 shadow-lg",
+          duration: 5000,
         });
         router.push("/register-cv");
         return false;
       } else if (hasCV) {
-        // Fallback to boolean result
         console.log("✅ CV check passed (fallback), allowing access");
         setCvVerified(true);
         handleCVVerified();
@@ -75,6 +78,8 @@ export function useCVVerification({
           title: "CV Required",
           description: "Please register your CV before submitting manuscripts.",
           variant: "destructive",
+          className: "bg-white text-red-600 border-red-500 shadow-lg",
+          duration: 5000,
         });
         router.push("/register-cv");
         return false;
@@ -87,6 +92,8 @@ export function useCVVerification({
         title: "Error",
         description: errorMsg,
         variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
       });
       router.push("/register-cv");
       return false;

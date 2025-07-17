@@ -1,52 +1,33 @@
 "use client";
-import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useLoading } from "@/context/LoadingContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  ClipboardCheckIcon,
-  PlusIcon,
-  WalletIcon,
-  CoinsIcon,
-  TrendingUpIcon,
-  BookOpenIcon,
-  Users2Icon,
-  VoteIcon,
-  AwardIcon,
-  ArrowUpRight,
-  AlertCircleIcon,
-} from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimaryWalletAddress } from "@/utils/wallet";
 import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
-import { useOverview, ManuscriptStats, UserStats } from "@/hooks/useOverview";
-import {
-  useWalletBalances,
-  TokenBalance,
-  WalletBalances,
-} from "@/hooks/useWalletBalances";
+import { useOverview } from "@/hooks/useOverview";
+import { useWalletBalances } from "@/hooks/useWalletBalances";
 import { Loading } from "@/components/ui/loading";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  StatsOverview,
+  QuickActions,
+  WalletPanel,
+  ReviewActivity,
+  OverviewHeader,
+} from "@/components/overview";
 
-interface QuickAction {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  href: string;
-  isPrimary?: boolean;
-  badge?: string;
-}
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -62,7 +43,6 @@ export default function OverviewPage() {
     connected,
     validSolanaPublicKey
   );
-
   const walletBalances = useWalletBalances(validSolanaPublicKey);
 
   const [isClient, setIsClient] = useState(false);
@@ -99,356 +79,8 @@ export default function OverviewPage() {
     setIsLoading(!isReady);
   }, [isReady, setIsLoading]);
 
-  function StatsOverview({
-    manuscriptStats,
-    userStats,
-  }: {
-    manuscriptStats: ManuscriptStats;
-    userStats: UserStats;
-  }) {
-    const stats = [
-      {
-        title: "Published Papers",
-        value: manuscriptStats.published,
-        icon: <BookOpenIcon className="h-6 w-6" />,
-        description: "Successfully published manuscripts",
-        trend: "+2 this month",
-      },
-      {
-        title: "Pending Reviews",
-        value: manuscriptStats.pendingReviews,
-        icon: <ClipboardCheckIcon className="h-6 w-6" />,
-        description: "Manuscripts awaiting review",
-        trend: "5 due this week",
-      },
-      {
-        title: "DOCI Minted",
-        value: manuscriptStats.published,
-        icon: <AwardIcon className="h-6 w-6" />,
-        description: "NFT certificates issued",
-        trend: "Latest 2 days ago",
-      },
-    ];
 
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            className="hover:shadow-lg transition-all duration-200 overflow-hidden"
-          >
-            <CardContent className="p-8 text-center relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
-              <div className="flex flex-col items-center gap-4">
-                <div className="p-3.5 rounded-xl bg-primary/5 ring-1 ring-primary/20">
-                  {stat.icon}
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                    {stat.title}
-                  </h3>
-                  <p className="text-4xl font-semibold tracking-tight mb-2">
-                    {stat.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {stat.description}
-                  </p>
-                  <Badge className="text-xs text-primary/80 font-medium mt-2">
-                    {stat.trend}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
 
-  function QuickActions({
-    manuscriptStats,
-  }: {
-    manuscriptStats: ManuscriptStats;
-  }) {
-    const quickActions: QuickAction[] = [
-      {
-        title: "Submit Manuscript",
-        description: "Upload and submit a new research manuscript",
-        icon: <PlusIcon className="h-5 w-5" />,
-        href: "/submit-manuscript",
-      },
-      {
-        title: "Research Trends",
-        description: "Explore trending research topics and analytics",
-        icon: <TrendingUpIcon className="h-5 w-5" />,
-        href: "/research-trends",
-        isPrimary: true,
-      },
-      {
-        title: "Find Reviews",
-        description: "Browse manuscripts available for review",
-        icon: <ClipboardCheckIcon className="h-5 w-5" />,
-        href: "/review-manuscript",
-        badge: `${manuscriptStats.pendingReviews} available`,
-      },
-      {
-        title: "Mint DOCI",
-        description: "Create NFT certificates for your research",
-        icon: <AwardIcon className="h-5 w-5" />,
-        href: "/doci-tracker",
-      },
-      {
-        title: "Researcher Profiles",
-        description: "Connect with other researchers",
-        icon: <Users2Icon className="h-5 w-5" />,
-        href: "/researcher-profiles",
-      },
-      {
-        title: "DAO Proposals",
-        description: "Vote on community proposals",
-        icon: <VoteIcon className="h-5 w-5" />,
-        href: "/dao-proposals",
-      },
-    ];
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {quickActions.map((action, index) => (
-          <Card
-            key={index}
-            className={`group hover:shadow-lg transition-all duration-200 relative overflow-hidden ${
-              action.isPrimary ? "ring-2 ring-primary/20 " : ""
-            }`}
-          >
-            <div
-              className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
-                action.isPrimary
-                  ? "from-primary via-primary/50 to-transparent"
-                  : "from-primary/20 via-primary/10 to-transparent"
-              }`}
-            />
-            <CardContent className="p-6 text-center">
-              <div className="flex flex-col items-center mb-6">
-                <div
-                  className={`p-3.5 rounded-xl ${
-                    action.isPrimary
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-primary/5"
-                  } group-hover:bg-primary group-hover:text-primary-foreground transition-colors ring-1 ring-primary/20`}
-                >
-                  {action.icon}
-                </div>
-                {action.badge && (
-                  <Badge
-                    variant="secondary"
-                    className="text-xs font-medium mt-3"
-                  >
-                    {action.badge}
-                  </Badge>
-                )}
-              </div>
-              <h3 className="font-medium mb-2 text-lg">{action.title}</h3>
-              <p className="text-sm text-muted-foreground mb-6 line-clamp-2">
-                {action.description}
-              </p>
-              <Button
-                variant={action.isPrimary ? "default" : "outline"}
-                size="sm"
-                className="w-full group-hover:translate-y-0 translate-y-1 transition-transform"
-                asChild
-              >
-                <Link href={action.href}>
-                  <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  function SidePanel({
-    userStats,
-    manuscriptStats,
-    walletBalances,
-  }: {
-    userStats: UserStats;
-    manuscriptStats: ManuscriptStats;
-    walletBalances: WalletBalances;
-  }) {
-    return (
-      <div className="space-y-6 sticky top-8">
-        <Card className="hover:shadow-lg transition-all duration-200 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center justify-center gap-2">
-              <WalletIcon className="h-5 w-5 text-primary" />
-              Wallet Balances
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {walletBalances.isLoading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Loading balances...
-                  </p>
-                </div>
-              ) : walletBalances.error ? (
-                <div className="text-center py-4">
-                  <AlertCircleIcon className="h-6 w-6 text-red-500 mx-auto mb-2" />
-                  <p className="text-sm text-red-600">{walletBalances.error}</p>
-                </div>
-              ) : (
-                <>
-                  {/* SOL Balance */}
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"></div>
-                        <span className="font-medium text-sm">SOL</span>
-                      </div>
-                      <span className="font-semibold">
-                        {walletBalances.sol.toFixed(4)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Token Balances */}
-                  {walletBalances.tokens.map((token: TokenBalance) => (
-                    <div
-                      key={token.symbol}
-                      className={`p-3 rounded-lg transition-all ${
-                        token.symbol === "FRONS"
-                          ? "bg-primary/10 border border-primary/20 ring-1 ring-primary/10"
-                          : "bg-muted/30"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              token.symbol === "FRONS"
-                                ? "bg-primary/20"
-                                : token.symbol === "USDCF"
-                                ? "bg-green-100"
-                                : "bg-gray-100"
-                            }`}
-                          >
-                            <CoinsIcon
-                              className={`h-4 w-4 ${
-                                token.symbol === "FRONS"
-                                  ? "text-primary"
-                                  : token.symbol === "USDCF"
-                                  ? "text-green-600"
-                                  : "text-gray-600"
-                              }`}
-                            />
-                          </div>
-                          <div className="flex flex-col">
-                            <span
-                              className={`font-medium text-sm ${
-                                token.symbol === "FRONS" ? "text-primary" : ""
-                              }`}
-                            >
-                              {token.symbol}
-                            </span>
-                            {token.symbol === "FRONS" && (
-                              <Badge
-                                variant="secondary"
-                                className="text-xs w-fit"
-                              >
-                                Featured
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span
-                            className={`font-semibold ${
-                              token.symbol === "FRONS"
-                                ? "text-lg text-primary"
-                                : ""
-                            }`}
-                          >
-                            {token.uiAmount.toLocaleString(undefined, {
-                              maximumFractionDigits:
-                                token.symbol === "USDCF" ? 2 : 4,
-                            })}
-                          </span>
-                          {token.symbol === "USDCF" && (
-                            <p className="text-xs text-muted-foreground">
-                              ${token.uiAmount.toFixed(2)} USD
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Separator className="opacity-30" />
-
-                  {/* FRONS Earnings Summary */}
-                  <div className="space-y-2 text-center">
-                    <p className="text-sm font-medium">FRONS Earnings</p>
-                    <p className="text-sm text-muted-foreground">
-                      Total earnings: ${userStats.totalEarnings.toFixed(2)}
-                    </p>
-                    <Badge
-                      className="text-sm text-muted-foreground"
-                      variant="secondary"
-                    >
-                      +50 FRONS from completed review
-                    </Badge>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-all duration-200 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center justify-center gap-2">
-              <ClipboardCheckIcon className="h-5 w-5 text-primary" />
-              Reviews Available
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 text-center">
-              <div>
-                <p className="text-3xl font-semibold tracking-tight mb-2">
-                  {manuscriptStats.pendingReviews}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Manuscripts awaiting review
-                </p>
-              </div>
-              <Separator className="opacity-30" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Your Review Stats</p>
-                <Badge
-                  className="text-sm text-muted-foreground"
-                  variant="outline"
-                >
-                  {userStats.reviewsCompleted} reviews completed
-                </Badge>
-              </div>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/review-manuscript">
-                  Find Reviews
-                  <ArrowUpRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const getUserDisplayName = (user: any) => {
     if (!user) return "User";
@@ -474,7 +106,7 @@ export default function OverviewPage() {
   if (!isReady) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-gray-50/50 flex w-full">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
             <div className="flex items-center justify-center min-h-screen">
@@ -491,31 +123,32 @@ export default function OverviewPage() {
   if (!connected || !isClient) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-gray-50/50 flex w-full">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="border-b border-gray-100 bg-white sticky top-0 z-40">
+            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
               <div className="flex items-center gap-3 px-6 py-4">
-                <SidebarTrigger className="w-10 h-10" />
+                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
                 <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-primary">Overview</span>
+                </div>
               </div>
             </div>
-            <div className="w-full py-12 space-y-12 lg:px-16 px-4">
-              <Alert variant="destructive" className="max-w-xl mx-auto">
-                <AlertDescription className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <WalletIcon className="h-5 w-5" />
-                    Please connect your wallet to view your overview
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push("/")}
-                  >
+            <div className="container max-w-4xl mx-auto px-6 py-8">
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <CardContent className="p-8 text-center">
+                  <h2 className="text-2xl font-semibold text-primary mb-4">
+                    Authentication Required
+                  </h2>
+                  <p className="text-muted-foreground mb-8 text-lg">
+                    Please connect your wallet to view your dashboard overview.
+                  </p>
+                  <Button onClick={() => router.push("/")} size="lg">
                     Connect Wallet
                   </Button>
-                </AlertDescription>
-              </Alert>
+                </CardContent>
+              </Card>
             </div>
           </SidebarInset>
         </div>
@@ -525,58 +158,63 @@ export default function OverviewPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-primary/5 flex w-full">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-6 py-4">
-              <SidebarTrigger className="w-10 h-10" />
+          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+            <div className="flex items-center gap-3 px-6 py-4">
+              <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
               <Separator orientation="vertical" className="h-6" />
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-primary">Overview</span>
+              </div>
             </div>
           </div>
           <main className="flex-1">
-            <div className="flex-1 p-4 sm:p-6">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-bold tracking-tight">
-                  Welcome back, {getUserDisplayName(user)}
-                </h1>
-                <p className="text-muted-foreground text-md max-w-2xl mx-auto">
-                  Your academic publishing dashboard
-                </p>
-              </div>
+            <div className="container max-w-6xl mx-auto px-6 py-8">
+              {/* Header */}
+              <OverviewHeader userName={getUserDisplayName(user)} />
+
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loading />
                 </div>
               ) : error ? (
-                <Card className="border-destructive mx-4">
-                  <CardContent className="p-6">
-                    <p className="text-destructive">{error}</p>
-                  </CardContent>
-                </Card>
+                <Alert variant="destructive" className="max-w-2xl mx-auto">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               ) : (
                 <div className="space-y-8">
+                  {/* Statistics Overview */}
                   <StatsOverview
                     userStats={userStats}
                     manuscriptStats={manuscriptStats}
                   />
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3 space-y-6">
                       <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold text-gray-900">
                           Quick Actions
                         </h2>
-                        <Badge variant="secondary">
-                          {manuscriptStats.pendingReviews} reviews available
-                        </Badge>
+                        <Button size="sm" asChild>
+                          <Link href="/submit-manuscript">
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            New Submission
+                          </Link>
+                        </Button>
                       </div>
                       <QuickActions manuscriptStats={manuscriptStats} />
                     </div>
-                    <div>
-                      <SidePanel
-                        userStats={userStats}
+
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                      <WalletPanel walletBalances={walletBalances} />
+
+                      {/* Review Summary */}
+                      <ReviewActivity
                         manuscriptStats={manuscriptStats}
-                        walletBalances={walletBalances}
+                        userStats={userStats}
                       />
                     </div>
                   </div>

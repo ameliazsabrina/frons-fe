@@ -1,475 +1,369 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/sonner";
 
-import {
-  BookOpenIcon,
-  CalendarIcon,
-  ExternalLinkIcon,
-  SaveIcon,
-  SendIcon,
-  AlertCircleIcon,
-  CheckCircle2Icon,
-} from "lucide-react";
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { WalletConnection } from "@/components/wallet-connection";
+import { usePrivy } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth/solana";
+import { useRouter } from "next/navigation";
+import { useLoading } from "@/context/LoadingContext";
+import { Loading } from "@/components/ui/loading";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import axios from "axios";
-import { useLoading } from "@/context/LoadingContext";
+import {
+  SidebarInset,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { PanelLeftIcon } from "lucide-react";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimaryWalletAddress } from "@/utils/wallet";
+import { getPrimarySolanaWallet } from "@/utils/wallet";
+import { useManuscriptSubmission } from "@/hooks/useManuscriptSubmission";
+import { Toaster } from "@/components/ui/toaster";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  FileTextIcon,
+  UsersIcon,
+  UploadIcon,
+  CheckCircleIcon,
+} from "lucide-react";
+import { BasicInformationForm } from "@/components/manuscript/BasicInformationForm";
+import { AbstractKeywordsForm } from "@/components/manuscript/AbstractKeywordsForm";
+import { FileUploadForm } from "@/components/manuscript/FileUploadForm";
+import { IPFSInfoDisplay } from "@/components/manuscript/IPFSInfoDisplay";
+import { SubmissionProgress } from "@/components/manuscript/SubmissionProgress";
+import { useSubmissionForm } from "@/hooks/useSubmissionForm";
+import { useCVVerification } from "@/hooks/useCVVerification";
+import { usePayment } from "@/hooks/usePayment";
+import HeaderImage from "@/components/header-image";
 
-interface ReviewData {
-  id: string;
-  manuscriptId: string;
-  manuscript: {
-    id: string;
-    title: string;
-    author: string;
-    abstract: string;
-    category: string[];
-    keywords: string[];
-    submissionDate: string;
-    cid: string;
-    ipfsUrls: {
-      manuscript: string;
-      metadata?: string;
-    };
-  };
-  assignedDate: string;
-  deadline: string;
-  status: string;
-  existingComments?: string;
-  existingConfidentialComments?: string;
-  existingDecision?: string;
+function CustomSidebarTrigger() {
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <Button
+      variant="ghost"
+      onClick={toggleSidebar}
+      className="h-10 w-10 p-0 hover:bg-gray-100 rounded-md"
+    >
+      <PanelLeftIcon className="h-6 w-6" />
+      <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  );
 }
 
-type ReviewDecision = "accept" | "reject" | "minor_revision" | "major_revision";
-
-export default function SubmitReviewPage() {
-  const router = useRouter();
-  const params = useParams();
-  const reviewId = params.reviewId as string;
-  const { authenticated: connected, user } = usePrivy();
-  const { wallets } = useWallets();
-  const publicKey = getPrimaryWalletAddress(wallets);
-  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
-    ? publicKey
-    : undefined;
+export default function SubmitManuscriptPage() {
   const { toast } = useToast();
+  const { authenticated: connected, authenticated } = usePrivy();
+  const { wallets: solanaWallets } = useSolanaWallets();
+  const router = useRouter();
   const { isLoading } = useLoading();
-  const [reviewData, setReviewData] = useState<ReviewData | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+
+  const solanaWallet = getPrimarySolanaWallet(solanaWallets);
+  const validSolanaPublicKey =
+    solanaWallet?.address && isValidSolanaAddress(solanaWallet.address)
+      ? solanaWallet.address
+      : undefined;
+
+  const {
+    formData,
+    selectedFile,
+    authors,
+    keywords,
+    error,
+    handleInputChange,
+    handleRemoveItem,
+    handleCategoriesChange,
+    handleFileChange,
+    handleRemoveFile,
+    validateForm,
+    resetForm,
+    getArrayFromCommaString,
+  } = useSubmissionForm();
+
+  const { cvVerified, cvChecking, verificationError } = useCVVerification({
+    walletAddress: validSolanaPublicKey,
+    connected,
+    authenticated,
+  });
+
+  const { processUSDCPayment, paymentProcessing, paymentError } = usePayment({
+    walletAddress: validSolanaPublicKey,
+    wallet: solanaWallet,
+  });
+
+  const { submitManuscript } = useManuscriptSubmission({
+    checkCVRegistration: undefined,
+  });
+
   const [submitting, setSubmitting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitProgress, setSubmitProgress] = useState(0);
   const [success, setSuccess] = useState<string | null>(null);
+  const [ipfsData, setIpfsData] = useState<{
+    cid: string;
+    ipfsUrl: string;
+  } | null>(null);
 
-  const [decision, setDecision] = useState<ReviewDecision | "">("");
-  const [comments, setComments] = useState("");
-  const [confidentialComments, setConfidentialComments] = useState("");
-  const [recommendation, setRecommendation] = useState("");
+  const [activeTab, setActiveTab] = useState("basic-info");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
-
-  const fetchReviewData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await axios.get(`${apiUrl}/api/reviews/${reviewId}`);
-
-        if (response.data.success) {
-          console.log("Successfully fetched review data:", response.data);
-          const review = response.data.review;
-          setReviewData({
-            id: review.id?.toString(),
-            manuscriptId: review.manuscript_id?.toString(),
-            manuscript: {
-              id: review.manuscript?.id?.toString(),
-              title: review.manuscript?.title || "Untitled",
-              author: review.manuscript?.author || "Unknown Author",
-              abstract: review.manuscript?.abstract || "No abstract available",
-              category: Array.isArray(review.manuscript?.category)
-                ? review.manuscript.category
-                : review.manuscript?.category?.split(",") || [],
-              keywords: review.manuscript?.keywords || [],
-              submissionDate:
-                review.manuscript?.submissionDate || new Date().toISOString(),
-              cid: review.manuscript?.ipfs_hash || review.manuscript?.cid,
-              ipfsUrls: {
-                manuscript: review.manuscript?.ipfs_hash
-                  ? `https://ipfs.io/ipfs/${review.manuscript.ipfs_hash}`
-                  : `https://ipfs.io/ipfs/${review.manuscript?.cid}`,
-                metadata: review.manuscript?.metadata_cid
-                  ? `https://ipfs.io/ipfs/${review.manuscript.metadata_cid}`
-                  : undefined,
-              },
-            },
-            assignedDate: review.assigned_date || review.created_at,
-            deadline:
-              review.deadline ||
-              new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            status: review.status || "pending",
-            existingComments: review.comments || "",
-            existingConfidentialComments: review.confidential_comments || "",
-            existingDecision: review.decision || "",
-          });
-
-          if (review.comments) setComments(review.comments);
-          if (review.confidential_comments)
-            setConfidentialComments(review.confidential_comments);
-          if (review.decision) setDecision(review.decision);
-          if (review.recommendation) setRecommendation(review.recommendation);
-
-          toast.success("Review data loaded successfully");
-          return;
-        }
-      } catch (directReviewError: any) {
-        console.log(
-          "Direct review endpoint failed, trying alternative approach:",
-          directReviewError.response?.status
-        );
-
-        // If direct review endpoint fails with 404, try using reviewId as manuscriptId
-        if (directReviewError.response?.status === 404) {
-          console.log("Attempting to fetch by manuscript ID instead...");
-
-          try {
-            const manuscriptResponse = await axios.get(
-              `${apiUrl}/api/reviews/manuscript/${reviewId}`
-            );
-
-            if (manuscriptResponse.data.success) {
-              console.log(
-                "Successfully fetched by manuscript ID:",
-                manuscriptResponse.data
-              );
-              const review = manuscriptResponse.data.review;
-
-              setReviewData({
-                id: review.id?.toString() || reviewId,
-                manuscriptId: reviewId,
-                manuscript: {
-                  id: reviewId,
-                  title:
-                    review.manuscript?.title ||
-                    manuscriptResponse.data.manuscript?.title ||
-                    "Untitled",
-                  author:
-                    review.manuscript?.author ||
-                    manuscriptResponse.data.manuscript?.author ||
-                    "Unknown Author",
-                  abstract:
-                    review.manuscript?.abstract ||
-                    manuscriptResponse.data.manuscript?.abstract ||
-                    "No abstract available",
-                  category: Array.isArray(review.manuscript?.category)
-                    ? review.manuscript.category
-                    : review.manuscript?.category?.split(",") || [],
-                  keywords:
-                    review.manuscript?.keywords ||
-                    manuscriptResponse.data.manuscript?.keywords ||
-                    [],
-                  submissionDate:
-                    review.manuscript?.submissionDate ||
-                    manuscriptResponse.data.manuscript?.submissionDate ||
-                    new Date().toISOString(),
-                  cid:
-                    review.manuscript?.ipfs_hash ||
-                    review.manuscript?.cid ||
-                    manuscriptResponse.data.manuscript?.cid,
-                  ipfsUrls: {
-                    manuscript: review.manuscript?.ipfs_hash
-                      ? `https://ipfs.io/ipfs/${review.manuscript.ipfs_hash}`
-                      : review.manuscript?.cid
-                      ? `https://ipfs.io/ipfs/${review.manuscript.cid}`
-                      : manuscriptResponse.data.manuscript?.cid
-                      ? `https://ipfs.io/ipfs/${manuscriptResponse.data.manuscript.cid}`
-                      : "#",
-                    metadata: review.manuscript?.metadata_cid
-                      ? `https://ipfs.io/ipfs/${review.manuscript.metadata_cid}`
-                      : undefined,
-                  },
-                },
-                assignedDate:
-                  review.assigned_date ||
-                  review.created_at ||
-                  new Date().toISOString(),
-                deadline:
-                  review.deadline ||
-                  new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-                status: review.status || "pending",
-                existingComments: review.comments || "",
-                existingConfidentialComments:
-                  review.confidential_comments || "",
-                existingDecision: review.decision || "",
-              });
-
-              if (review.comments) setComments(review.comments);
-              if (review.confidential_comments)
-                setConfidentialComments(review.confidential_comments);
-              if (review.decision) setDecision(review.decision);
-              if (review.recommendation)
-                setRecommendation(review.recommendation);
-
-              toast.success("Review data loaded successfully");
-              return;
-            }
-          } catch (manuscriptError) {
-            console.error("Failed to fetch by manuscript ID:", manuscriptError);
-          }
-        }
-      }
-
-      // If all approaches fail, create mock data for testing
-      console.log("Creating mock review data for testing");
-      setReviewData({
-        id: reviewId,
-        manuscriptId: reviewId,
-        manuscript: {
-          id: reviewId,
-          title: "Sample Manuscript for Review",
-          author: "Dr. Sample Author",
-          abstract:
-            "This is a sample abstract for testing the review submission interface. In a real scenario, this would contain the actual manuscript abstract.",
-          category: ["Computer Science", "Machine Learning"],
-          keywords: ["artificial intelligence", "machine learning", "research"],
-          submissionDate: new Date().toISOString(),
-          cid: "sample-cid",
-          ipfsUrls: {
-            manuscript: "#",
-            metadata: "#",
-          },
-        },
-        assignedDate: new Date().toISOString(),
-        deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "pending",
-        existingComments: "",
-        existingConfidentialComments: "",
-        existingDecision: "",
-      });
-
-      toast.info(
-        "Using sample data for testing. In production, this would load real review data."
-      );
-    } catch (error: any) {
-      console.error("Error fetching review data:", error);
-      setError("Failed to load review data. Please try again.");
-      toast.error("Failed to load review data");
-    } finally {
-      setLoading(false);
-    }
-  }, [reviewId, apiUrl, toast]);
+  const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (connected && validSolanaPublicKey && reviewId) {
-      fetchReviewData();
+    const newCompletedTabs = new Set<string>();
+
+    if (formData.title && formData.author && formData.category) {
+      newCompletedTabs.add("basic-info");
     }
-  }, [connected, validSolanaPublicKey, reviewId, fetchReviewData]);
 
-  const saveDraft = async () => {
-    if (!validSolanaPublicKey || !reviewData) return;
-
-    try {
-      setSaving(true);
-      setError(null);
-
-      const reviewSubmission = {
-        reviewId: reviewData.id,
-        manuscriptId: reviewData.manuscriptId,
-        reviewer: validSolanaPublicKey,
-        decision: decision || null,
-        comments: comments.trim(),
-        confidentialComments: confidentialComments.trim(),
-        recommendation: recommendation.trim(),
-        status: "draft",
-      };
-
-      console.log("Saving draft:", reviewSubmission);
-
-      const response = await axios.post(
-        `${apiUrl}/api/reviews/submit`,
-        reviewSubmission
-      );
-
-      if (response.data.success) {
-        toast.success("Draft saved successfully");
-        setSuccess("Draft saved successfully");
-      } else {
-        throw new Error(response.data.error || "Failed to save draft");
-      }
-    } catch (error: any) {
-      console.error("Error saving draft:", error);
-      const errorMessage =
-        error.response?.data?.error || error.message || "Failed to save draft";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setSaving(false);
+    if (formData.abstract && formData.keywords) {
+      newCompletedTabs.add("authors-keywords");
     }
-  };
 
-  const submitReview = async () => {
-    if (!validSolanaPublicKey || !reviewData) return;
+    if (selectedFile) {
+      newCompletedTabs.add("manuscript-file");
+    }
 
-    if (!decision) {
-      setError("Please select a decision before submitting");
-      toast.error("Please select a decision");
+    setCompletedTabs(newCompletedTabs);
+  }, [formData, selectedFile]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("handleSubmit called");
+
+    const validationError = validateForm();
+    if (validationError) {
+      console.log("Validation error:", validationError);
+      toast({
+        title: "Error",
+        description: validationError,
+        variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
+      });
       return;
     }
 
-    if (!comments.trim()) {
-      setError("Please provide comments for the authors");
-      toast.error("Please provide comments for the authors");
+    if (!validSolanaPublicKey || !cvVerified) {
+      console.log("Wallet/CV check failed:", {
+        validSolanaPublicKey,
+        cvVerified,
+      }); // Debug log
+      toast({
+        title: "Error",
+        description: "Wallet connection and CV verification required",
+        variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
+      });
       return;
     }
 
     try {
+      console.log("Starting submission process..."); // Debug log
       setSubmitting(true);
-      setError(null);
+      setSubmitProgress(0);
+      setSuccess(null);
+      setIpfsData(null);
 
-      const reviewSubmission = {
-        reviewId: reviewData.id,
-        manuscriptId: reviewData.manuscriptId,
-        reviewer: validSolanaPublicKey,
-        decision,
-        comments: comments.trim(),
-        confidentialComments: confidentialComments.trim(),
-        recommendation: recommendation.trim(),
-        status: "completed",
+      setSubmitProgress(10);
+      console.log("About to process payment...");
+      console.log("Payment context:", {
+        walletAddress: validSolanaPublicKey,
+        wallet: solanaWallet,
+      });
+      toast({
+        title: "Processing Payment",
+        description: "Please approve the $50 USDCF payment to escrow...",
+        className: "bg-white text-blue-600 border-blue-500 shadow-lg",
+        duration: 5000,
+      });
+
+      const paymentSignature = await processUSDCPayment();
+      console.log("Payment signature received:", paymentSignature); // Debug log
+
+      setSubmitProgress(30);
+      toast({
+        title: "Payment Successful",
+        description: "Payment processed successfully. Submitting manuscript...",
+        className: "bg-green-500 text-white border-none",
+      });
+
+      setSubmitProgress(50);
+
+      // Detailed logging before submission
+      console.log("📋 Submitting manuscript with details:");
+      console.log("📁 File info:", {
+        name: selectedFile!.name,
+        size: selectedFile!.size,
+        type: selectedFile!.type,
+        lastModified: selectedFile!.lastModified,
+      });
+
+      const submissionMetadata = {
+        title: formData.title,
+        authors: getArrayFromCommaString(formData.author).map((name) => ({
+          name,
+        })),
+        categories: getArrayFromCommaString(formData.category),
+        abstract: formData.abstract,
+        keywords: getArrayFromCommaString(formData.keywords),
+        walletAddress: validSolanaPublicKey,
       };
 
-      console.log("Submitting review:", reviewSubmission);
+      console.log("📋 Submission metadata:", submissionMetadata);
+      console.log("🌐 API URL:", apiUrl);
+      console.log("🔄 About to call submitManuscript...");
 
-      const response = await axios.post(
-        `${apiUrl}/api/reviews/submit`,
-        reviewSubmission
+      const result = await submitManuscript(
+        selectedFile!,
+        submissionMetadata,
+        apiUrl
       );
 
-      if (response.data.success) {
-        toast.success("Review submitted successfully!");
-        setSuccess("Review submitted successfully!");
+      console.log("✅ submitManuscript returned result:", result);
 
-        // Redirect after a short delay
-        setTimeout(() => {
-          router.push("/review-manuscript");
-        }, 2000);
-      } else {
-        throw new Error(response.data.error || "Failed to submit review");
+      if (!result) {
+        throw new Error("Failed to submit manuscript");
       }
-    } catch (error: any) {
-      console.error("Error submitting review:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to submit review";
-      setError(errorMessage);
-      toast.error(errorMessage);
+
+      setSubmitProgress(100);
+      const successMsg = `Manuscript "${formData.title}" submitted successfully!`;
+      toast({
+        title: "Success!",
+        description: successMsg,
+        className: "bg-green-500 text-white border-none",
+      });
+      setSuccess(successMsg);
+
+      setIpfsData({
+        cid: result.manuscript.cid,
+        ipfsUrl: result.ipfsUrls.manuscript,
+      });
+
+      toast({
+        title: "IPFS Links",
+        description: (
+          <div className="space-y-2">
+            <p>Your manuscript has been uploaded to IPFS:</p>
+            <a
+              href={result.ipfsUrls.manuscript}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-100 hover:text-blue-200 underline block"
+            >
+              View Manuscript
+            </a>
+            <p className="text-sm mt-2">
+              Payment Transaction: {paymentSignature}
+            </p>
+          </div>
+        ),
+        className: "bg-primary text-white border-none",
+      });
+
+      resetForm();
+
+      setTimeout(() => {
+        router.push("/overview");
+      }, 5000);
+    } catch (err: any) {
+      console.error("Failed to submit manuscript:", err);
+      console.log("Error details:", {
+        message: err.message,
+        stack: err.stack,
+        paymentError: paymentError,
+        errorObject: err,
+      }); // Debug log
+
+      let errorMsg = "Failed to submit manuscript. Please try again.";
+      if (paymentError || err.message?.includes("Payment failed")) {
+        errorMsg =
+          paymentError ||
+          "Payment failed. Please ensure you have sufficient USDCF balance.";
+      } else if (err.response?.data?.code === "CV_REQUIRED") {
+        errorMsg = err.response.data.message;
+        setTimeout(() => router.push("/register-cv"), 2000);
+      } else if (err.response?.data?.code === "MISSING_WALLET") {
+        errorMsg =
+          err.response.data.message || "Valid wallet connection required.";
+      } else if (err.response?.data?.code === "PINATA_ERROR") {
+        errorMsg = "IPFS upload failed. Please try again later.";
+      } else if (err.response?.status === 503) {
+        errorMsg = "Service temporarily unavailable. Please try again later.";
+      }
+
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+        className: "bg-white text-red-600 border-red-500 shadow-lg",
+        duration: 5000,
+      });
     } finally {
       setSubmitting(false);
+      setSubmitProgress(0);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const getDaysUntilDeadline = (deadline: string) => {
-    const deadlineDate = new Date(deadline);
-    const today = new Date();
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const getDecisionColor = (decision: string) => {
-    switch (decision) {
-      case "accept":
-        return "bg-green-100 text-green-800";
-      case "minor_revision":
-        return "bg-yellow-100 text-yellow-800";
-      case "major_revision":
-        return "bg-orange-100 text-orange-800";
-      case "reject":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getDecisionDescription = (decision: string) => {
-    switch (decision) {
-      case "accept":
-        return "Accept for publication";
-      case "minor_revision":
-        return "Accept with minor revisions";
-      case "major_revision":
-        return "Requires major revisions";
-      case "reject":
-        return "Reject for publication";
-      default:
-        return "No decision selected";
-    }
-  };
-
-  if (!connected) {
+  if (!connected || !validSolanaPublicKey) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-primary/5 flex w-full">
+        <div className="min-h-screen bg-white flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
             <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <SidebarTrigger className="w-10 h-10" />
-                <Separator orientation="vertical" className="h-6" />
+              <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
+                <CustomSidebarTrigger />
+                <span className="font-medium text-primary text-sm sm:text-base">
+                  Submit Manuscript
+                </span>
               </div>
             </div>
-            <div className="container max-w-4xl mx-auto px-4 py-8">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  text-bold tracking-tight">
-                  Submit Review
-                </h1>
-                <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                  Please connect your wallet to submit your manuscript review
+            <HeaderImage />
+            <div className="flex-1 p-4 sm:p-6">
+              <div className="text-center py-8">
+                <h2 className="text-xl sm:text-2xl text-primary mb-4">
+                  Authentication Required
+                </h2>
+                <p className="text-muted-foreground mb-8 text-base sm:text-lg px-4">
+                  Connect your wallet to submit manuscripts.
                 </p>
+                <WalletConnection />
               </div>
-              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-8 text-center">
-                  <AlertCircleIcon className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-                  <h2 className="text-xl font-semibold text-primary mb-2">
-                    Wallet Connection Required
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Please connect your wallet to access the review submission
-                    interface.
-                  </p>
-                  <Button onClick={() => router.push("/")} className="w-full">
-                    Connect Wallet
-                  </Button>
-                </CardContent>
-              </Card>
             </div>
           </SidebarInset>
+          <Toaster />
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (cvChecking || !cvVerified) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen bg-white flex w-full">
+          <OverviewSidebar connected={connected} />
+          <SidebarInset className="flex-1">
+            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
+                <CustomSidebarTrigger />
+                <span className="font-medium text-primary text-sm sm:text-base">
+                  Submit Manuscript
+                </span>
+              </div>
+            </div>
+            <HeaderImage />
+            <div className="flex-1 p-4 sm:p-6">
+              <Loading />
+            </div>
+          </SidebarInset>
+          <Toaster />
         </div>
       </SidebarProvider>
     );
@@ -477,304 +371,207 @@ export default function SubmitReviewPage() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-primary/5 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
-              <SidebarTrigger className="w-10 h-10" />
-              <Separator orientation="vertical" className="h-6" />
+          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+            <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
+              <SidebarTrigger />
+              <span className="font-medium text-primary text-sm sm:text-base">
+                Submit Manuscript
+              </span>
             </div>
           </div>
-          <div className="container max-w-4xl mx-auto px-4 py-8">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
-                Submit Review
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                Provide your expert review and feedback for this manuscript
-              </p>
-            </div>
+          <HeaderImage />
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
 
-            {loading ? (
-              <div className="flex items-center justify-center min-h-[200px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : error && !reviewData ? (
-              <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-8 text-center">
-                  <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                  <h2 className="text-xl font-semibold text-primary mb-2">
-                    Error Loading Review
-                  </h2>
-                  <p className="text-red-600 mb-6">{error}</p>
-                  <Button
-                    onClick={fetchReviewData}
-                    variant="outline"
-                    className="mr-4"
+              {submitting && (
+                <SubmissionProgress submitProgress={submitProgress} />
+              )}
+
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <CardContent className="p-0">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="w-full"
                   >
-                    Try Again
-                  </Button>
-                  <Button onClick={() => router.back()}>Go Back</Button>
-                </CardContent>
-              </Card>
-            ) : reviewData ? (
-              <div className="space-y-6">
-                {/* Success Message */}
-                {success && (
-                  <Card className="shadow-sm border border-green-200 rounded-xl bg-green-50/80">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2Icon className="h-5 w-5 text-green-600" />
-                        <p className="text-green-800 font-medium">{success}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Error Message */}
-                {error && (
-                  <Card className="shadow-sm border border-red-200 rounded-xl bg-red-50/80">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <AlertCircleIcon className="h-5 w-5 text-red-600" />
-                        <p className="text-red-800 font-medium">{error}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Manuscript Information */}
-                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-primary flex items-center gap-2">
-                      <BookOpenIcon className="h-6 w-6" />
-                      Manuscript Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-primary mb-2">
-                        {reviewData.manuscript.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        By {reviewData.manuscript.author}
-                      </p>
+                    <div className="border-b border-gray-100">
+                      <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none overflow-x-auto">
+                        <TabsTrigger
+                          value="basic-info"
+                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                        >
+                          <FileTextIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">
+                            Basic Information
+                          </span>
+                          <span className="sm:hidden">Basic</span>
+                          {completedTabs.has("basic-info") && (
+                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="authors-keywords"
+                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                        >
+                          <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">
+                            Abstract & Keywords
+                          </span>
+                          <span className="sm:hidden">Abstract</span>
+                          {completedTabs.has("authors-keywords") && (
+                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="manuscript-file"
+                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                        >
+                          <UploadIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">
+                            Manuscript File
+                          </span>
+                          <span className="sm:hidden">File</span>
+                          {completedTabs.has("manuscript-file") && (
+                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                      </TabsList>
                     </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-sm font-medium text-primary">
-                          Abstract
-                        </Label>
-                        <p className="text-sm text-foreground mt-1 leading-relaxed">
-                          {reviewData.manuscript.abstract}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-sm font-medium text-primary">
-                            Categories
-                          </Label>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {reviewData.manuscript.category.map(
-                              (cat, index) => (
-                                <Badge
-                                  key={index}
-                                  variant="secondary"
-                                  className="bg-primary/10 text-primary text-xs"
-                                >
-                                  {cat}
-                                </Badge>
-                              )
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm font-medium text-primary">
-                            Keywords
-                          </Label>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {reviewData.manuscript.keywords.map(
-                              (keyword, index) => (
-                                <Badge
-                                  key={index}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {keyword}
-                                </Badge>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4" />
-                            <span>
-                              Submitted:{" "}
-                              {formatDate(reviewData.manuscript.submissionDate)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4" />
-                            <span>
-                              Deadline: {formatDate(reviewData.deadline)} (
-                              {getDaysUntilDeadline(reviewData.deadline)} days)
-                            </span>
-                          </div>
-                        </div>
+                    <TabsContent
+                      value="basic-info"
+                      className="p-4 sm:p-8 space-y-6"
+                    >
+                      <BasicInformationForm
+                        formData={formData}
+                        authors={authors}
+                        submitting={submitting}
+                        onInputChange={handleInputChange}
+                        onRemoveItem={handleRemoveItem}
+                        onCategoriesChange={handleCategoriesChange}
+                      />
+                      <div className="flex justify-end pt-6">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            window.open(
-                              reviewData.manuscript.ipfsUrls.manuscript,
-                              "_blank"
-                            )
-                          }
+                          type="button"
+                          onClick={() => setActiveTab("authors-keywords")}
+                          disabled={!completedTabs.has("basic-info")}
+                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base"
                         >
-                          <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                          View Manuscript
+                          <span className="hidden sm:inline">
+                            Next: Abstract & Keywords
+                          </span>
+                          <span className="sm:hidden">Next</span>
                         </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </TabsContent>
 
-                {/* Review Form */}
-                <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-primary">
-                      Your Review
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Decision */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-primary">
-                        Decision *
-                      </Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {[
-                          "accept",
-                          "minor_revision",
-                          "major_revision",
-                          "reject",
-                        ].map((option) => (
-                          <Button
-                            key={option}
-                            variant={
-                              decision === option ? "default" : "outline"
-                            }
-                            onClick={() =>
-                              setDecision(option as ReviewDecision)
-                            }
-                            className="text-left justify-start h-auto p-4"
-                          >
-                            <div>
-                              <div className="font-medium">
-                                {getDecisionDescription(option)}
-                              </div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {option === "accept" &&
-                                  "Manuscript is ready for publication"}
-                                {option === "minor_revision" &&
-                                  "Small changes needed"}
-                                {option === "major_revision" &&
-                                  "Significant changes required"}
-                                {option === "reject" &&
-                                  "Not suitable for publication"}
-                              </div>
-                            </div>
-                          </Button>
-                        ))}
+                    <TabsContent
+                      value="authors-keywords"
+                      className="p-4 sm:p-8 space-y-6"
+                    >
+                      <AbstractKeywordsForm
+                        formData={{
+                          abstract: formData.abstract,
+                          keywords: formData.keywords,
+                        }}
+                        keywords={keywords}
+                        submitting={submitting}
+                        onInputChange={handleInputChange}
+                        onRemoveItem={handleRemoveItem}
+                      />
+                      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab("basic-info")}
+                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
+                        >
+                          <span className="hidden sm:inline">
+                            Previous: Basic Info
+                          </span>
+                          <span className="sm:hidden">Previous</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab("manuscript-file")}
+                          disabled={!completedTabs.has("authors-keywords")}
+                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-1 sm:order-2"
+                        >
+                          <span className="hidden sm:inline">
+                            Next: Upload File
+                          </span>
+                          <span className="sm:hidden">Next</span>
+                        </Button>
                       </div>
-                      {decision && (
-                        <Badge className={getDecisionColor(decision)}>
-                          {getDecisionDescription(decision)}
-                        </Badge>
-                      )}
-                    </div>
+                    </TabsContent>
 
-                    {/* Comments for Authors */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-primary">
-                        Comments for Authors *
-                      </Label>
-                      <Textarea
-                        value={comments}
-                        onChange={(e) => setComments(e.target.value)}
-                        placeholder="Provide detailed feedback for the authors. This will be shared with them."
-                        className="min-h-[120px] resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        This feedback will be shared with the authors to help
-                        them improve their manuscript.
-                      </p>
-                    </div>
-
-                    {/* Confidential Comments */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-primary">
-                        Confidential Comments (Optional)
-                      </Label>
-                      <Textarea
-                        value={confidentialComments}
-                        onChange={(e) =>
-                          setConfidentialComments(e.target.value)
-                        }
-                        placeholder="Private comments for editors only. These will not be shared with authors."
-                        className="min-h-[80px] resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        These comments are only visible to editors and will not
-                        be shared with authors.
-                      </p>
-                    </div>
-
-                    {/* Recommendation */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-primary">
-                        Additional Recommendations (Optional)
-                      </Label>
-                      <Textarea
-                        value={recommendation}
-                        onChange={(e) => setRecommendation(e.target.value)}
-                        placeholder="Any additional recommendations or suggestions for the manuscript or the review process."
-                        className="min-h-[80px] resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="bg-primary/5 border-t border-gray-100 flex justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={saveDraft}
-                      disabled={saving || submitting}
+                    <TabsContent
+                      value="manuscript-file"
+                      className="p-4 sm:p-8 space-y-6"
                     >
-                      <SaveIcon className="h-4 w-4 mr-2" />
-                      {saving ? "Saving..." : "Save Draft"}
-                    </Button>
-                    <Button
-                      onClick={submitReview}
-                      disabled={
-                        !decision || !comments.trim() || submitting || saving
-                      }
-                    >
-                      <SendIcon className="h-4 w-4 mr-2" />
-                      {submitting ? "Submitting..." : "Submit Review"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            ) : null}
+                      <FileUploadForm
+                        selectedFile={selectedFile}
+                        submitting={submitting}
+                        onFileChange={handleFileChange}
+                        onRemoveFile={handleRemoveFile}
+                      />
+                      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab("authors-keywords")}
+                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
+                        >
+                          <span className="hidden sm:inline">
+                            Previous: Authors & Keywords
+                          </span>
+                          <span className="sm:hidden">Previous</span>
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={
+                            submitting ||
+                            !cvVerified ||
+                            paymentProcessing ||
+                            !completedTabs.has("basic-info") ||
+                            !completedTabs.has("authors-keywords") ||
+                            !completedTabs.has("manuscript-file")
+                          }
+                          onClick={() => {
+                            console.log("Submit button clicked");
+                            console.log("Button disabled conditions:", {
+                              submitting,
+                              cvVerified,
+                              paymentProcessing,
+                              basicInfoComplete:
+                                completedTabs.has("basic-info"),
+                              authorsKeywordsComplete:
+                                completedTabs.has("authors-keywords"),
+                              manuscriptFileComplete:
+                                completedTabs.has("manuscript-file"),
+                            });
+                          }}
+                          className="w-full sm:w-auto min-w-[200px] text-sm sm:text-base order-1 sm:order-2"
+                        >
+                          {paymentProcessing
+                            ? "Processing Payment..."
+                            : submitting
+                            ? "Submitting..."
+                            : "Submit Manuscript"}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </form>
           </div>
         </SidebarInset>
+        <Toaster />
       </div>
     </SidebarProvider>
   );
