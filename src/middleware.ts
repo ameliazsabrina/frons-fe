@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 const UNAUTHENTICATED_PAGES = ["/", "/refresh"];
 
 export const config = {
-  matcher: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  matcher: [
+    "/((?!api|_next|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico|.*\\.webp).*)"
+  ],
 };
 
 export async function middleware(req: NextRequest) {
