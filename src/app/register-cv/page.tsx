@@ -30,6 +30,7 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
+import { Loading } from "@/components/ui/loading";
 import {
   SidebarProvider,
   SidebarInset,
