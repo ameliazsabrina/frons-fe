@@ -15,7 +15,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth";
 import { useToast } from "@/components/ui/sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { DOCIManuscript } from "@/types/fronsciers";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { PublicKey } from "@solana/web3.js";
-import { getPrimaryWalletAddress } from "@/utils/wallet";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
 import { Loading } from "@/components/ui/loading";
 
@@ -33,8 +33,8 @@ const formatDate = (timestamp: number) => {
 
 export default function DocisPage() {
   const { authenticated: connected } = usePrivy();
-  const { wallets } = useWallets();
-  const publicKey = getPrimaryWalletAddress(wallets);
+  const { wallets } = useSolanaWallets();
+  const publicKey = getPrimarySolanaWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -340,7 +340,7 @@ export default function DocisPage() {
                     Examples:
                   </span>
                   <Button
-                    variant="link"
+                    variant="ghost"
                     size="sm"
                     onClick={() =>
                       handleExampleSearch("10.fronsciers/manuscript.2024.001")
@@ -350,7 +350,7 @@ export default function DocisPage() {
                     10.fronsciers/manuscript.2024.001
                   </Button>
                   <Button
-                    variant="link"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleExampleSearch("manuscript.2024.005")}
                     className="h-auto p-0 text-xs text-primary hover:text-primary/80"

@@ -5,13 +5,13 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useLoading } from "@/context/LoadingContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PlusIcon } from "lucide-react";
 import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimaryWalletAddress } from "@/utils/wallet";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
 import { useOverview } from "@/hooks/useOverview";
@@ -32,12 +32,20 @@ import {
 export default function OverviewPage() {
   const router = useRouter();
   const { user, authenticated } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const connected = authenticated;
-  const publicKey = getPrimaryWalletAddress(wallets);
+  const publicKey = getPrimarySolanaWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
+
+  console.log("🔍 Overview page wallet debugging:");
+  console.log("- authenticated:", authenticated);
+  console.log("- connected:", connected);
+  console.log("- wallets count:", wallets?.length);
+  console.log("- publicKey from getPrimarySolanaWalletAddress:", publicKey);
+  console.log("- validSolanaPublicKey:", validSolanaPublicKey);
+  console.log("- isValidSolanaAddress result:", isValidSolanaAddress(publicKey));
 
   const { manuscriptStats, userStats, loading, error } = useOverview(
     connected,
@@ -110,9 +118,7 @@ export default function OverviewPage() {
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
             <div className="flex items-center justify-center min-h-screen">
-              <div className="text-center">
-                <Loading />
-              </div>
+              <Loading variant="page" text="Loading dashboard..." />
             </div>
           </SidebarInset>
         </div>
@@ -176,9 +182,7 @@ export default function OverviewPage() {
               <OverviewHeader userName={getUserDisplayName(user)} />
 
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loading />
-                </div>
+                <Loading variant="inline" text="Loading overview data..." />
               ) : error ? (
                 <Alert variant="destructive" className="max-w-2xl mx-auto">
                   <AlertDescription>{error}</AlertDescription>

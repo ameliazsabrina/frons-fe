@@ -75,7 +75,7 @@ export function CVRegistrationGuard({
     };
 
     performInitialCheck();
-  }, []); // Only run once on mount
+  }, [authenticated, checkCVRegistration, checkCVRegistrationPrivy, walletAddress]); // Only run once on mount
 
   // Watch for hook status updates and sync local state
   useEffect(() => {
@@ -104,7 +104,7 @@ export function CVRegistrationGuard({
       setHasShownToast(true);
       router.push("/author-dashboard");
     }
-  }, [localStatus, hasShownToast, toast]);
+  }, [localStatus, hasShownToast, toast, router]);
 
   useEffect(() => {
     // Only redirect if we're sure there's no CV data in the database

@@ -360,7 +360,7 @@ export default function SubmitManuscriptPage() {
             </div>
             <HeaderImage />
             <div className="flex-1 p-4 sm:p-6">
-              <Loading />
+              <Loading variant="page" text="Loading review..." />
             </div>
           </SidebarInset>
           <Toaster />

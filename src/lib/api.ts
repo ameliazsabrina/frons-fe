@@ -96,7 +96,7 @@ export class ApiClient {
 
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
-      : {};
+      : undefined;
     const response = await this.cachedClient.get<{ manuscripts: Manuscript[] }>(
       "/manuscripts",
       params,
@@ -252,6 +252,83 @@ export class ApiClient {
       return response.data.success === true;
     } catch {
       return false;
+    }
+  }
+
+  // NFT Health check
+  async checkNFTHealth(): Promise<any> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/nft-metadata/health`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to check NFT health:", error);
+      throw error;
+    }
+  }
+
+  // Create NFT metadata
+  async createNFTMetadata(data: any): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/nft-metadata/create`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to create NFT metadata:", error);
+      throw error;
+    }
+  }
+
+  // Get NFT metadata
+  async getNFTMetadata(mint: string): Promise<any> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/nft-metadata/${mint}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get NFT metadata:", error);
+      throw error;
+    }
+  }
+
+  // Update NFT metadata
+  async updateNFTMetadata(mint: string, data: any): Promise<any> {
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/nft-metadata/${mint}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update NFT metadata:", error);
+      throw error;
+    }
+  }
+
+  // Verify NFT metadata
+  async verifyNFTMetadata(mint: string): Promise<any> {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/nft-metadata/${mint}/verify`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to verify NFT metadata:", error);
+      throw error;
+    }
+  }
+
+  // Generate NFT preview image
+  async generateNFTPreviewImage(data: any): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/nft-metadata/preview`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to generate NFT preview image:", error);
+      throw error;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircleIcon, LoaderIcon } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { type WalletBalances, type TokenBalance } from "@/hooks/useWalletBalances";
 
 interface WalletPanelProps {
@@ -8,6 +9,8 @@ interface WalletPanelProps {
 }
 
 export function WalletPanel({ walletBalances }: WalletPanelProps) {
+  console.log("🎨 WalletPanel rendering with balances:", walletBalances);
+  
   return (
     <Card className="bg-white/80 backdrop-blur-sm">
       <CardHeader className="pb-4">
@@ -16,12 +19,7 @@ export function WalletPanel({ walletBalances }: WalletPanelProps) {
       <CardContent>
         <div className="space-y-3">
           {walletBalances.isLoading ? (
-            <div className="text-center py-4">
-              <LoaderIcon className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Loading balances...
-              </p>
-            </div>
+            <Loading variant="inline" text="Loading balances..." size="sm" />
           ) : walletBalances.error ? (
             <div className="text-center py-4">
               <AlertCircleIcon className="h-6 w-6 text-red-500 mx-auto mb-2" />

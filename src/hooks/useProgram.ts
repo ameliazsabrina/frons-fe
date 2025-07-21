@@ -1,11 +1,5 @@
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import {
-  Program,
-  AnchorProvider,
-  web3,
-  utils,
-  BN,
-} from "@coral-xyz/anchor";
+import { Program, AnchorProvider, web3, utils, BN } from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { useMemo } from "react";
 import { SOLANA_CONFIG } from "@/lib/constants/solana";
@@ -50,7 +44,7 @@ export const useProgram = () => {
 
   const program = useMemo(() => {
     if (!provider) return null;
-    return new Program(IDL as any, SOLANA_CONFIG.PROGRAM_ID, provider);
+    return new Program(IDL as any, provider);
   }, [provider]);
 
   return {

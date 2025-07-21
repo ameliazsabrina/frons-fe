@@ -56,7 +56,12 @@ export function useNFTIntegration() {
         setError(null);
 
         const result = await backendAPI.getNFTMetadata(mint);
-        return result;
+        return {
+          success: result.success,
+          mint: result.mint,
+          metadata: result.metadata,
+          explorerUrl: result.explorerUrl,
+        };
       } catch (err) {
         console.error("Failed to get NFT metadata:", err);
         setError(
@@ -202,10 +207,7 @@ export function useNFTIntegration() {
 
         // 1. Publish manuscript
         const publicationResult = await backendAPI.publishManuscript(
-          manuscriptId,
-          {
-            publishedBy,
-          }
+          manuscriptId.toString()
         );
 
         if (!publicationResult?.success) {

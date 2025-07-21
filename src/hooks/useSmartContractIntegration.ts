@@ -206,7 +206,9 @@ export function useSmartContractIntegration() {
         );
 
         // Create a new keypair for the manuscript
-        const manuscriptKeypair = new (await import("@solana/web3.js")).Keypair();
+        const manuscriptKeypair = new (
+          await import("@solana/web3.js")
+        ).Keypair();
 
         const tx = await program.methods
           .submitManuscript(ipfsHash)
@@ -237,8 +239,8 @@ export function useSmartContractIntegration() {
   );
 
   // Check if user meets submission requirements
-  const checkSubmissionRequirements = useCallback(
-    async (): Promise<boolean> => {
+  const checkSubmissionRequirements =
+    useCallback(async (): Promise<boolean> => {
       if (!program || !publicKey) {
         return false;
       }
@@ -250,10 +252,20 @@ export function useSmartContractIntegration() {
           program.programId
         );
 
-        const userAccount = await program.account.user.fetch(userPda);
-        
+        const programAccount = program.account as any;
+        if (!programAccount.user) {
+          console.warn("user account not found in program");
+          return false;
+        }
+        const userAccount = await programAccount.user.fetch(userPda);
+
         // Check submission requirements based on smart contract logic
-        const hasValidEducation = ["PhD", "Master", "Bachelor", "Doctorate"].includes(userAccount.education);
+        const hasValidEducation = [
+          "PhD",
+          "Master",
+          "Bachelor",
+          "Doctorate",
+        ].includes(userAccount.education);
         const hasCvVerified = userAccount.cvVerified;
         const hasEnoughPapers = userAccount.publishedPapers > 2;
 
@@ -262,32 +274,32 @@ export function useSmartContractIntegration() {
         console.error("Failed to check submission requirements:", err);
         return false;
       }
-    },
-    [program, publicKey]
-  );
+    }, [program, publicKey]);
 
   // Get user account data
-  const getUserAccount = useCallback(
-    async (): Promise<any | null> => {
-      if (!program || !publicKey) {
+  const getUserAccount = useCallback(async (): Promise<any | null> => {
+    if (!program || !publicKey) {
+      return null;
+    }
+
+    try {
+      const [userPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("user"), publicKey.toBuffer()],
+        program.programId
+      );
+
+      const programAccount = program.account as any;
+      if (!programAccount.user) {
+        console.warn("user account not found in program");
         return null;
       }
-
-      try {
-        const [userPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from("user"), publicKey.toBuffer()],
-          program.programId
-        );
-
-        const userAccount = await program.account.user.fetch(userPda);
-        return userAccount;
-      } catch (err) {
-        console.error("Failed to get user account:", err);
-        return null;
-      }
-    },
-    [program, publicKey]
-  );
+      const userAccount = await programAccount.user.fetch(userPda);
+      return userAccount;
+    } catch (err) {
+      console.error("Failed to get user account:", err);
+      return null;
+    }
+  }, [program, publicKey]);
 
   return {
     loading,

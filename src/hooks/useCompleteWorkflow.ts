@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { backendAPI } from "@/lib/api";
 import { useCVRegistration } from "./useCVRegistration";
 import { useManuscriptManagement } from "./useManuscriptManagement";
+import { useManuscriptSubmission } from "./useManuscriptSubmission";
 import { useNFTIntegration } from "./useNFTIntegration";
 import {
   ManuscriptSubmissionRequest,
@@ -67,6 +68,10 @@ export function useCompleteWorkflow(walletAddress?: string) {
 
   const { assignReviewers, getReviewStatus, publishManuscript } =
     useManuscriptManagement();
+    
+  const { submitManuscript } = useManuscriptSubmission({
+    checkCVRegistration: undefined
+  });
 
   const { checkNFTHealth, createNFTMetadata } = useNFTIntegration();
 
@@ -127,7 +132,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [walletAddress, checkCVRegistration]);
+  }, [walletAddress, checkCVRegistration, updateState]);
 
   // Step 2: Upload CV
   const uploadCVStep = useCallback(async (): Promise<boolean> => {
@@ -175,7 +180,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [walletAddress, workflowData.cvFile, uploadCV]);
+  }, [walletAddress, workflowData.cvFile, uploadCV, updateState]);
 
   // Step 3: Submit Manuscript
   const submitManuscriptStep = useCallback(async (): Promise<boolean> => {
@@ -196,24 +201,29 @@ export function useCompleteWorkflow(walletAddress?: string) {
         message: "Submitting manuscript for peer review...",
       });
 
-      const submissionData: ManuscriptSubmissionRequest = {
-        manuscript: workflowData.manuscriptFile,
+      const metadata = {
         title: workflowData.title,
-        author: workflowData.author,
-        category: workflowData.category,
+        authors: [{ name: workflowData.author }],
+        categories: [workflowData.category],
         abstract: workflowData.abstract,
-        keywords: workflowData.keywords,
-        authorWallet: walletAddress,
+        keywords: workflowData.keywords.split(',').map(k => k.trim()),
+        walletAddress: walletAddress,
       };
 
-      const result = await backendAPI.submitManuscript(submissionData);
+      const result = await submitManuscript(
+        workflowData.manuscriptFile,
+        metadata,
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api"
+      );
 
-      if (result.success) {
-        setManuscriptId(result.manuscript.id);
+      if (result && result.success) {
+        if (result.manuscript && result.manuscript.id) {
+          setManuscriptId(Number(result.manuscript.id));
+        }
         updateState({
           step: "under_review",
           progress: 40,
-          message: `✅ Manuscript submitted! ID: ${result.manuscript.id}. Now under peer review.`,
+          message: `✅ Manuscript submitted! Now under peer review.`,
         });
         return true;
       } else {
@@ -234,7 +244,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [walletAddress, workflowData]);
+  }, [walletAddress, workflowData, updateState, submitManuscript]);
 
   // Step 4: Assign Reviewers (Editor function)
   const assignReviewersStep = useCallback(
@@ -257,17 +267,15 @@ export function useCompleteWorkflow(walletAddress?: string) {
         });
 
         const result = await assignReviewers(
-          manuscriptId,
-          reviewers,
-          "editor@example.com" // This would be dynamic in real app
+          manuscriptId.toString(),
+          reviewers.length
         );
 
         if (result) {
-          setReviewIds(result.reviewRecords.map((r) => r.id));
           updateState({
             step: "under_review",
             progress: 60,
-            message: `✅ ${result.reviewersAssigned} reviewers assigned. Waiting for reviews...`,
+            message: `✅ Reviewers assigned successfully. Waiting for reviews...`,
           });
           return true;
         } else {
@@ -289,7 +297,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
         return false;
       }
     },
-    [manuscriptId, assignReviewers]
+    [manuscriptId, assignReviewers, updateState]
   );
 
   // Step 5: Check Review Status
@@ -311,7 +319,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
         message: "Checking review status...",
       });
 
-      const result = await getReviewStatus(manuscriptId);
+      const result = await getReviewStatus(manuscriptId.toString());
 
       if (result) {
         const progress =
@@ -350,7 +358,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [manuscriptId, getReviewStatus]);
+  }, [manuscriptId, getReviewStatus, updateState]);
 
   // Step 6: Publish Manuscript
   const publishManuscriptStep = useCallback(async (): Promise<boolean> => {
@@ -372,15 +380,14 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
 
       const result = await publishManuscript(
-        manuscriptId,
-        "editor@example.com" // This would be dynamic in real app
+        manuscriptId.toString()
       );
 
       if (result) {
         updateState({
           step: "published",
           progress: 90,
-          message: `✅ Manuscript published successfully! Published on: ${result.manuscript.publishedDate}`,
+          message: `✅ Manuscript published successfully!`,
         });
         return true;
       } else {
@@ -401,7 +408,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [manuscriptId, publishManuscript]);
+  }, [manuscriptId, publishManuscript, updateState]);
 
   // Step 7: Create NFT (Optional - Currently disabled in production)
   const createNFTStep = useCallback(async (): Promise<boolean> => {
@@ -472,7 +479,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
       });
       return false;
     }
-  }, [workflowData, checkNFTHealth, createNFTMetadata]);
+  }, [workflowData, checkNFTHealth, createNFTMetadata, updateState]);
 
   // Complete workflow runner
   const runCompleteWorkflow = useCallback(async () => {
@@ -502,7 +509,7 @@ export function useCompleteWorkflow(walletAddress?: string) {
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
-  }, [checkCVStep, submitManuscriptStep]);
+  }, [checkCVStep, submitManuscriptStep, updateState]);
 
   // Reset workflow
   const resetWorkflow = useCallback(() => {

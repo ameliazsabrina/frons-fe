@@ -149,13 +149,26 @@ export function useManuscriptSubmission({
         console.log("- Success:", result.data.success);
         console.log("- Full response:", result.data);
 
-        if (result.data.success) {
+        // Enhanced success detection - check for actual submission indicators
+        const hasManuscriptId = result.data.manuscript?.id;
+        const hasIpfsHash = result.data.manuscript?.cid || result.data.smartContract?.ipfs_hash;
+        const hasIpfsUrls = result.data.ipfsUrls?.manuscript;
+        
+        console.log("🔍 Enhanced success detection:");
+        console.log("- Has manuscript ID:", !!hasManuscriptId);
+        console.log("- Has IPFS hash:", !!hasIpfsHash);
+        console.log("- Has IPFS URLs:", !!hasIpfsUrls);
+        console.log("- Backend success flag:", result.data.success);
+
+        // Consider submission successful if manuscript was created and stored, 
+        // even if there were non-critical errors (like storage fallback)
+        if (result.data.success || (hasManuscriptId && hasIpfsHash)) {
           console.log("✅ Manuscript submission successful!");
           return result.data;
         }
 
         console.error("❌ Submission failed with response:", result.data);
-        setError("Submission failed");
+        setError("Submission failed - no manuscript data received");
         return null;
       } catch (error: any) {
         console.error("❌ API Request failed with error:");
@@ -166,6 +179,24 @@ export function useManuscriptSubmission({
         console.error("- Full error object:", error);
         
         const errorData = error.response?.data;
+        
+        // Check if this is a storage fallback scenario where submission actually succeeded
+        const hasManuscriptData = errorData?.manuscript?.id || errorData?.smartContract?.ipfs_hash;
+        const isStorageError = errorData?.code === "STORAGE_ERROR" || 
+                              errorData?.code === "WALRUS_ERROR" ||
+                              (error.message && error.message.includes("Walrus"));
+        
+        console.log("🔍 Error analysis:");
+        console.log("- Has manuscript data:", !!hasManuscriptData);
+        console.log("- Is storage error:", isStorageError);
+        console.log("- Error code:", errorData?.code);
+        
+        // If we have manuscript data despite storage errors, treat as success
+        if (hasManuscriptData && isStorageError) {
+          console.log("✅ Storage fallback successful - treating as success despite error");
+          return errorData;
+        }
+        
         let errorMessage = "Failed to submit manuscript";
 
         if (errorData?.code === "CV_REQUIRED") {
@@ -176,11 +207,19 @@ export function useManuscriptSubmission({
           errorMessage = "Authentication expired. Please login again.";
         } else if (errorData?.code === "MISSING_WALLET") {
           errorMessage = errorData.message || "Wallet address required";
+        } else if (errorData?.code === "DUPLICATE_MANUSCRIPT") {
+          // For duplicate manuscript, preserve the original error for proper handling in main page
+          console.log("🔄 Rethrowing DUPLICATE_MANUSCRIPT error for main page handling");
+          throw error; // Rethrow the original axios error so main page can access error.response.data.code
+        } else if (errorData?.code === "DUPLICATE_DATA") {
+          errorMessage = "This data has already been submitted";
         } else if (errorData?.code === "PINATA_ERROR") {
           errorMessage = "IPFS upload failed. Please try again.";
+        } else if (errorData?.code === "STORAGE_ERROR" && !hasManuscriptData) {
+          // Only show storage error if no manuscript data was created
+          errorMessage = "Storage service error. Please try again.";
         } else if (errorData?.code === "NETWORK_ERROR") {
-          errorMessage =
-            "Network connection failed. Please check your connection.";
+          errorMessage = "Network connection failed. Please check your connection.";
         }
 
         setError(errorMessage);

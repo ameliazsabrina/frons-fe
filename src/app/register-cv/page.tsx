@@ -522,24 +522,11 @@ const ConnectedView = () => {
                         )}
 
                         {uploading && (
-                          <div className="space-y-4 p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-                            <div className="flex justify-between text-base font-medium">
-                              <span className="text-primary">
-                                Processing your CV...
-                              </span>
-                              <span className="text-primary">
-                                {uploadProgress}%
-                              </span>
-                            </div>
-                            <Progress
-                              value={uploadProgress}
-                              className="w-full h-3 rounded-full bg-primary/10"
-                            />
-                            <p className="text-sm text-muted-foreground text-center">
-                              We&apos;re analyzing your CV and extracting your
-                              academic information
-                            </p>
-                          </div>
+                          <Loading 
+                            variant="overlay" 
+                            text="Processing your CV..." 
+                            progress={uploadProgress}
+                          />
                         )}
 
                         <Button

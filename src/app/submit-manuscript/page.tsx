@@ -94,9 +94,19 @@ export default function SubmitManuscriptPage() {
     authenticated,
   });
 
-  const { processUSDCPayment, paymentProcessing, paymentError } = usePayment({
+  const paymentHook = usePayment({
     walletAddress: validSolanaPublicKey,
     wallet: solanaWallet,
+  });
+
+  const { processUSDCPayment, paymentProcessing, paymentError } = paymentHook;
+
+  console.log("🔧 Payment hook initialized:", {
+    processUSDCPayment: typeof processUSDCPayment,
+    paymentProcessing,
+    paymentError,
+    walletAddress: validSolanaPublicKey,
+    wallet: !!solanaWallet,
   });
 
   const { submitManuscript } = useManuscriptSubmission({
@@ -176,7 +186,15 @@ export default function SubmitManuscriptPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleSubmit called");
+    console.log("🔥 handleSubmit called");
+    console.log("📊 Payment hook state at submit:", {
+      processUSDCPayment: typeof processUSDCPayment,
+      paymentProcessing,
+      paymentError,
+      walletAddress: validSolanaPublicKey,
+      wallet: !!solanaWallet,
+      walletConnected: !!solanaWallet?.address,
+    });
 
     setShowValidationErrors(true);
 
@@ -211,32 +229,56 @@ export default function SubmitManuscriptPage() {
     }
 
     try {
-      console.log("Starting submission process...");
+      console.log("🚀 Starting submission process...");
+      console.log("📋 Current form state:", {
+        formData,
+        selectedFile: selectedFile?.name,
+        validSolanaPublicKey,
+        cvVerified,
+        paymentProcessing,
+        submitting,
+      });
+
       setSubmitting(true);
       setSubmitProgress(0);
       setSuccess(null);
       setIpfsData(null);
 
       setSubmitProgress(10);
-      console.log("About to process payment...");
-      console.log("Payment context:", {
+      console.log("💳 About to process payment...");
+      console.log("💰 Payment context:", {
         walletAddress: validSolanaPublicKey,
-        wallet: solanaWallet,
-      });
-      toast({
-        title: "Processing Payment",
-        description: "Please approve the $50 USDCF payment to escrow...",
-        className: "bg-blue-500 text-white border-none",
+        wallet: !!solanaWallet,
+        walletConnected: !!solanaWallet?.address,
+        walletAddress2: solanaWallet?.address,
+        processUSDCPayment: typeof processUSDCPayment,
+        paymentProcessing,
+        paymentError,
       });
 
+      console.log("🎯 CRITICAL: About to call processUSDCPayment()");
+      console.log("📞 Function type check:", typeof processUSDCPayment);
+      console.log("🔄 Payment processing state:", paymentProcessing);
+
+      toast({
+        title: "Processing Payment",
+        description: "You're paying $50 USDCF that will be saved in the escrow account. If the manuscript is rejected, you'll get it back.",
+        className: "bg-white border-blue-500 text-blue-600  shadow-lg",
+      });
+
+      console.log("🚨 CALLING processUSDCPayment() NOW");
       const paymentSignature = await processUSDCPayment();
-      console.log("Payment signature received:", paymentSignature);
+      console.log("✅ Payment signature received:", paymentSignature);
+      console.log(
+        "🎉 Payment completed successfully, signature:",
+        paymentSignature
+      );
 
       setSubmitProgress(30);
       toast({
         title: "Payment Successful",
         description: "Payment processed successfully. Submitting manuscript...",
-        className: "bg-green-500 text-white border-none",
+        className: "text-green-600  bg-white border-green-500 shadow-lg",
       });
 
       setSubmitProgress(50);
@@ -336,6 +378,10 @@ export default function SubmitManuscriptPage() {
       } else if (err.response?.data?.code === "MISSING_WALLET") {
         errorMsg =
           err.response.data.message || "Valid wallet connection required.";
+      } else if (err.response?.data?.code === "DUPLICATE_MANUSCRIPT") {
+        errorMsg = "This manuscript has been uploaded before";
+      } else if (err.response?.data?.code === "DUPLICATE_DATA") {
+        errorMsg = "This data has already been submitted";
       } else if (err.response?.data?.code === "PINATA_ERROR") {
         errorMsg = "IPFS upload failed. Please try again later.";
       } else if (err.response?.status === 503) {
@@ -404,7 +450,7 @@ export default function SubmitManuscriptPage() {
             </div>
             <HeaderImage />
             <div className="flex-1 p-4 sm:p-6">
-              <Loading />
+              <Loading variant="page" text="Verifying CV registration..." />
             </div>
           </SidebarInset>
           <Toaster />

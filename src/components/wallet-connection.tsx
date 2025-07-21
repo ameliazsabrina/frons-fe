@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
@@ -70,28 +70,7 @@ export const WalletConnection = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (
-      authenticated &&
-      walletsReady &&
-      wallets.length === 0 &&
-      !isCreatingWallet
-    ) {
-      handleCreateWallet();
-    }
-  }, [authenticated, walletsReady, wallets.length, isCreatingWallet]);
-
-  const copyAddress = async (address: string) => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error("Failed to copy address:", error);
-    }
-  };
-
-  const handleCreateWallet = async () => {
+  const handleCreateWallet = useCallback(async () => {
     if (!createWallet) {
       setWalletCreationError("Wallet creation not available");
       return;
@@ -106,6 +85,27 @@ export const WalletConnection = () => {
       );
     } finally {
       setIsCreatingWallet(false);
+    }
+  }, [createWallet]);
+
+  useEffect(() => {
+    if (
+      authenticated &&
+      walletsReady &&
+      wallets.length === 0 &&
+      !isCreatingWallet
+    ) {
+      handleCreateWallet();
+    }
+  }, [authenticated, walletsReady, wallets.length, isCreatingWallet, handleCreateWallet]);
+
+  const copyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy address:", error);
     }
   };
 
@@ -124,7 +124,7 @@ export const WalletConnection = () => {
   };
 
   if (!privyReady || !walletsReady) {
-    return <Loading />;
+    return <Loading variant="inline" text="Loading wallet..." size="sm" />;
   }
 
   if (!connected) {

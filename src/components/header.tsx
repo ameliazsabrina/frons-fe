@@ -26,10 +26,11 @@ import {
 
 function ConditionalSidebarTrigger() {
   try {
-    const { toggleSidebar } = useSidebar();
+    // Always call the hook first
+    const sidebarProps = useSidebar();
     return <SidebarTrigger />;
-  } catch {
-    // If not in SidebarProvider context, don't render anything
+  } catch (error) {
+    // If not in SidebarProvider context, render nothing
     return null;
   }
 }

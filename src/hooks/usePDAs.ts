@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { PublicKey } from "@solana/web3.js";
-import { utils } from "@project-serum/anchor";
 import { SOLANA_CONFIG, PDA_SEEDS } from "@/lib/constants/solana";
 import { useProgram } from "./useProgram";
 

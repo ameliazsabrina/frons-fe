@@ -36,7 +36,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth";
 import axios from "axios";
 import { useToast } from "@/components/ui/sonner";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
@@ -46,7 +46,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLoading } from "@/context/LoadingContext";
 import { WalletConnection } from "@/components/wallet-connection";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimaryWalletAddress } from "@/utils/wallet";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
 import { Loading } from "@/components/ui/loading";
 
@@ -107,8 +107,8 @@ const reviewStatuses = [
 export default function ReviewManuscriptPage() {
   const router = useRouter();
   const { authenticated: connected, user } = usePrivy();
-  const { wallets } = useWallets();
-  const publicKey = getPrimaryWalletAddress(wallets);
+  const { wallets } = useSolanaWallets();
+  const publicKey = getPrimarySolanaWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;

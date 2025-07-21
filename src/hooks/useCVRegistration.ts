@@ -179,7 +179,7 @@ export function useCVRegistration(walletAddress?: string) {
       } finally {
       }
     },
-    []
+    [apiUrl]
   );
 
   const checkCVRegistrationPrivy = useCallback(
@@ -431,7 +431,7 @@ export function useCVRegistration(walletAddress?: string) {
         setUploadProgress(0);
       }
     },
-    [apiUrl, walletAddress, checkCVRegistration]
+    [apiUrl, walletAddress, checkCVRegistration, setIsLoading]
   );
 
   const getUserProfile = useCallback(
@@ -568,7 +568,7 @@ export function useCVRegistration(walletAddress?: string) {
         setIsLoading(false);
       }
     },
-    [authenticated, getAccessToken, apiUrl]
+    [authenticated, getAccessToken, apiUrl, setIsLoading]
   );
 
   const updateUserProfile = useCallback(
@@ -813,7 +813,7 @@ export function useCVRegistration(walletAddress?: string) {
         setIsLoading(false);
       }
     },
-    [authenticated, getAccessToken, apiUrl]
+    [authenticated, getAccessToken, apiUrl, setIsLoading]
   );
 
   const getUserSpecialization = useCallback(
@@ -913,7 +913,7 @@ export function useCVRegistration(walletAddress?: string) {
         setIsLoading(false);
       }
     },
-    [checkCVRegistration]
+    [apiUrl, setIsLoading, checkCVRegistration]
   );
 
   return {

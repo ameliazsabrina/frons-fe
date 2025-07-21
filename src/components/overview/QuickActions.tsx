@@ -48,8 +48,8 @@ export function QuickActions({ manuscriptStats }: QuickActionsProps) {
     },
     {
       title: "DAO Proposals",
-      description: "Participate in community governance",
-      href: "/dao-proposals",
+      description: "(Coming Soon)",
+      href: "/",
     },
   ];
 

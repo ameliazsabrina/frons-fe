@@ -337,7 +337,10 @@ export const useManuscriptWorkflow = () => {
     async (manuscriptPDA: PublicKey) => {
       if (!program) return null;
       try {
-        return await program.account.manuscript.fetch(manuscriptPDA);
+        // TODO: Fix account type mismatch between IDL and TypeScript
+        return await (program.account as any).dociManuscript.fetch(
+          manuscriptPDA
+        );
       } catch (error) {
         console.error("Error fetching manuscript:", error);
         return null;
@@ -351,7 +354,8 @@ export const useManuscriptWorkflow = () => {
     async (userPDA: PublicKey) => {
       if (!program) return null;
       try {
-        return await program.account.user.fetch(userPDA);
+        // TODO: Fix account type mismatch between IDL and TypeScript
+        return await (program.account as any).user.fetch(userPDA);
       } catch (error) {
         console.error("Error fetching user:", error);
         return null;
@@ -365,7 +369,14 @@ export const useManuscriptWorkflow = () => {
     async (dociManuscriptPDA: PublicKey) => {
       if (!program) return null;
       try {
-        return await program.account.dociManuscript.fetch(dociManuscriptPDA);
+        // Use the correct account accessor based on the IDL
+        const programAccount = program.account as any;
+        if (programAccount.dociManuscript) {
+          return await programAccount.dociManuscript.fetch(dociManuscriptPDA);
+        } else {
+          console.warn("dociManuscript account not found in program");
+          return null;
+        }
       } catch (error) {
         console.error("Error fetching DOCI manuscript:", error);
         return null;

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import {
   AlertCircleIcon,
   UserIcon,
@@ -189,15 +190,15 @@ export default function YourProfile() {
           },
           overview: result.profile.overview || "",
           summary: {
-            education: result.profile.education?.length || 0,
-            experience: result.profile.experience?.length || 0,
-            publications: result.profile.publications?.length || 0,
-            awards: result.profile.awards?.length || 0,
+            education: (result.profile as any).education?.length || 0,
+            experience: (result.profile as any).experience?.length || 0,
+            publications: (result.profile as any).publications?.length || 0,
+            awards: (result.profile as any).awards?.length || 0,
           },
-          education: result.profile.education || [],
-          experience: result.profile.experience || [],
-          publications: result.profile.publications || [],
-          awards: result.profile.awards || [],
+          education: (result.profile as any).education || [],
+          experience: (result.profile as any).experience || [],
+          publications: (result.profile as any).publications || [],
+          awards: (result.profile as any).awards || [],
         };
 
         console.log("📊 Transformed profile:", transformedProfile);
@@ -399,10 +400,12 @@ export default function YourProfile() {
                     <div className="flex flex-col items-center space-y-4">
                       <div className="w-32 h-32 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
                         {profile.personalInfo.photoUrl ? (
-                          <img
+                          <Image
                             src={profile.personalInfo.photoUrl}
                             alt={profile.personalInfo.fullName}
                             className="w-full h-full object-cover"
+                            width={128}
+                            height={128}
                           />
                         ) : (
                           <UserIcon className="w-16 h-16 text-primary/40" />

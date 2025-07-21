@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,14 +25,14 @@ import {
   FileTextIcon,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useWallets } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth";
 import { Loading } from "@/components/ui/loading";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { backendAPI } from "@/lib/api";
-import { getPrimaryWalletAddress } from "@/utils/wallet";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 
 interface PublishedManuscript {
   id: number;
@@ -70,8 +70,8 @@ const RESEARCH_CATEGORIES = [
 
 export default function PublishedManuscriptsPage() {
   const { authenticated: connected } = usePrivy();
-  const { wallets } = useWallets();
-  const publicKey = getPrimaryWalletAddress(wallets);
+  const { wallets } = useSolanaWallets();
+  const publicKey = getPrimarySolanaWalletAddress(wallets);
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
@@ -224,7 +224,7 @@ export default function PublishedManuscriptsPage() {
   ];
 
   // Fetch published manuscripts
-  const fetchPublishedManuscripts = async () => {
+  const fetchPublishedManuscripts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -285,7 +285,7 @@ export default function PublishedManuscriptsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Filter and sort manuscripts
   useEffect(() => {
@@ -336,7 +336,7 @@ export default function PublishedManuscriptsPage() {
   // Load manuscripts on component mount
   useEffect(() => {
     fetchPublishedManuscripts();
-  }, []);
+  }, [fetchPublishedManuscripts]);
 
   const formatDate = (dateString: string) => {
     try {

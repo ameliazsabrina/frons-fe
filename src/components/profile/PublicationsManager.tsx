@@ -303,12 +303,17 @@ export function PublicationsManager({
                 variant="outline"
                 className="mr-2"
               >
-                <RefreshCwIcon
-                  className={`h-4 w-4 mr-2 ${
-                    loadingCVPublications ? "animate-spin" : ""
-                  }`}
-                />
-                {loadingCVPublications ? "Loading CV..." : "Sync from CV"}
+{loadingCVPublications ? (
+                  <>
+                    <RefreshCwIcon className="h-4 w-4 mr-2 animate-spin" />
+                    Loading CV...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCwIcon className="h-4 w-4 mr-2" />
+                    Sync from CV
+                  </>
+                )}
               </Button>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
