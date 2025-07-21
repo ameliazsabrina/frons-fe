@@ -13,11 +13,11 @@ import { useLoading } from "@/context/LoadingContext";
 
 export default function Home() {
   const { isReady, progress, pageState } = usePageReady({
-    checkImages: false,
+    checkImages: true,
     checkFonts: true,
     checkData: true,
     minLoadTime: 600,
-    maxLoadTime: 5000,
+    maxLoadTime: 8000,
   });
 
   const { setIsLoading } = useLoading();

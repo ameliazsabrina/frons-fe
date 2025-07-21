@@ -16,6 +16,8 @@ export function Footer() {
               width={24}
               height={24}
               className="rounded-md w-12 h-12"
+              onLoad={() => console.log("Footer logo loaded successfully")}
+              onError={() => console.error("Footer logo failed to load")}
             />
           </div>
 

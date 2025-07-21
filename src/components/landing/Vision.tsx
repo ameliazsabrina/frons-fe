@@ -107,6 +107,9 @@ export function Vision() {
               alt="Fronsciers's Vision"
               width={700}
               height={700}
+              priority
+              onLoad={() => console.log("Vision image loaded successfully")}
+              onError={() => console.error("Vision image failed to load")}
             />
           </div>
 

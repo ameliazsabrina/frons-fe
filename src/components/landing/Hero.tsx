@@ -88,16 +88,30 @@ export function Hero() {
 }
 
 function LaptopDisplayContent() {
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const handleImageLoad = () => {
+    // Image has loaded, animations can proceed safely
+    console.log("Hero image loaded successfully");
+  };
+
+  const handleImageError = () => {
+    console.error("Hero image failed to load");
+  };
+
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <div className="relative w-full h-full flex items-center justify-center p-8">
         <Image
+          ref={imageRef}
           src="/laptop-size.png"
           alt="Fronsciers Platform on Laptop"
           width={1200}
           height={800}
           className="w-full h-auto max-w-5xl object-contain"
           priority
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
       </div>
     </div>
