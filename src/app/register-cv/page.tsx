@@ -196,6 +196,8 @@ const ConnectedView = () => {
         description:
           "Your CV has been verified successfully. You can now submit manuscripts.",
       });
+      setShowProfile(true);
+      router.push("/your-profile");
     } else if (cvStatus && !cvStatus.hasCV) {
       toast({
         title: "⚠️ CV Required",
@@ -523,9 +525,9 @@ const ConnectedView = () => {
                         )}
 
                         {uploading && (
-                          <Loading 
-                            variant="overlay" 
-                            text="Processing your CV..." 
+                          <Loading
+                            variant="overlay"
+                            text="Processing your CV..."
                             progress={uploadProgress}
                           />
                         )}
@@ -535,7 +537,7 @@ const ConnectedView = () => {
                           disabled={!selectedFile || uploading}
                           className="w-full font-semibold"
                         >
-                          {uploading ? "Processing..." : "Parse CV"}
+                          {uploading ? "Processing..." : "Upload CV"}
                         </Button>
                       </>
                     ) : (

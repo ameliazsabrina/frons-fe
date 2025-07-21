@@ -30,7 +30,7 @@ const TOKEN_CONFIG = [
     decimals: 9,
   },
   {
-    symbol: "USDCF",
+    symbol: "USDC",
     mintAddress: DEVNET_USDCF_ADDRESS,
     decimals: 6,
   },
@@ -67,15 +67,16 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
 
     try {
       const publicKey = new PublicKey(walletAddress);
-
-      // Fetch SOL balance
       const solBalance = await connection.getBalance(publicKey);
       const solAmount = solBalance / LAMPORTS_PER_SOL;
       console.log("💰 SOL balance:", solAmount);
 
-      // Fetch token balances
       const tokenBalances: TokenBalance[] = [];
-      console.log("🪙 Fetching token balances for:", TOKEN_CONFIG.length, "tokens");
+      console.log(
+        "🪙 Fetching token balances for:",
+        TOKEN_CONFIG.length,
+        "tokens"
+      );
 
       for (const tokenConfig of TOKEN_CONFIG) {
         console.log(`🔍 Fetching ${tokenConfig.symbol} balance...`);
@@ -85,7 +86,10 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             mintPublicKey,
             publicKey
           );
-          console.log(`📍 ${tokenConfig.symbol} token account:`, associatedTokenAddress.toString());
+          console.log(
+            `📍 ${tokenConfig.symbol} token account:`,
+            associatedTokenAddress.toString()
+          );
 
           try {
             const tokenAccount = await getAccount(
@@ -95,7 +99,10 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             const balance = Number(tokenAccount.amount);
             const uiAmount = balance / Math.pow(10, tokenConfig.decimals);
 
-            console.log(`✅ ${tokenConfig.symbol} balance:`, { balance, uiAmount });
+            console.log(`✅ ${tokenConfig.symbol} balance:`, {
+              balance,
+              uiAmount,
+            });
             tokenBalances.push({
               symbol: tokenConfig.symbol,
               balance,
@@ -104,8 +111,9 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
               mintAddress: tokenConfig.mintAddress,
             });
           } catch (accountError) {
-            // Token account doesn't exist, balance is 0
-            console.log(`⚠️ ${tokenConfig.symbol} account doesn't exist, showing 0 balance`);
+            console.log(
+              `⚠️ ${tokenConfig.symbol} account doesn't exist, showing 0 balance`
+            );
             tokenBalances.push({
               symbol: tokenConfig.symbol,
               balance: 0,
@@ -119,7 +127,7 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             `❌ Error fetching ${tokenConfig.symbol} balance:`,
             tokenError
           );
-          // Add token with 0 balance on error
+
           tokenBalances.push({
             symbol: tokenConfig.symbol,
             balance: 0,

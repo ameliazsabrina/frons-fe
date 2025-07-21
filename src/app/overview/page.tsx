@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +28,6 @@ import {
   OverviewHeader,
 } from "@/components/overview";
 
-
 export default function OverviewPage() {
   const router = useRouter();
   const { user, authenticated } = usePrivy();
@@ -39,14 +37,6 @@ export default function OverviewPage() {
   const validSolanaPublicKey = isValidSolanaAddress(publicKey)
     ? publicKey
     : undefined;
-
-  console.log("🔍 Overview page wallet debugging:");
-  console.log("- authenticated:", authenticated);
-  console.log("- connected:", connected);
-  console.log("- wallets count:", wallets?.length);
-  console.log("- publicKey from getPrimarySolanaWalletAddress:", publicKey);
-  console.log("- validSolanaPublicKey:", validSolanaPublicKey);
-  console.log("- isValidSolanaAddress result:", isValidSolanaAddress(publicKey));
 
   const { manuscriptStats, userStats, loading, error } = useOverview(
     connected,
@@ -87,9 +77,6 @@ export default function OverviewPage() {
   useEffect(() => {
     setIsLoading(!isReady);
   }, [isReady, setIsLoading]);
-
-
-
 
   const getUserDisplayName = (user: any) => {
     if (!user) return "User";
