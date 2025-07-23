@@ -8,111 +8,27 @@
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1547ms
- ✓ Compiled /middleware in 71ms (108 modules)
- ✓ Compiled in 62ms (108 modules)
- ✓ Compiled in 43ms (108 modules)
+ ✓ Ready in 1666ms
+ ✓ Compiled /middleware in 149ms (108 modules)
  ○ Compiling /[username] ...
- ✓ Compiled /[username] in 5.9s (8961 modules)
- ✓ Compiled in 480ms (4316 modules)
- HEAD /amelia_zakiya_sabrina 200 in 6890ms
- GET /amelia_zakiya_sabrina 200 in 25ms
- ✓ Compiled in 1305ms (8961 modules)
- ✓ Compiled in 559ms (4316 modules)
- ✓ Compiled /[username] in 371ms (4645 modules)
- GET /amelia_zakiya_sabrina 200 in 878ms
- GET /ameliazsabrina 200 in 30ms
- GET /placeholder.svg 200 in 33ms
- HEAD /ameliazsabrina 200 in 28ms
- ✓ Compiled in 1139ms (8961 modules)
- GET /ameliazsabrina 200 in 75ms
- GET /placeholder.svg 200 in 559ms
- ✓ Compiled in 3.3s (9125 modules)
- GET /ameliazsabrina 200 in 1240ms
- GET /ameliazsabrina 200 in 884ms
- GET /ameliazsabrina 200 in 24ms
- GET /ameliazsabrina 200 in 37ms
- GET /placeholder.svg 200 in 33ms
- HEAD /ameliazsabrina 200 in 30ms
- ✓ Compiled in 935ms (9125 modules)
- GET /placeholder.svg 200 in 915ms
- GET /ameliazsabrina 200 in 16ms
- ✓ Compiled in 753ms (9125 modules)
- GET /placeholder.svg 200 in 927ms
- GET /ameliazsabrina 200 in 610ms
- ○ Compiling / ...
- ✓ Compiled / in 2.4s (9938 modules)
- GET / 200 in 2528ms
- GET / 200 in 7ms
- GET /ameliazsabrina 200 in 522ms
- HEAD /ameliazsabrina 200 in 28ms
- GET /placeholder.svg 200 in 34ms
- ✓ Compiled in 1601ms (9952 modules)
- GET /placeholder.svg 200 in 558ms
- GET /ameliazsabrina 200 in 8ms
- GET /ameliazsabrina 200 in 37ms
- GET /placeholder.svg 200 in 38ms
- HEAD /ameliazsabrina 200 in 36ms
- GET /ameliazsabrina 200 in 28ms
- HEAD /ameliazsabrina 200 in 21ms
- GET /placeholder.svg 200 in 19ms
- GET / 200 in 155ms
- GET /rejoelm 200 in 28ms
- HEAD /rejoelm 200 in 32ms
- GET /placeholder.svg 200 in 23ms
- GET /rejoelm 200 in 25ms
- HEAD /rejoelm 200 in 26ms
- GET /placeholder.svg 200 in 23ms
- ✓ Compiled in 2.9s (9938 modules)
- GET /rejoelm 200 in 66ms
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET /rejoelm 200 in 457ms
- HEAD /rejoelm 200 in 25ms
- GET /placeholder.svg 200 in 42ms
- ⨯ ./src/app/[username]/page.tsx
-Error:   [31mx[0m Unexpected token `div`. Expected jsx identifier
-     ,-[[36;1;4m/Users/mac/fronsciers-all/fronsciers-fe/src/app/[username]/page.tsx[0m:148:1]
- [2m145[0m |   if (loading) {
- [2m146[0m |     return (
- [2m147[0m | 
- [2m148[0m |         <div className="flex items-center justify-center min-h-[60vh]">
-     : [35;1m         ^^^[0m
- [2m149[0m |           <Loading variant="page" text="Loading profile..." />
- [2m150[0m |         </div>
- [2m151[0m |       </div>
-     `----
-
-Caused by:
-    Syntax Error
-
-Import trace for requested module:
-./src/app/[username]/page.tsx
- ○ Compiling /_error ...
- ✓ Compiled /_error in 2.5s (10285 modules)
- ✓ Compiled (10271 modules)
- GET /rejoelm 500 in 3861ms
- GET /rejoelm 200 in 89ms
+ ✓ Compiled /[username] in 6s (9125 modules)
+ ✓ Compiled in 473ms (4398 modules)
+ HEAD /rejoelm 200 in 7038ms
  GET /rejoelm 200 in 29ms
- GET /rejoelm 200 in 164ms
- ✓ Compiled in 955ms (10285 modules)
- GET /rejoelm 200 in 1142ms
- GET /rejoelm 200 in 643ms
- GET /rejoelm 200 in 31ms
- GET /placeholder.svg 200 in 36ms
- HEAD /rejoelm 200 in 36ms
- GET /rejoelm 200 in 24ms
- HEAD /rejoelm 200 in 27ms
- GET /placeholder.svg 200 in 30ms
- GET /rejoelm 200 in 40ms
- HEAD /rejoelm 200 in 32ms
- GET /rejoelm 200 in 30ms
- HEAD /rejoelm 200 in 62ms
- GET /placeholder.svg 200 in 39ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1709ms (9922 modules)
+ GET / 200 in 2375ms
+ GET / 200 in 31ms
  ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 1276ms (10275 modules)
- GET /rejoelm 404 in 1725ms
- GET /_next/static/css/app/layout.css?v=1753276518081 404 in 44ms
- GET /_next/static/chunks/app/layout.js 404 in 87ms
- GET /_next/static/chunks/main-app.js?v=1753276518081 404 in 94ms
- GET /_next/static/chunks/app/not-found.js 404 in 85ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 86ms
+ ✓ Compiled /_not-found in 856ms (9926 modules)
+ GET /_next/static/css/app/layout.css?v=1753278069745 404 in 1260ms
+ GET /_next/static/css/app/layout.css?v=1753278069185 404 in 1261ms
+ GET /_next/static/chunks/main-app.js?v=1753278069745 404 in 708ms
+ GET /_next/static/chunks/main-app.js?v=1753278069185 404 in 711ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 59ms
+ GET /_next/static/chunks/app/not-found.js 404 in 63ms
+ GET /_next/static/chunks/app/layout.js 404 in 65ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 54ms
+ GET /_next/static/chunks/app/layout.js 404 in 53ms
+ GET /_next/static/chunks/app/not-found.js 404 in 36ms
+[?25h

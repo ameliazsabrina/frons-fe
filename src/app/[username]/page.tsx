@@ -144,39 +144,42 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loading variant="page" text="Loading profile..." />
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8 flex items-center justify-center">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-gray-300" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">
-                {error === "User not found"
-                  ? "User Not Found"
-                  : "Profile Unavailable"}
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                {error === "User not found"
-                  ? `No user found with username "@${username}"`
-                  : "This profile is temporarily unavailable"}
-              </p>
-              <Button asChild>
-                <Link href="/">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
+        <Header />
+        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Card className="max-w-md mx-auto shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-gray-300" />
+                </div>
+                <h2 className="text-xl font-semibold mb-3 text-gray-900">
+                  {error === "User not found"
+                    ? "User Not Found"
+                    : "Profile Unavailable"}
+                </h2>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  {error === "User not found"
+                    ? `No user found with username "@${username}"`
+                    : "This profile is temporarily unavailable"}
+                </p>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
