@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const UNAUTHENTICATED_PAGES = ["/", "/refresh"];
 
+// Function to check if a path should be publicly accessible
+function isPublicUserProfile(pathname: string): boolean {
+  // Match pattern: /[username] where username contains only letters, numbers, underscores, hyphens
+  const usernamePattern = /^\/[a-zA-Z0-9_-]+$/;
+  return usernamePattern.test(pathname);
+}
+
 export const config = {
   matcher: [
     "/((?!api|_next|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico|.*\\.webp).*)"
@@ -21,7 +28,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (UNAUTHENTICATED_PAGES.includes(pathname)) {
+  if (UNAUTHENTICATED_PAGES.includes(pathname) || isPublicUserProfile(pathname)) {
     return NextResponse.next();
   }
 

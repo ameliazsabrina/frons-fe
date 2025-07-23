@@ -20,25 +20,6 @@ export interface UserStats {
   reputationScore: number;
 }
 
-// Mock data for demo purposes
-const generateMockManuscriptStats = (): ManuscriptStats => ({
-  total: 47,
-  submitted: 12,
-  underReview: 8,
-  published: 23,
-  rejected: 4,
-  pendingReviews: 15,
-  readyForPublication: 3,
-});
-
-const generateMockUserStats = (): UserStats => ({
-  manuscriptsSubmitted: 12,
-  manuscriptsPublished: 8,
-  reviewsCompleted: 34,
-  fronsTokens: 2850,
-  totalEarnings: 127.5,
-  reputationScore: 92,
-});
 
 export function useOverview(
   connected: boolean,
@@ -66,9 +47,24 @@ export function useOverview(
 
   useEffect(() => {
     if (!connected || !validSolanaPublicKey) {
-      // Even when not connected, show some demo data
-      setManuscriptStats(generateMockManuscriptStats());
-      setUserStats(generateMockUserStats());
+      // Reset to empty state when not connected
+      setManuscriptStats({
+        total: 0,
+        submitted: 0,
+        underReview: 0,
+        published: 0,
+        rejected: 0,
+        pendingReviews: 0,
+        readyForPublication: 0,
+      });
+      setUserStats({
+        manuscriptsSubmitted: 0,
+        manuscriptsPublished: 0,
+        reviewsCompleted: 0,
+        fronsTokens: 0,
+        totalEarnings: 0,
+        reputationScore: 0,
+      });
       setLoading(false);
       return;
     }
@@ -87,23 +83,32 @@ export function useOverview(
           );
 
           if (manuscriptsResponse.data.success) {
-            // Enhance real data with mock data for demo
+            // Use real data only
             const realStats = manuscriptsResponse.data.stats;
-            setManuscriptStats({
-              total: realStats.total + 35,
-              submitted: realStats.submitted + 8,
-              underReview: realStats.underReview + 6,
-              published: realStats.published + 18,
-              rejected: realStats.rejected + 3,
-              pendingReviews: realStats.pendingReviews + 12,
-              readyForPublication: realStats.readyForPublication + 2,
-            });
+            setManuscriptStats(realStats);
           } else {
-            setManuscriptStats(generateMockManuscriptStats());
+            // Reset to empty state if API fails
+            setManuscriptStats({
+              total: 0,
+              submitted: 0,
+              underReview: 0,
+              published: 0,
+              rejected: 0,
+              pendingReviews: 0,
+              readyForPublication: 0,
+            });
           }
         } catch (apiError) {
-          console.log("API not available, using mock data");
-          setManuscriptStats(generateMockManuscriptStats());
+          console.log("API not available, showing empty state");
+          setManuscriptStats({
+            total: 0,
+            submitted: 0,
+            underReview: 0,
+            published: 0,
+            rejected: 0,
+            pendingReviews: 0,
+            readyForPublication: 0,
+          });
         }
 
         try {
@@ -112,29 +117,52 @@ export function useOverview(
           );
 
           if (userResponse.data.success) {
-            // Enhance real data with mock data for demo
+            // Use real data only
             const realUserStats = userResponse.data.stats;
-            setUserStats({
-              manuscriptsSubmitted: realUserStats.manuscriptsSubmitted + 8,
-              manuscriptsPublished: realUserStats.manuscriptsPublished + 6,
-              reviewsCompleted: realUserStats.reviewsCompleted + 28,
-              fronsTokens: realUserStats.fronsTokens + 2400,
-              totalEarnings: realUserStats.totalEarnings + 95.5,
-              reputationScore: Math.max(realUserStats.reputationScore + 25, 92),
-            });
+            setUserStats(realUserStats);
           } else {
-            setUserStats(generateMockUserStats());
+            // Reset to empty state if API fails
+            setUserStats({
+              manuscriptsSubmitted: 0,
+              manuscriptsPublished: 0,
+              reviewsCompleted: 0,
+              fronsTokens: 0,
+              totalEarnings: 0,
+              reputationScore: 0,
+            });
           }
         } catch (apiError) {
-          console.log("User API not available, using mock data");
-          setUserStats(generateMockUserStats());
+          console.log("User API not available, showing empty state");
+          setUserStats({
+            manuscriptsSubmitted: 0,
+            manuscriptsPublished: 0,
+            reviewsCompleted: 0,
+            fronsTokens: 0,
+            totalEarnings: 0,
+            reputationScore: 0,
+          });
         }
       } catch (err: any) {
         console.error("Failed to fetch stats:", err);
-        // Fallback to mock data on error
-        setManuscriptStats(generateMockManuscriptStats());
-        setUserStats(generateMockUserStats());
-        setError(null); // Don't show error, just use mock data
+        // Show error state instead of mock data
+        setError("Failed to load dashboard data. Please try refreshing the page.");
+        setManuscriptStats({
+          total: 0,
+          submitted: 0,
+          underReview: 0,
+          published: 0,
+          rejected: 0,
+          pendingReviews: 0,
+          readyForPublication: 0,
+        });
+        setUserStats({
+          manuscriptsSubmitted: 0,
+          manuscriptsPublished: 0,
+          reviewsCompleted: 0,
+          fronsTokens: 0,
+          totalEarnings: 0,
+          reputationScore: 0,
+        });
       } finally {
         setLoading(false);
       }
