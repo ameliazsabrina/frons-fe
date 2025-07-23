@@ -91,11 +91,11 @@ function LaptopDisplayContent() {
   const imageRef = useRef<HTMLImageElement>(null);
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center scale-125">
+    <div className="relative flex h-full w-full items-center justify-center scale-110">
       <div className="relative w-full h-full ">
         <Image
           ref={imageRef}
-          src="/laptop-size.png"
+          src="/laptop-dummy.png"
           alt="Fronsciers Platform on Laptop"
           width={2000}
           height={2000}

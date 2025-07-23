@@ -7,8 +7,31 @@ import axios from "axios";
 import { usePrivy } from "@privy-io/react-auth";
 import { performanceCache, CachedApiClient } from "./cache";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // Check if we're running in production (deployed)
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                      process.env.VERCEL_ENV === 'production' ||
+                      typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+  
+  // Use environment variable if set, otherwise fallback based on environment
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (envUrl) {
+    console.log(`🔗 Using API URL from env: ${envUrl}`);
+    return envUrl;
+  }
+  
+  // Fallback URLs
+  const productionUrl = 'https://frons-be-production.up.railway.app/api';
+  const developmentUrl = 'http://localhost:5001/api';
+  
+  const apiUrl = isProduction ? productionUrl : developmentUrl;
+  console.log(`🔗 Using ${isProduction ? 'production' : 'development'} API URL: ${apiUrl}`);
+  
+  return apiUrl;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // API Response Types
 export interface ApiResponse<T = any> {

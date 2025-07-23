@@ -107,7 +107,6 @@ export default function AuthorsDashboardPage() {
             <AuthorDashboardHeader onNewSubmission={navigateToSubmission} />
             <AuthorStatsGrid stats={stats} />
 
-            {/* Main Content */}
             <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
               <Tabs
                 value={activeTab}
