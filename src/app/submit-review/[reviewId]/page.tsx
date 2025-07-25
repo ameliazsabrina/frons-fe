@@ -9,7 +9,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import {
@@ -360,7 +360,35 @@ export default function SubmitManuscriptPage() {
             </div>
             <HeaderImage />
             <div className="flex-1 p-4 sm:p-6">
-              <Loading variant="page" text="Loading review..." />
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="text-center space-y-4">
+                  <Skeleton className="h-8 w-48 mx-auto" />
+                  <Skeleton className="h-4 w-64 mx-auto" />
+                </div>
+                <div className="space-y-6">
+                  <div className="p-6 bg-white rounded-xl border space-y-4">
+                    <Skeleton className="h-6 w-40" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
+                    <div className="flex space-x-2">
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-18" />
+                    </div>
+                  </div>
+                  <div className="p-6 bg-white rounded-xl border space-y-4">
+                    <Skeleton className="h-6 w-32" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                    <Skeleton className="h-32 w-full" />
+                  </div>
+                </div>
+              </div>
             </div>
           </SidebarInset>
           <Toaster />

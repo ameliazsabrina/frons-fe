@@ -37,7 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
@@ -151,7 +151,7 @@ export default function YourProfile() {
     error: cvError,
   } = useCVRegistration(walletAddress);
 
-  const { eligibilityResult: isReviewerEligible } = useReviewerEligibility();
+  const { eligibilityResult } = useReviewerEligibility();
 
   const loadProfile = useCallback(async () => {
     if (!walletAddress || !isValidSolanaAddress(walletAddress)) return;
@@ -317,13 +317,136 @@ export default function YourProfile() {
               </div>
             </div>
             <HeaderImage />
-            <div className="container max-w-5xl mx-auto px-6 py-12">
-              <div className="flex items-center justify-center space-x-3 text-center">
-                <Loading />
-                <span className="text-muted-foreground">
-                  Loading your profile...
-                </span>
+            <div className="container max-w-6xl mx-auto px-6 py-8">
+              {/* Profile Header skeleton - matching 3-column layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                {/* Left column - Profile picture and basic info */}
+                <div className="lg:col-span-1">
+                  <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center space-y-4">
+                        {/* Profile picture skeleton */}
+                        <Skeleton className="w-32 h-32 rounded-full" />
+                        
+                        {/* Name and title skeleton */}
+                        <div className="text-center space-y-2">
+                          <Skeleton className="h-6 w-32" />
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-4 w-36" />
+                        </div>
+                        
+                        {/* Edit button skeleton */}
+                        <Skeleton className="h-9 w-24" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right columns - Contact info and summary */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Contact information card skeleton */}
+                  <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-40" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[...Array(6)].map((_, i) => (
+                          <div key={i} className="space-y-2">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-4 w-full" />
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Academic profiles section */}
+                      <div className="border-t pt-4 mt-4">
+                        <Skeleton className="h-4 w-32 mb-3" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {[...Array(2)].map((_, i) => (
+                            <div key={i} className="space-y-1">
+                              <Skeleton className="h-3 w-16" />
+                              <Skeleton className="h-4 w-full" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Summary stats card skeleton */}
+                  <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-32" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="text-center p-4 bg-primary/5 rounded-lg">
+                            <div className="flex items-center justify-center mb-2">
+                              <Skeleton className="w-5 h-5" />
+                            </div>
+                            <Skeleton className="h-8 w-8 mx-auto mb-1" />
+                            <Skeleton className="h-4 w-16 mx-auto" />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
+
+              {/* Main tabs skeleton */}
+              <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                {/* Tabs list skeleton */}
+                <div className="w-full h-auto grid grid-cols-6 bg-gray-50/50 p-0 rounded-lg">
+                  {["Overview", "Education", "Experience", "Publications", "Awards", "Academic Card"].map((tab, i) => (
+                    <div
+                      key={i}
+                      className={`py-3 px-4 text-center ${
+                        i === 0 ? "bg-white border-b-2 border-b-primary" : ""
+                      }`}
+                    >
+                      <Skeleton className="h-4 w-16 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Tab content skeleton */}
+                <div className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-48" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    
+                    {/* Content sections */}
+                    <div className="space-y-6">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="space-y-3">
+                          <Skeleton className="h-5 w-40" />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-9 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-20" />
+                              <Skeleton className="h-9 w-full" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Action buttons */}
+                    <div className="flex justify-end space-x-3 pt-6 border-t">
+                      <Skeleton className="h-9 w-20" />
+                      <Skeleton className="h-9 w-16" />
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </div>
           </SidebarInset>
         </div>
@@ -377,7 +500,7 @@ export default function YourProfile() {
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center space-x-2">
                 <span className="font-medium text-primary">Your Profile</span>
-                {isReviewerEligible && (
+                {eligibilityResult?.isEligible && (
                   <Badge
                     variant="secondary"
                     className="bg-green-100 text-green-800 ml-2"
@@ -413,21 +536,84 @@ export default function YourProfile() {
                       </div>
 
                       <div className="text-center space-y-2">
-                        <h1 className="text-2xl font-bold text-primary">
-                          {profile.personalInfo.fullName}
-                        </h1>
-                        <p className="text-lg text-muted-foreground">
-                          {profile.personalInfo.title ||
-                            profile.personalInfo.profession}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {profile.personalInfo.institution}
-                        </p>
-                        {profile.personalInfo.location && (
-                          <div className="flex items-center justify-center space-x-1 text-sm text-muted-foreground">
-                            <MapPinIcon className="w-4 h-4" />
-                            <span>{profile.personalInfo.location}</span>
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            <div>
+                              <Input
+                                value={editData.personalInfo?.fullName || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "personalInfo",
+                                    "fullName",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Full Name"
+                                className="text-center text-xl font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                value={editData.personalInfo?.title || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "personalInfo",
+                                    "title",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Title"
+                                className="text-center"
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                value={editData.personalInfo?.institution || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "personalInfo",
+                                    "institution",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Institution"
+                                className="text-center text-sm"
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                value={editData.personalInfo?.location || ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "personalInfo",
+                                    "location",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Location"
+                                className="text-center text-sm"
+                              />
+                            </div>
                           </div>
+                        ) : (
+                          <>
+                            <h1 className="text-2xl font-semibold text-primary">
+                              {profile.personalInfo.fullName}
+                            </h1>
+                            <p className="text-lg text-muted-foreground">
+                              {profile.personalInfo.title ||
+                                profile.personalInfo.profession}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {profile.personalInfo.institution}
+                            </p>
+                            {profile.personalInfo.location && (
+                              <div className="flex items-center justify-center space-x-1 text-sm text-muted-foreground">
+                                <MapPinIcon className="w-4 h-4" />
+                                <span>{profile.personalInfo.location}</span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
 
@@ -451,7 +637,7 @@ export default function YourProfile() {
                             >
                               {saving ? (
                                 <>
-                                  <Loading />
+                                  <Skeleton className="h-4 w-4" />
                                   <span className="ml-2">Saving...</span>
                                 </>
                               ) : (

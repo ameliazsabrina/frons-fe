@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loading } from "@/components/ui/loading";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,137 +13,76 @@ import {
 } from "@/components/ui/collapsible";
 import { Header } from "@/components/header";
 import { ChevronDown, ChevronUp, ArrowLeft, ExternalLink } from "lucide-react";
-
-interface PublicUserProfile {
-  id: number;
-  username: string;
-  fullName: string;
-  title: string;
-  profession: string;
-  institution: string;
-  location: string;
-  field: string;
-  specialization: string;
-  overview: string;
-  profilePhoto: string;
-  headerImage: string;
-  publicContact: {
-    website: string;
-    linkedIn: string;
-    github: string;
-    orcid: string;
-    googleScholar: string;
-  };
-  education: Array<{
-    id: number;
-    institution: string;
-    degree: string;
-    field: string;
-    start_date: string;
-    end_date: string;
-    location: string;
-  }>;
-  experience: Array<{
-    id: number;
-    company: string;
-    position: string;
-    start_date: string;
-    end_date: string;
-    description: string;
-    location: string;
-  }>;
-  awards: Array<{
-    id: number;
-    name: string;
-    issuer: string;
-    date: string;
-    description: string;
-  }>;
-  publications: Array<{
-    id: number;
-    title: string;
-    authors: string[];
-    venue: string;
-    date: string;
-    doi: string;
-    url: string;
-  }>;
-  createdAt: string;
-}
+import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { useCollapsibleSections } from "@/hooks/useCollapsibleSections";
+import {
+  getInitials,
+  formatDate,
+  formatAuthors,
+  formatOrcidUrl,
+  formatDoiUrl,
+} from "@/utils/profileUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PublicProfilePage() {
   const params = useParams();
   const username = params.username as string;
 
-  const [profile, setProfile] = useState<PublicUserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Initialize sections as closed by default for better UX
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    education: false,
-    experience: false,
-    publications: false,
-    awards: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  useEffect(() => {
-    async function fetchProfile() {
-      if (!username) return;
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
-
-        console.log(`🔍 Fetching profile for username: ${username}`);
-        console.log(`🌐 API URL: ${apiUrl}/user/profile/${username}`);
-
-        const response = await fetch(`${apiUrl}/user/profile/${username}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("User not found");
-          } else {
-            setError("Failed to load profile");
-          }
-          return;
-        }
-
-        const data = await response.json();
-        console.log(`✅ API Response:`, data);
-
-        if (data.success) {
-          console.log(`🎉 Profile loaded successfully:`, data.data);
-          setProfile(data.data);
-        } else {
-          console.error(`❌ API returned error:`, data);
-          setError("Failed to load profile");
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-        setError("Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProfile();
-  }, [username]);
+  const { profile, loading, error } = usePublicProfile(username);
+  const { openSections, toggleSection } = useCollapsibleSections();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
+        <Header />
+        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
+          {/* Header image skeleton */}
+          <Skeleton className="w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl" />
+          
+          {/* Profile card skeleton */}
+          <Card className="mb-8 shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start gap-6">
+                <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full mx-auto sm:mx-0" />
+                <div className="flex-1 min-w-0 text-center sm:text-left space-y-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-64 mx-auto sm:mx-0" />
+                    <Skeleton className="h-6 w-32 mx-auto sm:mx-0" />
+                    <Skeleton className="h-6 w-48 mx-auto sm:mx-0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-40 mx-auto sm:mx-0" />
+                    <Skeleton className="h-4 w-36 mx-auto sm:mx-0" />
+                    <Skeleton className="h-4 w-44 mx-auto sm:mx-0" />
+                  </div>
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 pt-6 border-t space-y-3">
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sections skeleton */}
+          <div className="space-y-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-5 w-5" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -184,23 +121,6 @@ export default function PublicProfilePage() {
       </div>
     );
   }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join("");
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    try {
-      return new Date(dateString).getFullYear().toString();
-    } catch {
-      return dateString;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
@@ -320,7 +240,7 @@ export default function PublicProfilePage() {
                   )}
                   {profile.publicContact.orcid && (
                     <a
-                      href={`https://orcid.org/${profile.publicContact.orcid}`}
+                      href={formatOrcidUrl(profile.publicContact.orcid)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline flex items-center gap-1 text-sm"
@@ -513,9 +433,7 @@ export default function PublicProfilePage() {
                             {pub.title}
                           </h4>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {Array.isArray(pub.authors)
-                              ? pub.authors.join(", ")
-                              : pub.authors}
+                            {formatAuthors(pub.authors)}
                           </p>
                           {pub.venue && (
                             <p className="text-sm text-primary mb-2">
@@ -526,7 +444,7 @@ export default function PublicProfilePage() {
                             {pub.date && <span>{formatDate(pub.date)}</span>}
                             {pub.doi && (
                               <a
-                                href={`https://doi.org/${pub.doi}`}
+                                href={formatDoiUrl(pub.doi)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline flex items-center gap-1"

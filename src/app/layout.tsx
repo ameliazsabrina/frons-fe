@@ -38,11 +38,11 @@ export default function RootLayout({
       >
         <LoadingProvider>
           <PrivyProvider>
-            <DesktopOnlyWrapper>
-              <CustomCursor />
-              {children}
-              <Toaster />
-            </DesktopOnlyWrapper>
+            {/* <DesktopOnlyWrapper> */}
+            <CustomCursor />
+            {children}
+            <Toaster />
+            {/* </DesktopOnlyWrapper> */}
           </PrivyProvider>
         </LoadingProvider>
       </body>

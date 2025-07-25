@@ -29,7 +29,7 @@ import { useToast } from "@/components/ui/sonner";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WalletConnection } from "@/components/wallet-connection";
 import {
   useReviewManuscripts,
@@ -111,12 +111,12 @@ export default function ReviewManuscriptPage() {
             <div className="container max-w-6xl mx-auto px-4 py-8 lg:px-16">
               <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                 <CardHeader>
-                  <CardTitle className="text-xl text-primary">
+                  <CardTitle className="text-xl text-primary text-center">
                     Review Dashboard
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground mb-6 text-center">
                     Please connect your wallet to access the review dashboard.
                   </p>
                   <WalletConnection />
@@ -205,7 +205,73 @@ export default function ReviewManuscriptPage() {
             {/* Manuscripts List */}
             <div className="space-y-6">
               {loading ? (
-                <Loading />
+                <div className="space-y-8">
+                  {/* Search and Filter skeleton - matching actual layout */}
+                  <div className="mb-8 space-y-4">
+                    {/* Search Bar skeleton */}
+                    <div className="relative max-w-full">
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+
+                    {/* Category Filter skeleton */}
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-10 w-48" />
+                    </div>
+
+                    {/* Status Filter skeleton */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-28" />
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-8 w-20" />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Manuscripts grid skeleton - matching 3-column responsive layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card
+                        key={i}
+                        className="shadow-sm border border-gray-100 rounded-xl bg-white/80"
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex flex-col h-full">
+                            <div className="flex-1">
+                              {/* Title and Status badge */}
+                              <div className="flex items-start justify-between gap-4 mb-4">
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-6 w-20" />
+                              </div>
+
+                              {/* Author and categories */}
+                              <div className="space-y-3 mb-4">
+                                <Skeleton className="h-4 w-24" />
+                                <div className="flex flex-wrap gap-2">
+                                  <Skeleton className="h-5 w-16" />
+                                  <Skeleton className="h-5 w-20" />
+                                </div>
+                              </div>
+
+                              {/* Submission info */}
+                              <div className="space-y-2 mb-4">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-4 w-28" />
+                              </div>
+                            </div>
+
+                            {/* Action button */}
+                            <div className="pt-4 border-t border-gray-100">
+                              <Skeleton className="h-9 w-full" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
               ) : error ? (
                 <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
                   <CardContent className="p-8 text-center">

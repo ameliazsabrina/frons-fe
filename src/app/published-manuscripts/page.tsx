@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -435,8 +435,33 @@ export default function PublishedManuscriptsPage() {
 
             {/* Loading State */}
             {loading && (
-              <div className="flex justify-center items-center py-12">
-                <Loading />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(9)].map((_, i) => (
+                  <div key={i} className="p-6 bg-white rounded-xl border space-y-4">
+                    <div className="flex items-start justify-between">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-6 w-4/5" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-5/6" />
+                        <Skeleton className="h-3 w-4/5" />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                    <div className="flex space-x-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

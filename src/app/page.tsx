@@ -27,7 +27,7 @@ export default function Home() {
   }, [isReady, setIsLoading]);
 
   if (!isReady) {
-    return <Loading progress={progress} />;
+    return <Loading progress={progress} showSpinner={false} />;
   }
 
   return (

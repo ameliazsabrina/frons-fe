@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
@@ -16,7 +16,7 @@ import { usePDAs } from "@/hooks/usePDAs";
 import { PublicKey } from "@solana/web3.js";
 import { useOverview } from "@/hooks/useOverview";
 import { useWalletBalances } from "@/hooks/useWalletBalances";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -105,9 +105,134 @@ export default function OverviewPage() {
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
-            <div className="flex items-center justify-center min-h-screen">
-              <Loading variant="page" text="Loading dashboard..." />
+            <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+              <div className="flex items-center gap-3 px-6 py-4">
+                <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
+                <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-primary">Overview</span>
+                </div>
+              </div>
             </div>
+            <main className="flex-1">
+              <div className="container max-w-6xl mx-auto px-6 py-8">
+                {/* Header skeleton */}
+                <div className="mb-8">
+                  <Skeleton className="h-8 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </div>
+
+                {/* StatsOverview skeleton - 4 columns */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100/80 shadow-sm"
+                    >
+                      <div className="text-center space-y-2">
+                        <Skeleton className="h-8 w-12 mx-auto" />
+                        <Skeleton className="h-4 w-24 mx-auto" />
+                        <Skeleton className="h-3 w-20 mx-auto" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                  {/* Left column - QuickActions */}
+                  <div className="lg:col-span-3 space-y-6">
+                    {/* Quick Actions header */}
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-9 w-32" />
+                    </div>
+                    
+                    {/* QuickActions grid - 6 cards in 3 columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[...Array(6)].map((_, i) => (
+                        <Card
+                          key={i}
+                          className={`group transition-all duration-200 ${
+                            i === 0 ? "ring-2 ring-primary/20 bg-primary/5" : "bg-white/80"
+                          }`}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1 space-y-2">
+                                <Skeleton className="h-5 w-24" />
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-4 w-28" />
+                              </div>
+                              {i === 1 && <Skeleton className="h-5 w-16 ml-2" />}
+                            </div>
+                            <Skeleton className="h-9 w-full" />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right sidebar */}
+                  <div className="space-y-6">
+                    {/* WalletPanel skeleton */}
+                    <Card className="bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <Skeleton className="h-5 w-28" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {/* SOL Balance */}
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <Skeleton className="h-4 w-8" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                          
+                          {/* Token balances */}
+                          {[...Array(2)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`flex items-center justify-between p-3 rounded-lg ${
+                                i === 0 ? "bg-primary/10 border border-primary/20" : "bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Skeleton className="h-4 w-12" />
+                                {i === 0 && <Skeleton className="h-4 w-12" />}
+                              </div>
+                              <div className="text-right space-y-1">
+                                <Skeleton className="h-4 w-16" />
+                                {i === 1 && <Skeleton className="h-3 w-12" />}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* ReviewActivity skeleton */}
+                    <Card className="bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <Skeleton className="h-5 w-28" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center space-y-3">
+                          <div className="space-y-2">
+                            <Skeleton className="h-8 w-8 mx-auto" />
+                            <Skeleton className="h-4 w-24 mx-auto" />
+                          </div>
+                          <Separator />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-28 mx-auto" />
+                            <Skeleton className="h-5 w-32 mx-auto" />
+                          </div>
+                          <Skeleton className="h-9 w-full" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </main>
           </SidebarInset>
         </div>
       </SidebarProvider>
@@ -170,7 +295,34 @@ export default function OverviewPage() {
               <OverviewHeader userName={getUserDisplayName(user)} />
 
               {loading ? (
-                <Loading variant="inline" text="Loading overview data..." />
+                <div className="space-y-6">
+                  {/* Stats skeleton */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i} className="p-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-5 w-5 rounded" />
+                          </div>
+                          <Skeleton className="h-8 w-16" />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                  {/* Quick actions skeleton */}
+                  <Card className="p-6">
+                    <Skeleton className="h-6 w-32 mb-4" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="space-y-2">
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-4 w-20 mx-auto" />
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
               ) : error ? (
                 <Alert variant="destructive" className="max-w-2xl mx-auto">
                   <AlertDescription>{error}</AlertDescription>
