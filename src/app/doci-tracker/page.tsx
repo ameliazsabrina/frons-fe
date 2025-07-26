@@ -26,6 +26,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp * 1000).toLocaleDateString();
@@ -277,7 +278,8 @@ export default function DocisPage() {
   };
 
   return (
-    <SidebarProvider>
+    <DesktopOnlyWrapper>
+      <SidebarProvider>
       <div className="min-h-screen bg-primary/5 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -557,6 +559,7 @@ export default function DocisPage() {
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </DesktopOnlyWrapper>
   );
 }

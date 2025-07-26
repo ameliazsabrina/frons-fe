@@ -3,24 +3,24 @@ import { Separator } from "@/components/ui/separator";
 
 const demoItems = [
   {
-    text: "1. Submit Your Manuscript",
+    text: "Submit Your Manuscript",
     description:
-      "Upload your manuscript and CV to begin the publishing process.",
+      "1. Upload your manuscript and CV to begin the publishing process.",
   },
   {
-    text: "2. Peer Review Process",
+    text: "Peer Review Process",
     description:
-      "Your work will be reviewed by qualified community members for quality and relevance.",
+      "2. Your work will be reviewed by qualified community members for quality and relevance.",
   },
   {
-    text: "3. Publish to Fronsciers",
+    text: "Publish to Fronsciers",
     description:
-      "Once approved, your manuscript is published to the decentralized archive.",
+      "3. Once approved, your manuscript is published to the decentralized archive.",
   },
   {
-    text: "4. Earn FRONS Tokens",
+    text: "Earn FRONS Tokens",
     description:
-      "Receive token rewards for successful submissions and peer reviews.",
+      "4. Receive token rewards for successful submissions and peer reviews.",
   },
 ];
 

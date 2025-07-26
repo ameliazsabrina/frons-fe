@@ -48,6 +48,7 @@ import { Badge } from "@/components/ui/badge";
 import HeaderImage from "@/components/header-image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcademicCardSection } from "@/components/profile/academic-card/AcademicCardSection";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 interface UserProfile {
   personalInfo: {
@@ -280,7 +281,8 @@ export default function YourProfile() {
 
   if (!connected) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -297,13 +299,15 @@ export default function YourProfile() {
             <UnconnectedView />
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   if (loadingProfile) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -450,13 +454,15 @@ export default function YourProfile() {
             </div>
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   if (error || !profile) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -485,12 +491,14 @@ export default function YourProfile() {
             </div>
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   return (
-    <SidebarProvider>
+    <DesktopOnlyWrapper>
+      <SidebarProvider>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -1309,6 +1317,7 @@ export default function YourProfile() {
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </DesktopOnlyWrapper>
   );
 }

@@ -40,6 +40,7 @@ import { useSubmissionForm } from "@/hooks/useSubmissionForm";
 import { useCVVerification } from "@/hooks/useCVVerification";
 import { usePayment } from "@/hooks/usePayment";
 import HeaderImage from "@/components/header-image";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 function CustomSidebarTrigger() {
   const { toggleSidebar } = useSidebar();
@@ -404,7 +405,8 @@ export default function SubmitManuscriptPage() {
 
   if (!connected || !validSolanaPublicKey) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-white flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -431,13 +433,15 @@ export default function SubmitManuscriptPage() {
           </SidebarInset>
           <Toaster />
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   if (cvChecking || !cvVerified) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-white flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -481,12 +485,14 @@ export default function SubmitManuscriptPage() {
           </SidebarInset>
           <Toaster />
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   return (
-    <SidebarProvider>
+    <DesktopOnlyWrapper>
+      <SidebarProvider>
       <div className="min-h-screen bg-white flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -665,6 +671,7 @@ export default function SubmitManuscriptPage() {
         </SidebarInset>
         <Toaster />
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </DesktopOnlyWrapper>
   );
 }

@@ -391,15 +391,16 @@ div.tp-dfwv {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 80%;
+  height: 60%;
   position: relative;
+  text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
   font-weight: 600;
   color: #16007e;
-  letter-spacing: -0.03em;
-  font-size: 3.5vh;
+  letter-spacing: -0.02em;
+  font-size: 3vh;
 }
 
 .menu__item-link:hover {

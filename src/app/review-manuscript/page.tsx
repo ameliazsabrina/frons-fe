@@ -38,6 +38,7 @@ import {
   useReviewUtils,
   reviewStatuses,
 } from "@/hooks/review-manuscript";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 export default function ReviewManuscriptPage() {
   const router = useRouter();
@@ -97,7 +98,8 @@ export default function ReviewManuscriptPage() {
 
   if (!connected) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-primary/5 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -125,12 +127,14 @@ export default function ReviewManuscriptPage() {
             </div>
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   return (
-    <SidebarProvider>
+    <DesktopOnlyWrapper>
+      <SidebarProvider>
       <div className="min-h-screen bg-primary/5 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -429,6 +433,7 @@ export default function ReviewManuscriptPage() {
           </div>
         )}
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </DesktopOnlyWrapper>
   );
 }

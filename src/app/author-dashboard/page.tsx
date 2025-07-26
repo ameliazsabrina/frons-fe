@@ -28,6 +28,7 @@ import {
   ManuscriptCard,
   QuickActionsTab,
 } from "@/components/author-dashboard";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 export default function AuthorsDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -52,7 +53,8 @@ export default function AuthorsDashboardPage() {
 
   if (isLoading) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -120,13 +122,15 @@ export default function AuthorsDashboardPage() {
             </div>
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   if (!isWalletConnected) {
     return (
-      <SidebarProvider>
+      <DesktopOnlyWrapper>
+        <SidebarProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
           <OverviewSidebar connected={connected} />
           <SidebarInset className="flex-1">
@@ -157,12 +161,14 @@ export default function AuthorsDashboardPage() {
             </div>
           </SidebarInset>
         </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </DesktopOnlyWrapper>
     );
   }
 
   return (
-    <SidebarProvider>
+    <DesktopOnlyWrapper>
+      <SidebarProvider>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
@@ -262,6 +268,7 @@ export default function AuthorsDashboardPage() {
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </DesktopOnlyWrapper>
   );
 }
