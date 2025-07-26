@@ -92,14 +92,25 @@ function LaptopDisplayContent() {
 
   return (
     <div className="relative flex h-full w-full items-center justify-center scale-110">
-      <div className="relative w-full h-full ">
+      <div className="relative w-full h-full">
+        {/* Mobile Image - visible on mobile devices */}
         <Image
           ref={imageRef}
-          src="/laptop-dummy.png"
-          alt="Fronsciers Platform on Laptop"
+          src="/mobile-dummy.png"
+          alt="Fronsciers"
           width={2000}
           height={2000}
-          className="w-full h-full max-w-full object-contain"
+          className="w-full h-full max-w-full object-contain md:hidden"
+          priority
+        />
+
+        {/* Desktop/Laptop Image - visible on md screens and above */}
+        <Image
+          src="/laptop-dummy.png"
+          alt="Fronsciers"
+          width={2000}
+          height={2000}
+          className="w-full h-full max-w-full object-contain hidden md:block"
           priority
         />
       </div>
