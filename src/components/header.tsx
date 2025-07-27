@@ -254,16 +254,19 @@ export function Header() {
                   <div className="space-y-6">
                     <Link
                       href="/register-institution"
-                      className={getLinkClasses("/register-institution")}
+                      className={
+                        getLinkClasses("/register-institution") +
+                        "  ml-2 text-gray-900 "
+                      }
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Register Your Institution
                     </Link>
 
-                    <div className="px-3">
-                      <p className="text-sm font-medium mb-3">Connect Wallet</p>
-                      <WalletConnection />
-                    </div>
+                    <p className="font-medium mb-2 ml-4 text-gray-900">
+                      Connect Wallet
+                    </p>
+                    <WalletConnection />
                   </div>
                 </div>
               </SheetContent>

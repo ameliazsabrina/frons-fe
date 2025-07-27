@@ -12,7 +12,6 @@ import {
   ArrowRight,
   ArrowDown,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -188,91 +187,6 @@ export function Feature() {
         {/* Workflow Diagram */}
         <div ref={cardsRef} className="py-16 px-4">
           <div className="max-w-7xl mx-auto">
-            {/* Loading Skeleton */}
-            <div className="hidden lg:block">
-              <div className="relative">
-                <div className="grid grid-cols-4 gap-6 max-w-7xl mx-auto">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="relative">
-                      <Card className="border-primary/10 min-h-[150px]">
-                        <CardContent className="p-4 h-full flex flex-col">
-                          <div className="flex flex-col space-y-4 h-full">
-                            <Skeleton className="h-6 w-6" />
-                            <div className="flex-1">
-                              <Skeleton className="h-6 w-3/4 mb-3" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {i < 3 && (
-                        <div className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-10">
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Tablet Skeleton */}
-            <div className="hidden md:block lg:hidden">
-              <div className="relative">
-                <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="relative">
-                      <Card className="border-primary/10 min-h-[150px]">
-                        <CardContent className="p-4 h-full flex flex-col">
-                          <div className="flex flex-col space-y-4 h-full">
-                            <Skeleton className="h-6 w-6" />
-                            <div className="flex-1">
-                              <Skeleton className="h-6 w-3/4 mb-3" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {(i === 0 || i === 2) && (
-                        <div className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-10">
-                          <Skeleton className="h-5 w-5 rounded-full" />
-                        </div>
-                      )}
-                      {i === 1 && (
-                        <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 z-10">
-                          <Skeleton className="h-5 w-5 rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Skeleton */}
-            <div className="md:hidden px-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="relative">
-                  <Card className="border-primary/10">
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-4">
-                        <Skeleton className="h-6 w-6 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <Skeleton className="h-6 w-3/4 mb-2" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {i < 3 && (
-                    <div className="flex flex-col items-center py-3">
-                      <Skeleton className="h-5 w-5 rounded-full" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
             {/* Desktop Single Row Layout */}
             <div className="hidden lg:block">
               <div className="relative">
