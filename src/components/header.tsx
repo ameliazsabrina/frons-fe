@@ -55,10 +55,12 @@ export function Header() {
 
   // Helper function to generate link classes
   const getLinkClasses = (href: string) => {
-    const baseClasses = "flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-200 group hover:bg-white hover:shadow-sm";
-    const activeClasses = pathname === href
-      ? "bg-white text-gray-900 shadow-sm border border-gray-100"
-      : "text-gray-600 hover:text-gray-900";
+    const baseClasses =
+      "flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-200 group hover:bg-white hover:shadow-sm";
+    const activeClasses =
+      pathname === href
+        ? "bg-white text-gray-900 shadow-sm border border-gray-100"
+        : "text-gray-600 hover:text-gray-900";
     return `${baseClasses} ${activeClasses}`;
   };
 
@@ -181,8 +183,8 @@ export function Header() {
           <div className="flex md:hidden items-center justify-end">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 mr-4">
-                  <MenuIcon className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 mr-4">
+                  <MenuIcon className="h-8 w-8 text-primary" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] sm:w-[400px] p-4">

@@ -21,7 +21,7 @@ export function Footer() {
             />
           </div>
 
-          <p className="text-gray-600 text-sm max-w-md mx-auto">
+          <p className="text-gray-600 text-sm max-w-xs lg:max-w-md mx-auto tracking-tight">
             Revolutionizing academic publishing through blockchain technology.
           </p>
 

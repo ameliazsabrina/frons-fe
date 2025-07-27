@@ -19,13 +19,19 @@ interface ProfileData {
 
 interface CardExporterProps {
   profileData: ProfileData;
+  hasAccess?: boolean;
 }
 
-export function CardExporter({ profileData }: CardExporterProps) {
+export function CardExporter({ profileData, hasAccess = true }: CardExporterProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const exportAsImage = async (format: "png" | "jpeg") => {
+    if (!hasAccess) {
+      toast.error("Please purchase Academic Card access to export");
+      return;
+    }
+
     if (!cardRef.current) {
       toast.error("Card preview not found");
       return;

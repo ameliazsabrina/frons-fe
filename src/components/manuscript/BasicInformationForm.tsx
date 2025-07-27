@@ -104,14 +104,13 @@ export function BasicInformationForm({
           <Label className="text-base font-semibold text-primary">
             Research Category *
           </Label>
-          <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/10">
-            <ResearchCategorySelector
-              selectedCategories={
-                formData.category ? formData.category.split(", ") : []
-              }
-              onCategoriesChange={onCategoriesChange}
-            />
-          </div>
+
+          <ResearchCategorySelector
+            selectedCategories={
+              formData.category ? formData.category.split(", ") : []
+            }
+            onCategoriesChange={onCategoriesChange}
+          />
         </div>
       </CardContent>
     </Card>

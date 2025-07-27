@@ -292,7 +292,7 @@ export default function DocisPage() {
 
           <HeaderImage />
 
-          <div className="container max-w-6xl mx-auto px-4 py-8">
+          <div className="container max-w-full mx-auto  py-8">
             <div className="mb-8">
               <div className="text-center mb-6">
                 <h1 className="text-3xl font-semibold text-primary mb-2">

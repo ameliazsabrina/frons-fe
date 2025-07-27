@@ -432,7 +432,6 @@ export default function SubmitManuscriptPage() {
                           value="basic-info"
                           className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
                         >
-                          <FileTextIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">
                             Basic Information
                           </span>
@@ -445,7 +444,6 @@ export default function SubmitManuscriptPage() {
                           value="authors-keywords"
                           className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
                         >
-                          <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">
                             Abstract & Keywords
                           </span>
@@ -458,7 +456,6 @@ export default function SubmitManuscriptPage() {
                           value="manuscript-file"
                           className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
                         >
-                          <UploadIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">
                             Manuscript File
                           </span>

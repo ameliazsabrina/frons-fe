@@ -16,7 +16,6 @@ export function CTA() {
   useEffect(() => {
     if (!sectionRef.current) return;
     const ctx = gsap.context(() => {
-      // Simple fade in animation for title
       if (titleRef.current) {
         gsap.fromTo(
           titleRef.current,
@@ -36,7 +35,6 @@ export function CTA() {
         );
       }
 
-      // Simple fade in animation for content
       if (contentRef.current) {
         gsap.fromTo(
           contentRef.current,
@@ -60,7 +58,6 @@ export function CTA() {
     return () => ctx.revert();
   }, []);
 
-  // Smooth scroll to top
   const handleStartNow = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -69,9 +66,10 @@ export function CTA() {
 
   return (
     <section ref={sectionRef} className="bg-white">
-      <div className="container max-w-7xl mx-auto px-4 py-16">
-        <Separator className="mb-16" />
-        <div className="text-center space-y-8">
+      <div className="container py-16">
+        <Separator className="w-full mb-16" />
+
+        <div className="text-center space-y-8 px-4">
           <h2
             ref={titleRef}
             className="font-spectral font-semibold text-primary word mb-[-0.1em] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"

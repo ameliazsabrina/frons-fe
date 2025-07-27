@@ -36,10 +36,8 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
         <Header />
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
-          {/* Header image skeleton */}
           <Skeleton className="w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl" />
-          
-          {/* Profile card skeleton */}
+
           <Card className="mb-8 shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
             <CardContent className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -69,10 +67,12 @@ export default function PublicProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Sections skeleton */}
           <div className="space-y-6">
             {[...Array(4)].map((_, i) => (
-              <Card key={i} className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+              <Card
+                key={i}
+                className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <Skeleton className="h-6 w-32" />
@@ -176,7 +176,7 @@ export default function PublicProfilePage() {
 
               <div className="flex-1 min-w-0 text-center sm:text-left">
                 <div className="mb-4">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">
                     {profile.fullName || `@${profile.username}`}
                   </h1>
                   <p className="text-base sm:text-lg text-muted-foreground mb-2">

@@ -113,7 +113,7 @@ export function Vision() {
             />
           </div>
 
-          <p className=" text-lg lg:text-3xl text-gray-600 max-w-2xl mx-auto tracking-tight ">
+          <p className=" text-lg lg:text-3xl text-gray-600 max-w-2xl mx-auto tracking-tight leading-tight">
             Fronsciers grows as the communities keep contribute to the
             innovations
           </p>

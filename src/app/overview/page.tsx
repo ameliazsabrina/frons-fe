@@ -104,7 +104,7 @@ export default function OverviewPage() {
     return (
       <DesktopOnlyWrapper>
         <SidebarProvider>
-          <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+          <div className="min-h-screen bg-white flex w-full">
             <OverviewSidebar connected={connected} />
             <SidebarInset className="flex-1">
               <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
@@ -117,7 +117,7 @@ export default function OverviewPage() {
                 </div>
               </div>
               <main className="flex-1">
-                <div className="container max-w-6xl mx-auto px-6 py-8">
+                <div className="container max-w-full mx-auto  py-8">
                   {/* Header skeleton */}
                   <div className="mb-8">
                     <Skeleton className="h-8 w-48 mb-2" />
@@ -148,14 +148,16 @@ export default function OverviewPage() {
                         <Skeleton className="h-6 w-32" />
                         <Skeleton className="h-9 w-32" />
                       </div>
-                      
+
                       {/* QuickActions grid - 6 cards in 3 columns */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[...Array(6)].map((_, i) => (
                           <Card
                             key={i}
                             className={`group transition-all duration-200 ${
-                              i === 0 ? "ring-2 ring-primary/20 bg-primary/5" : "bg-white/80"
+                              i === 0
+                                ? "ring-2 ring-primary/20 bg-primary/5"
+                                : "bg-white/80"
                             }`}
                           >
                             <CardContent className="p-6">
@@ -165,7 +167,9 @@ export default function OverviewPage() {
                                   <Skeleton className="h-4 w-32" />
                                   <Skeleton className="h-4 w-28" />
                                 </div>
-                                {i === 1 && <Skeleton className="h-5 w-16 ml-2" />}
+                                {i === 1 && (
+                                  <Skeleton className="h-5 w-16 ml-2" />
+                                )}
                               </div>
                               <Skeleton className="h-9 w-full" />
                             </CardContent>
@@ -188,13 +192,15 @@ export default function OverviewPage() {
                               <Skeleton className="h-4 w-8" />
                               <Skeleton className="h-4 w-16" />
                             </div>
-                            
+
                             {/* Token balances */}
                             {[...Array(2)].map((_, i) => (
                               <div
                                 key={i}
                                 className={`flex items-center justify-between p-3 rounded-lg ${
-                                  i === 0 ? "bg-primary/10 border border-primary/20" : "bg-gray-50"
+                                  i === 0
+                                    ? "bg-primary/10 border border-primary/20"
+                                    : "bg-gray-50"
                                 }`}
                               >
                                 <div className="flex items-center space-x-2">
@@ -258,20 +264,16 @@ export default function OverviewPage() {
                   </div>
                 </div>
               </div>
-              <div className="container max-w-4xl mx-auto px-6 py-8">
-                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-                  <CardContent className="p-8 text-center">
-                    <h2 className="text-2xl font-semibold text-primary mb-4">
-                      Authentication Required
-                    </h2>
-                    <p className="text-muted-foreground mb-8 text-lg">
-                      Please connect your wallet to view your dashboard overview.
-                    </p>
-                    <Button onClick={() => router.push("/")} size="lg">
-                      Connect Wallet
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="container max-w-full mx-auto  py-8">
+                <h2 className="text-2xl font-semibold text-primary mb-2">
+                  Authentication Required
+                </h2>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  Please connect your wallet to view your dashboard overview.
+                </p>
+                <Button onClick={() => router.push("/")} size="lg">
+                  Connect Wallet
+                </Button>
               </div>
             </SidebarInset>
           </div>
@@ -296,7 +298,7 @@ export default function OverviewPage() {
               </div>
             </div>
             <main className="flex-1">
-              <div className="container max-w-6xl mx-auto px-6 py-8">
+              <div className="container max-w-full mx-auto  py-8">
                 {/* Header */}
                 <OverviewHeader userName={getUserDisplayName(user)} />
 

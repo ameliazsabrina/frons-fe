@@ -94,17 +94,12 @@ const UnconnectedView = () => (
   <>
     <HeaderImage />
     <div className="container max-w-5xl mx-auto px-6 py-12">
-      <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-        <CardContent className="pb-8">
-          <p className="text-muted-foreground mb-8 text-center text-base">
-            Please connect your wallet to register your CV and submit
-            manuscripts.
-          </p>
-          <div className="flex justify-center items-center">
-            <WalletConnection />
-          </div>
-        </CardContent>
-      </Card>
+      <p className="text-muted-foreground mb-4 text-center text-sm">
+        Please connect your wallet to register your CV and submit manuscripts.
+      </p>
+      <div className="flex justify-center items-center">
+        <WalletConnection />
+      </div>
     </div>
   </>
 );

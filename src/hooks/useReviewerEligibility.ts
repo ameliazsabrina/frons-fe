@@ -53,31 +53,54 @@ export function useReviewerEligibility(manuscriptId?: string) {
     const issues: string[] = [];
     const benefits: string[] = [];
 
+    // Add null checks for backend data
+    if (!backendData) {
+      issues.push("Unable to retrieve qualification data");
+      return {
+        isEligible: false,
+        requirements: {
+          hasMinimumEducation: false,
+          hasMinimumPublications: false,
+          publishedPapers: 0,
+          requiredPapers: 3,
+        },
+        issues,
+        benefits,
+        qualificationScore: 0,
+      };
+    }
+
+    // Ensure reasons object exists
+    const reasons = backendData.reasons || {};
+    const requirements = backendData.requirements || {};
+
     // Process education requirement
-    if (!backendData.reasons.hasMinimumEducation) {
+    if (!reasons.hasMinimumEducation) {
       issues.push(
-        `Minimum education requirement not met (${backendData.requirements.minimumEducation} or higher required)`
+        `Minimum education requirement not met (${requirements.minimumEducation || 'Bachelor\'s degree'} or higher required)`
       );
     } else {
-      benefits.push(`✓ Education requirement satisfied (${backendData.reasons.educationLevel})`);
+      benefits.push(`✓ Education requirement satisfied (${reasons.educationLevel || 'Verified'})`);
     }
 
     // Process publication requirement
-    if (!backendData.reasons.hasMinimumPublications) {
-      const remaining = backendData.requirements.minimumPublications - backendData.reasons.publicationCount;
+    if (!reasons.hasMinimumPublications) {
+      const publicationCount = reasons.publicationCount || 0;
+      const requiredPublications = requirements.minimumPublications || 3;
+      const remaining = requiredPublications - publicationCount;
       issues.push(
         `${remaining} more publication${
           remaining > 1 ? "s" : ""
-        } needed (${backendData.reasons.publicationCount}/${backendData.requirements.minimumPublications} required for reviewer eligibility)`
+        } needed (${publicationCount}/${requiredPublications} required for reviewer eligibility)`
       );
     } else {
       benefits.push(
-        `✓ Publication requirement met (${backendData.reasons.publicationCount} publications recorded)`
+        `✓ Publication requirement met (${reasons.publicationCount || 0} publications recorded)`
       );
     }
 
     // Process CV requirement
-    if (!backendData.reasons.cvUploaded) {
+    if (!reasons.cvUploaded) {
       issues.push("CV upload required for reviewer eligibility");
     } else {
       benefits.push("✓ CV uploaded and verified");
@@ -102,16 +125,16 @@ export function useReviewerEligibility(manuscriptId?: string) {
     }
 
     return {
-      isEligible: backendData.qualified,
+      isEligible: backendData.qualified || false,
       requirements: {
-        hasMinimumEducation: backendData.reasons.hasMinimumEducation,
-        hasMinimumPublications: backendData.reasons.hasMinimumPublications,
-        publishedPapers: backendData.reasons.publicationCount,
-        requiredPapers: backendData.requirements.minimumPublications,
+        hasMinimumEducation: reasons.hasMinimumEducation || false,
+        hasMinimumPublications: reasons.hasMinimumPublications || false,
+        publishedPapers: reasons.publicationCount || 0,
+        requiredPapers: requirements.minimumPublications || 3,
       },
       issues,
       benefits,
-      qualificationScore: backendData.qualificationScore,
+      qualificationScore: backendData.qualificationScore || 0,
     };
   };
 
@@ -140,8 +163,16 @@ export function useReviewerEligibility(manuscriptId?: string) {
 
       if (response.data.success && response.data.qualification) {
         const backendData = response.data.qualification as BackendReviewerQualification;
+        console.log("Backend qualification data structure:", {
+          qualified: backendData.qualified,
+          reasons: backendData.reasons,
+          requirements: backendData.requirements,
+          hasReasons: !!backendData.reasons,
+          hasRequirements: !!backendData.requirements
+        });
         return convertBackendResponse(backendData);
       } else {
+        console.warn("Backend response missing qualification data:", response.data);
         throw new Error(response.data.message || "Failed to get qualification data");
       }
     } catch (err) {
