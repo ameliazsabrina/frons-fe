@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CardPreview } from "./CardPreview";
-
 import { ShippingAddressForm } from "./ShippingAddressForm";
 import { useAcademicCardPayment } from "@/hooks/useAcademicCardPayment";
 import { useToast } from "@/components/ui/sonner";
@@ -98,13 +97,17 @@ export function AcademicCardSection({
     );
   }, [profileData]);
 
-  // Check payment status once when profile is complete
   useEffect(() => {
-    if (isProfileComplete && !paymentStatus && !paymentLoading && !hasCheckedStatus.current) {
+    if (
+      isProfileComplete &&
+      !paymentStatus &&
+      !paymentLoading &&
+      !hasCheckedStatus.current
+    ) {
       hasCheckedStatus.current = true;
       checkPaymentStatus();
     }
-  }, [isProfileComplete, paymentStatus, paymentLoading]); // Safe dependencies
+  }, [isProfileComplete, paymentStatus, paymentLoading, checkPaymentStatus]);
 
   useEffect(() => {
     if (paymentError) {

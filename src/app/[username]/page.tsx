@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +129,7 @@ export default function PublicProfilePage() {
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {profile.headerImage && (
           <div className="relative w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl overflow-hidden shadow-lg">
-            <img
+            <Image
               src={profile.headerImage || "/placeholder.svg"}
               alt={`${profile.fullName || profile.username}'s header`}
               className="w-full h-full object-cover"

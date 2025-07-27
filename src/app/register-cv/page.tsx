@@ -200,7 +200,7 @@ const ConnectedView = () => {
           "Please upload your CV or fill in your profile details to submit manuscripts.",
       });
     }
-  }, [cvStatus, toast]);
+  }, [cvStatus, toast, router]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
