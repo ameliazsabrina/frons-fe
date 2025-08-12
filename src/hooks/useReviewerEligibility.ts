@@ -176,18 +176,21 @@ export function useReviewerEligibility(manuscriptId?: string) {
         throw new Error(response.data.message || "Failed to get qualification data");
       }
     } catch (err) {
-      console.error("Failed to check reviewer eligibility:", err);
-      
-      // Handle API errors gracefully
+      // Handle API errors gracefully - don't log 404s as they're expected
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
+          // 404 is expected for users without CVs - don't log as error
+          console.log("No reviewer qualification found - user may need to upload CV");
           setError("User profile not found. Please upload your CV first.");
         } else if (err.response?.status === 401) {
+          console.error("Authentication error checking reviewer eligibility:", err);
           setError("Authentication required");
         } else {
+          console.error("Failed to check reviewer eligibility:", err);
           setError(err.response?.data?.message || "Failed to check eligibility");
         }
       } else {
+        console.error("Failed to check reviewer eligibility:", err);
         setError(err instanceof Error ? err.message : "Failed to check eligibility");
       }
       

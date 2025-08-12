@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormData {
   title: string;
@@ -25,6 +26,7 @@ export function useSubmissionForm({
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getArrayFromCommaString = useCallback((str: string) => {
     return str
@@ -84,12 +86,20 @@ export function useSubmissionForm({
       const file = event.target.files?.[0];
       if (file) {
         if (file.type !== "application/pdf") {
-          alert("Please select a PDF file");
+          toast({
+            variant: "destructive",
+            title: "Invalid File Type",
+            description: "Please select a PDF file.",
+          });
           return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-          alert("File size must be less than 10MB");
+          toast({
+            variant: "destructive",
+            title: "File Too Large",
+            description: "File size must be less than 10MB.",
+          });
           return;
         }
 
@@ -97,7 +107,7 @@ export function useSubmissionForm({
         setError(null);
       }
     },
-    []
+    [toast]
   );
 
   const handleRemoveFile = useCallback(() => {

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useManuscriptManagement } from "@/hooks/useManuscriptManagement";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { PendingReviewManuscript } from "@/types/backend";
+import { useToast } from "@/hooks/use-toast";
 
 export const useReviewManuscripts = (
   connected: boolean,
@@ -11,6 +12,7 @@ export const useReviewManuscripts = (
   const [manuscripts, setManuscripts] = useState<PendingReviewManuscript[]>([]);
   const [selectedManuscript, setSelectedManuscript] = useState<PendingReviewManuscript | null>(null);
   const [reviewStatus, setReviewStatus] = useState<any>(null);
+  const { toast } = useToast();
 
   const {
     isLoading: loading,
@@ -83,7 +85,11 @@ export const useReviewManuscripts = (
 
     const validReviewers = reviewers.filter((r) => r.trim() !== "");
     if (validReviewers.length < 3) {
-      alert("Please provide at least 3 reviewer wallet addresses");
+      toast({
+        variant: "destructive",
+        title: "Insufficient Reviewers",
+        description: "Please provide at least 3 reviewer wallet addresses.",
+      });
       return false;
     }
 
@@ -93,7 +99,11 @@ export const useReviewManuscripts = (
     );
 
     if (result) {
-      alert(`Successfully assigned reviewers`);
+      toast({
+        variant: "success",
+        title: "Reviewers Assigned",
+        description: "Successfully assigned reviewers to the manuscript.",
+      });
       loadPendingManuscripts(); // Refresh list
       return true;
     }
@@ -112,7 +122,11 @@ export const useReviewManuscripts = (
     const result = await publishManuscript(selectedManuscript.id.toString());
 
     if (result) {
-      alert("Manuscript published successfully!");
+      toast({
+        variant: "success",
+        title: "Manuscript Published",
+        description: "The manuscript has been published successfully!",
+      });
       setSelectedManuscript(null);
       setReviewStatus(null);
       loadPendingManuscripts(); // Refresh list

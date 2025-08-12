@@ -13,25 +13,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           theme: "light",
           accentColor: "#16007E",
           logo: "/Logo.png",
+          walletChainType: "solana-only",
         },
         embeddedWallets: {
           solana: {
             createOnLogin: "users-without-wallets",
           },
         },
-        // externalWallets: {
-        //   solana: {
-        //     connectors: toSolanaWalletConnectors({
-        //       shouldAutoConnect: true,
-        //       // metadata: {
-        //       //   name: "Fronsciers",
-        //       //   description: "Academic Publishing Platform",
-        //       //   url: "https://fronsciers.com",
-        //       //   icons: ["/Logo.png"],
-        //       // },
-        //     }),
-        //   },
-        // },
       }}
     >
       {children}

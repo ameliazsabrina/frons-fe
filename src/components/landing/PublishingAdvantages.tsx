@@ -69,7 +69,7 @@ export function PublishingAdvantages() {
         <div className="w-full mb-16 px-4 sm:px-8 lg:px-16">
           <Separator className="w-full" />
         </div>
-        <h1 className="text-center font-spectral font-semibold text-primary text-5xl  md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">
+        <h1 className="text-center font-spectral font-semibold text-primary text-4xl  md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">
           With Fronsciers,
         </h1>
       </header>

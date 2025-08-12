@@ -8,8 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useLoading } from "@/context/LoadingContext";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PlusIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { usePDAs } from "@/hooks/usePDAs";
@@ -44,6 +44,7 @@ export default function OverviewPage() {
     validSolanaPublicKey
   );
   const walletBalances = useWalletBalances(validSolanaPublicKey);
+  const { toast } = useToast();
 
   const [isClient, setIsClient] = useState(false);
   const [program, setProgram] = useState<any>(null);
@@ -63,6 +64,17 @@ export default function OverviewPage() {
   });
 
   const { setIsLoading } = useLoading();
+
+  // Show toast notification for errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error Loading Overview",
+        description: error,
+      });
+    }
+  }, [error, toast]);
 
   useEffect(() => {
     setIsClient(true);
@@ -332,9 +344,20 @@ export default function OverviewPage() {
                     </Card>
                   </div>
                 ) : error ? (
-                  <Alert variant="destructive" className="max-w-2xl mx-auto">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
+                  <div className="text-center py-12">
+                    <div className="mb-6">
+                      <PlusIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                        Unable to Load Overview
+                      </h2>
+                      <p className="text-gray-600">
+                        There was an error loading your overview data. Please try refreshing the page.
+                      </p>
+                    </div>
+                    <Button onClick={() => window.location.reload()} variant="outline">
+                      Refresh Page
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-8">
                     {/* Statistics Overview */}

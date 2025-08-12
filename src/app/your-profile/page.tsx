@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import {
-  AlertCircleIcon,
   UserIcon,
   MailIcon,
   EditIcon,
@@ -38,10 +37,10 @@ import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
-import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+
 import { useReviewerEligibility } from "@/hooks/useReviewerEligibility";
 import { Badge } from "@/components/ui/badge";
 
@@ -135,6 +134,7 @@ export default function YourProfile() {
 
   const walletAddress = getPrimarySolanaWalletAddress(solanaWallets);
   const router = useRouter();
+  const { toast } = useToast();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -205,10 +205,21 @@ export default function YourProfile() {
       } else {
         console.log("📊 No profile found or failed to load");
         setError("Profile not found. Please register your CV first.");
+        toast({
+          variant: "destructive",
+          title: "Profile Not Found",
+          description: "Please register your CV first to create your profile.",
+        });
       }
     } catch (err) {
       console.error("📊 Failed to load profile:", err);
-      setError("Failed to load profile. Please try again.");
+      const errorMessage = "Failed to load profile. Please try again.";
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Error Loading Profile",
+        description: errorMessage,
+      });
     } finally {
       setLoadingProfile(false);
     }
@@ -268,9 +279,26 @@ export default function YourProfile() {
         await loadProfile(); // Reload profile
         setIsEditing(false);
         setEditData({});
+        toast({
+          variant: "success",
+          title: "Profile Updated",
+          description: "Your profile has been successfully updated.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: "Failed to update your profile. Please try again.",
+        });
       }
     } catch (err) {
       console.error("Failed to save profile:", err);
+      toast({
+        variant: "destructive",
+        title: "Error Saving Profile",
+        description:
+          "An error occurred while saving your profile. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -489,16 +517,18 @@ export default function YourProfile() {
                 </div>
               </div>
               <HeaderImage />
-              <div className="container max-w-full mx-auto  py-8">
-                <Alert variant="destructive" className="max-w-md mx-auto">
-                  <AlertCircleIcon className="h-4 w-4" />
-                  <AlertDescription>
-                    {error ||
-                      "Profile not found. Please register your CV first."}
-                  </AlertDescription>
-                </Alert>
-                <div className="flex justify-center mt-6">
-                  <Button onClick={() => router.push("/register-cv")}>
+              <div className="container max-w-full mx-auto py-8">
+                <div className="text-center">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                      Profile Not Found
+                    </h2>
+                    <p className="text-gray-600">
+                      You haven't registered your CV yet. Get started by
+                      uploading your CV to create your academic profile.
+                    </p>
+                  </div>
+                  <Button onClick={() => router.push("/register-cv")} size="lg">
                     Register Your CV
                   </Button>
                 </div>
@@ -683,7 +713,15 @@ export default function YourProfile() {
                         </div>
 
                         <Button
-                          onClick={loadProfile}
+                          onClick={() => {
+                            loadProfile();
+                            toast({
+                              variant: "default",
+                              title: "Profile Refreshed",
+                              description:
+                                "Your profile data has been refreshed.",
+                            });
+                          }}
                           variant="ghost"
                           size="sm"
                           className="w-full"

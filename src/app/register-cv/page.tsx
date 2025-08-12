@@ -158,6 +158,17 @@ const ConnectedView = () => {
     }
   }, [cvError]);
 
+  // Show toast notifications for errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error,
+      });
+    }
+  }, [error, toast]);
+
   useEffect(() => {
     const checkProfile = async () => {
       if (!validSolanaPublicKey) return;
@@ -212,12 +223,20 @@ const ConnectedView = () => {
         "image/jpg",
       ];
       if (!validTypes.includes(file.type)) {
-        alert("Please select a PDF or image file (JPG, PNG)");
+        toast({
+          variant: "destructive",
+          title: "Invalid File Type",
+          description: "Please select a PDF or image file (JPG, PNG).",
+        });
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert("File size must be less than 10MB");
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: "File size must be less than 10MB.",
+        });
         return;
       }
 
@@ -425,14 +444,6 @@ const ConnectedView = () => {
       <div className="container max-w-5xl mx-auto px-6 pb-12">
         <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
           <CardContent className="space-y-8 ">
-            {error && (
-              <div className="p-4 bg-red-50/80 border border-red-200/80 rounded-xl shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <AlertCircleIcon className="h-5 w-5 text-red-600" />
-                  <p className="text-red-800 text-md font-medium">{error}</p>
-                </div>
-              </div>
-            )}
 
             {(!cvStatus?.hasCV || !editableData.fullName) && (
               <div className="space-y-8">

@@ -262,7 +262,7 @@ export function useCVRegistration(walletAddress?: string) {
         formData.append("walletAddress", walletAddress);
 
         const result = await axios.post(
-          `${apiUrl}/parse-cv/parse-cv`,
+          `${apiUrl}/cv/parse-cv`,
           formData,
           { headers }
         );
@@ -330,7 +330,7 @@ export function useCVRegistration(walletAddress?: string) {
 
         console.log(`Uploading CV for wallet address: ${walletAddress}`);
 
-        const result = await axios.post(`${apiUrl}/cv/upload`, formData, {
+        const result = await axios.post(`${apiUrl}/parse-cv/upload`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -456,7 +456,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.get(
-          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
+          `${apiUrl}/cv/user/profile/${walletAddress}`,
           { headers }
         );
 
@@ -511,11 +511,11 @@ export function useCVRegistration(walletAddress?: string) {
 
         return result.data as UserProfileResponse;
       } catch (err) {
-        console.error("Failed to get user profile:", err);
-
         // Handle specific error cases with appropriate toast messages
         if (axios.isAxiosError(err)) {
           if (err.response?.status === 404) {
+            // 404 is expected for users without CVs - don't log as error
+            console.log("No CV profile found - user needs to upload CV first");
             const responseData = err.response.data;
             if (
               responseData?.message ===
@@ -540,12 +540,14 @@ export function useCVRegistration(walletAddress?: string) {
             });
             setError("Authentication required");
           } else if (err.response?.status && err.response?.status >= 500) {
+            console.error("Server error getting user profile:", err);
             toast.error("Server Error", {
               description: "Server error occurred. Please try again later.",
               duration: 4000,
             });
             setError("Server error occurred");
           } else {
+            console.error("Failed to get user profile:", err);
             toast.error("Failed to Load Profile", {
               description: `Error: ${
                 err.response?.data?.message || err.message
@@ -555,6 +557,7 @@ export function useCVRegistration(walletAddress?: string) {
             setError(err.response?.data?.message || err.message);
           }
         } else {
+          console.error("Network error getting user profile:", err);
           toast.error("Network Error", {
             description:
               "Failed to connect to server. Please check your internet connection.",
@@ -596,7 +599,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.patch(
-          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
+          `${apiUrl}/cv/user/profile/${walletAddress}`,
           updateData,
           { headers }
         );
@@ -717,10 +720,10 @@ export function useCVRegistration(walletAddress?: string) {
 
         console.log(
           "Uploading profile photo to:",
-          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`
+          `${apiUrl}/cv/user/profile-photo/${walletAddress}`
         );
         const response = await axios.post(
-          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`,
+          `${apiUrl}/cv/user/profile-photo/${walletAddress}`,
           formData,
           { headers }
         );
@@ -838,7 +841,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.get(
-          `${apiUrl}/parse-cv/user/specialization/${walletAddress}`,
+          `${apiUrl}/cv/user/specialization/${walletAddress}`,
           { headers }
         );
         return result;
@@ -874,7 +877,7 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
-        const result = await axios.post(`${apiUrl}/parse-cv/manual-profile`, {
+        const result = await axios.post(`${apiUrl}/cv/manual-profile`, {
           ...profileData,
           walletAddress,
         });
