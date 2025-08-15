@@ -13,9 +13,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           theme: "light",
           accentColor: "#16007E",
           logo: "/Logo.png",
-          walletChainType: "solana-only",
+          walletChainType: 'solana-only',
+        },
+        externalWallets: {
+          solana: {
+            connectors: toSolanaWalletConnectors(),
+          },
         },
         embeddedWallets: {
+          ethereum: {
+            createOnLogin: 'off',
+          },
           solana: {
             createOnLogin: "users-without-wallets",
           },

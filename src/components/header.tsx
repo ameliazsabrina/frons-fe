@@ -53,7 +53,6 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Helper function to generate link classes
   const getLinkClasses = (href: string) => {
     const baseClasses =
       "flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-200 group hover:bg-white hover:shadow-sm";

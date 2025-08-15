@@ -345,34 +345,35 @@ export function useCVRegistration(walletAddress?: string) {
         clearInterval(progressInterval);
         setUploadProgress(100);
 
+        console.log("📊 Raw API response:", result.data);
+        
         if (result.data.success && result.data.data) {
+          const cvData = result.data.data; // Backend returns data in result.data.data
+          console.log("📋 Parsed CV data structure:", cvData);
+          
           const parsedData = {
-            fullName: result.data.data.selfIdentity?.fullName || "",
-            title: result.data.data.selfIdentity?.title || "",
-            profession: result.data.data.selfIdentity?.profession || "",
-            institution: result.data.data.selfIdentity?.institution || "",
-            location: result.data.data.selfIdentity?.location || "",
-            field: result.data.data.selfIdentity?.field || "",
-            specialization: result.data.data.selfIdentity?.specialization || "",
-            email: result.data.data.contact?.email || "",
-            phone: result.data.data.contact?.phone || "",
-            linkedIn: result.data.data.contact?.linkedIn || "",
-            github: result.data.data.contact?.github || "",
-            website: result.data.data.contact?.website || "",
-            overview: result.data.data.overview || "",
-            orcid:
-              result.data.data.contact?.orcid ||
-              result.data.data.academicProfile?.orcid ||
-              "",
-            googleScholar:
-              result.data.data.contact?.googleScholar ||
-              result.data.data.academicProfile?.googleScholar ||
-              "",
-            education: result.data.data.education || [],
-            experience: result.data.data.experience || [],
-            publications: result.data.data.publications || [],
-            awards: result.data.data.awards || [],
+            fullName: cvData.selfIdentity?.fullName || "",
+            title: cvData.selfIdentity?.title || "",
+            profession: cvData.selfIdentity?.profession || "",
+            institution: cvData.selfIdentity?.institution || "",
+            location: cvData.selfIdentity?.location || "",
+            field: cvData.selfIdentity?.field || "",
+            specialization: cvData.selfIdentity?.specialization || "",
+            email: cvData.contact?.email || "",
+            phone: cvData.contact?.phone || "",
+            linkedIn: cvData.contact?.linkedIn || "",
+            github: cvData.contact?.github || "",
+            website: cvData.contact?.website || "",
+            overview: cvData.overview || "",
+            orcid: cvData.contact?.orcid || "",
+            googleScholar: cvData.contact?.googleScholar || "",
+            education: cvData.education || [],
+            experience: cvData.experience || [],
+            publications: cvData.publications || [],
+            awards: cvData.awards || [],
           };
+          
+          console.log("🔄 Transformed parsed data:", parsedData);
 
           setCvData({
             fullName: parsedData.fullName,
@@ -384,10 +385,10 @@ export function useCVRegistration(walletAddress?: string) {
             registeredAt: new Date().toISOString(),
             orcid: parsedData.orcid,
             googleScholar: parsedData.googleScholar,
-            education: result.data.data.education || [],
-            experience: result.data.data.experience || [],
-            publications: result.data.data.publications || [],
-            awards: result.data.data.awards || [],
+            education: parsedData.education,
+            experience: parsedData.experience,
+            publications: parsedData.publications,
+            awards: parsedData.awards,
           });
 
           // If the CV was saved to the database, check the registration status
@@ -411,9 +412,14 @@ export function useCVRegistration(walletAddress?: string) {
             message: result.data.message || "CV parsed successfully",
             savedToDatabase: result.data.savedToDatabase,
           };
+        } else {
+          console.error("❌ CV parsing failed - invalid response structure:", {
+            hasSuccess: !!result.data.success,
+            hasData: !!result.data.data,
+            actualData: result.data
+          });
+          throw new Error(result.data.message || "Failed to parse CV - invalid response structure");
         }
-
-        throw new Error(result.data.message || "Failed to parse CV");
       } catch (err) {
         console.error("Failed to parse CV:", err);
         const errorMessage =

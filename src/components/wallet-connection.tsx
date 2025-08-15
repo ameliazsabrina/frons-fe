@@ -97,7 +97,13 @@ export const WalletConnection = () => {
     ) {
       handleCreateWallet();
     }
-  }, [authenticated, walletsReady, wallets.length, isCreatingWallet, handleCreateWallet]);
+  }, [
+    authenticated,
+    walletsReady,
+    wallets.length,
+    isCreatingWallet,
+    handleCreateWallet,
+  ]);
 
   const copyAddress = async (address: string) => {
     try {

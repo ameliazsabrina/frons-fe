@@ -45,7 +45,7 @@ export function Loading({
           )}
 
           {progress !== undefined && (
-            <div className="w-64 mx-auto pt-2">
+            <div className="w-96 mx-auto pt-2">
               <div className="w-full bg-gray-200 rounded-full h-2 font-semibold">
                 <div
                   className="bg-primary h-2 rounded-full transition-all duration-300 ease-out font-semibold"
