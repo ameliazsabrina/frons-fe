@@ -135,7 +135,7 @@ export const WalletConnection = () => {
 
   if (!connected) {
     return (
-      <Button onClick={login} className="text-sm">
+      <Button onClick={login} className="text-sm font-semibold !rounded-full">
         Get Started
       </Button>
     );

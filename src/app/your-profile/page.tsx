@@ -223,7 +223,7 @@ export default function YourProfile() {
     } finally {
       setLoadingProfile(false);
     }
-  }, [walletAddress, getUserProfile]);
+  }, [walletAddress, getUserProfile, toast]);
 
   useEffect(() => {
     if (connected && walletAddress) {
@@ -524,7 +524,7 @@ export default function YourProfile() {
                       Profile Not Found
                     </h2>
                     <p className="text-gray-600">
-                      You haven't registered your CV yet. Get started by
+                      You haven&apos;t registered your CV yet. Get started by
                       uploading your CV to create your academic profile.
                     </p>
                   </div>
