@@ -117,13 +117,6 @@ export default function OverviewPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">Overview</span>
-              </div>
-            </div>
-          </div>
           <main className="flex-1">
             <div className="container max-w-full mx-auto py-8">
               {/* Header skeleton */}
@@ -175,9 +168,7 @@ export default function OverviewPage() {
                               <Skeleton className="h-4 w-32" />
                               <Skeleton className="h-4 w-28" />
                             </div>
-                            {i === 1 && (
-                              <Skeleton className="h-5 w-16 ml-2" />
-                            )}
+                            {i === 1 && <Skeleton className="h-5 w-16 ml-2" />}
                           </div>
                           <Skeleton className="h-9 w-full" />
                         </CardContent>
@@ -261,13 +252,6 @@ export default function OverviewPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">Overview</span>
-              </div>
-            </div>
-          </div>
           <div className="container max-w-full mx-auto py-8 flex flex-col items-center justify-center">
             <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
               Authentication Required
@@ -294,13 +278,6 @@ export default function OverviewPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-          <div className="flex items-center gap-3 px-6 py-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-primary">Overview</span>
-            </div>
-          </div>
-        </div>
         <main className="flex-1">
           <div className="container max-w-full mx-auto py-8">
             {/* Header */}
@@ -343,8 +320,8 @@ export default function OverviewPage() {
                     Unable to Load Overview
                   </h2>
                   <p className="text-gray-600">
-                    There was an error loading your overview data. Please
-                    try refreshing the page.
+                    There was an error loading your overview data. Please try
+                    refreshing the page.
                   </p>
                 </div>
                 <Button

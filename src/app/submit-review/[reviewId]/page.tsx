@@ -402,14 +402,6 @@ export default function SubmitManuscriptPage() {
       <div className="min-h-screen bg-white flex w-full">
         <OverviewSidebar connected={connected} />
         <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
-              <SidebarTrigger />
-              <span className="font-medium text-primary text-sm sm:text-base">
-                Submit Manuscript
-              </span>
-            </div>
-          </div>
           <HeaderImage />
           <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
             <form onSubmit={handleSubmit} className="space-y-6">

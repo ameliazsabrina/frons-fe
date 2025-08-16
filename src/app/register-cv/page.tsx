@@ -1395,13 +1395,6 @@ export default function RegisterCV() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-          <div className="flex items-center gap-3 px-6 py-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-primary">Register CV</span>
-            </div>
-          </div>
-        </div>
         {!connected ? <UnconnectedView /> : <ConnectedView />}
       </div>
     </div>

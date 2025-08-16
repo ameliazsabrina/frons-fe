@@ -157,16 +157,20 @@ export default function YourProfile() {
 
       // Collect all possible wallet addresses
       const allWalletAddresses: string[] = [];
-      
+
       // Add primary wallet (Privy embedded wallet preferred)
       const primaryWallet = getPrimarySolanaWalletAddress(solanaWallets);
       if (primaryWallet && isValidSolanaAddress(primaryWallet)) {
         allWalletAddresses.push(primaryWallet);
       }
-      
+
       // Add all other connected wallets
       solanaWallets.forEach((wallet) => {
-        if (wallet.address && isValidSolanaAddress(wallet.address) && !allWalletAddresses.includes(wallet.address)) {
+        if (
+          wallet.address &&
+          isValidSolanaAddress(wallet.address) &&
+          !allWalletAddresses.includes(wallet.address)
+        ) {
           allWalletAddresses.push(wallet.address);
         }
       });
@@ -176,7 +180,10 @@ export default function YourProfile() {
         return;
       }
 
-      console.log("📊 Searching for profile across wallets:", allWalletAddresses);
+      console.log(
+        "📊 Searching for profile across wallets:",
+        allWalletAddresses
+      );
       const result = await getUserProfileMultiWallet(allWalletAddresses);
 
       if (result?.success && result.profile) {
@@ -283,7 +290,7 @@ export default function YourProfile() {
   const handleSave = async () => {
     if (!walletAddress) {
       toast({
-        variant: "destructive", 
+        variant: "destructive",
         title: "No Wallet Connected",
         description: "Please connect a wallet to update your profile.",
       });
@@ -337,15 +344,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">
-                  Your Profile
-                </span>
-              </div>
-            </div>
-          </div>
           <HeaderImage />
           <UnconnectedView />
         </div>
@@ -360,15 +358,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">
-                  Your Profile
-                </span>
-              </div>
-            </div>
-          </div>
           <HeaderImage />
           <div className="container max-w-full mx-auto py-8">
             {/* Profile Header skeleton - matching 3-column layout */}
@@ -523,15 +512,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">
-                  Your Profile
-                </span>
-              </div>
-            </div>
-          </div>
           <HeaderImage />
           <div className="container max-w-full mx-auto py-8">
             <div className="text-center">
@@ -540,8 +520,8 @@ export default function YourProfile() {
                   Profile Not Found
                 </h2>
                 <p className="text-gray-600">
-                  You have not registered your CV yet. Get started by
-                  uploading your CV to create your academic profile.
+                  You have not registered your CV yet. Get started by uploading
+                  your CV to create your academic profile.
                 </p>
               </div>
               <Button onClick={() => router.push("/register-cv")} size="lg">
@@ -560,21 +540,6 @@ export default function YourProfile() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-          <div className="flex items-center gap-3 px-6 py-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-primary">Your Profile</span>
-              {eligibilityResult?.isEligible && (
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800 ml-2"
-                >
-                  Reviewer Eligible
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
         <HeaderImage />
 
         <div className="container max-w-full mx-auto py-8">
@@ -632,9 +597,7 @@ export default function YourProfile() {
                           </div>
                           <div>
                             <Input
-                              value={
-                                editData.personalInfo?.institution || ""
-                              }
+                              value={editData.personalInfo?.institution || ""}
                               onChange={(e) =>
                                 handleInputChange(
                                   "personalInfo",
@@ -730,8 +693,7 @@ export default function YourProfile() {
                         toast({
                           variant: "default",
                           title: "Profile Refreshed",
-                          description:
-                            "Your profile data has been refreshed.",
+                          description: "Your profile data has been refreshed.",
                         });
                       }}
                       variant="ghost"
@@ -784,9 +746,7 @@ export default function YourProfile() {
                       </Label>
                       {isEditing ? (
                         <Input
-                          value={
-                            editData.personalInfo?.specialization || ""
-                          }
+                          value={editData.personalInfo?.specialization || ""}
                           onChange={(e) =>
                             handleInputChange(
                               "personalInfo",
@@ -998,9 +958,7 @@ export default function YourProfile() {
                             </Label>
                             {isEditing ? (
                               <Input
-                                value={
-                                  editData.contact?.googleScholar || ""
-                                }
+                                value={editData.contact?.googleScholar || ""}
                                 onChange={(e) =>
                                   handleInputChange(
                                     "contact",
@@ -1038,9 +996,7 @@ export default function YourProfile() {
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.education}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Education
-                      </p>
+                      <p className="text-sm text-muted-foreground">Education</p>
                     </div>
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
                       <div className="flex items-center justify-center"></div>
@@ -1065,9 +1021,7 @@ export default function YourProfile() {
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.awards}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Awards
-                      </p>
+                      <p className="text-sm text-muted-foreground">Awards</p>
                     </div>
                   </div>
                 </CardContent>
@@ -1150,8 +1104,8 @@ export default function YourProfile() {
                             No overview information available
                           </p>
                           <p className="text-sm text-gray-400">
-                            Click "Edit Profile" to add your
-                            professional overview
+                            Click "Edit Profile" to add your professional
+                            overview
                           </p>
                         </div>
                       )}
@@ -1216,8 +1170,7 @@ export default function YourProfile() {
                             {exp.position}
                           </div>
                           <div className="text-sm text-gray-600">
-                            {exp.company}{" "}
-                            {exp.location && `• ${exp.location}`}
+                            {exp.company} {exp.location && `• ${exp.location}`}
                             {exp.type && ` • ${exp.type}`}
                           </div>
                           <div className="text-sm text-gray-500">
@@ -1272,9 +1225,7 @@ export default function YourProfile() {
                                   : pub.authors}
                               </div>
                             )}
-                            {pub.venue && (
-                              <div>Published in: {pub.venue}</div>
-                            )}
+                            {pub.venue && <div>Published in: {pub.venue}</div>}
                           </div>
                           <div className="text-sm text-gray-500">
                             {pub.date && `Date: ${pub.date}`}
@@ -1300,9 +1251,7 @@ export default function YourProfile() {
                 ) : (
                   <div className="text-center py-12">
                     <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-2">
-                      No publications found
-                    </p>
+                    <p className="text-gray-500 mb-2">No publications found</p>
                     <p className="text-sm text-gray-400">
                       Upload a detailed CV to populate this section
                     </p>
