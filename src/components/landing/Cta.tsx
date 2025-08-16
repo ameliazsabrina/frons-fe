@@ -76,14 +76,16 @@ export function CTA() {
           >
             Shape the Future
           </h2>
-          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto tracking-tight mt-[-0.5em]">
+          <p className="text-base md:text-md text-gray-600 max-w-3xl mx-auto tracking-tight mt-[-0.5em]">
             Join Fronsciers and be part of a new era in academic publishing,
             where your research reaches the world, your reviews matter, and
             innovation thrives in a transparent, global community.
           </p>
 
-          <div ref={contentRef} className="flex justify-center mt-12">
-            <Button onClick={handleStartNow}>Start Now</Button>
+          <div ref={contentRef} className="flex justify-center mt-12 ">
+            <Button onClick={handleStartNow} className="text-lg font-semibold">
+              Start Now
+            </Button>
           </div>
         </div>
       </div>

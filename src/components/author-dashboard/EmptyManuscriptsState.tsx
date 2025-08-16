@@ -6,9 +6,9 @@ interface EmptyManuscriptsStateProps {
   variant?: "overview" | "manuscripts";
 }
 
-export function EmptyManuscriptsState({ 
-  onSubmitManuscript, 
-  variant = "overview" 
+export function EmptyManuscriptsState({
+  onSubmitManuscript,
+  variant = "overview",
 }: EmptyManuscriptsStateProps) {
   if (variant === "overview") {
     return (
@@ -33,7 +33,8 @@ export function EmptyManuscriptsState({
         No Manuscripts Yet
       </h3>
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        You haven&apos;t submitted any manuscripts yet. Start by submitting your first research paper.
+        You have not submitted any manuscripts yet. Start by submitting your
+        first research paper.
       </p>
       <Button onClick={onSubmitManuscript} size="lg">
         <PlusIcon className="h-4 w-4 mr-2" />

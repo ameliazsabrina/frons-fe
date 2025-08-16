@@ -11,13 +11,8 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import SidebarProvider from "@/provider/SidebarProvider";
+import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import {
-  SidebarInset,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { PanelLeftIcon } from "lucide-react";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWallet } from "@/utils/wallet";
@@ -40,22 +35,7 @@ import { useSubmissionForm } from "@/hooks/useSubmissionForm";
 import { useCVVerification } from "@/hooks/useCVVerification";
 import { usePayment } from "@/hooks/usePayment";
 import HeaderImage from "@/components/header-image";
-import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
-function CustomSidebarTrigger() {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={toggleSidebar}
-      className="h-10 w-10 p-0 hover:bg-gray-100 rounded-md"
-    >
-      <PanelLeftIcon className="h-6 w-6" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
-}
 
 export default function SubmitManuscriptPage() {
   const { toast } = useToast();
@@ -405,15 +385,13 @@ export default function SubmitManuscriptPage() {
 
   if (!connected || !validSolanaPublicKey) {
     return (
-      <DesktopOnlyWrapper>
-        <SidebarProvider>
+      <div className="min-h-screen bg-white flex w-full">
           <div className="min-h-screen bg-white flex w-full">
-            <OverviewSidebar connected={connected} />
-            <SidebarInset className="flex-1">
+            <Sidebar><OverviewSidebar connected={connected} /></Sidebar>
+            <div className="flex-1">
               <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
                 <div className="flex items-center gap-3 px-6 py-4">
-                  <CustomSidebarTrigger />
-                  <span className="font-medium text-primary">
+                                    <span className="font-medium text-primary">
                     Submit Manuscript
                   </span>
                 </div>
@@ -433,22 +411,19 @@ export default function SubmitManuscriptPage() {
             </SidebarInset>
             <Toaster />
           </div>
-        </SidebarProvider>
-      </DesktopOnlyWrapper>
+        </div className="min-h-screen bg-white flex w-full">
     );
   }
 
   if (cvChecking || !cvVerified) {
     return (
-      <DesktopOnlyWrapper>
-        <SidebarProvider>
+      <div className="min-h-screen bg-white flex w-full">
           <div className="min-h-screen bg-white flex w-full">
-            <OverviewSidebar connected={connected} />
-            <SidebarInset className="flex-1">
+            <Sidebar><OverviewSidebar connected={connected} /></Sidebar>
+            <div className="flex-1">
               <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
                 <div className="flex items-center gap-3 px-6 py-4">
-                  <CustomSidebarTrigger />
-                  <span className="font-medium text-primary">
+                                    <span className="font-medium text-primary">
                     Submit Manuscript
                   </span>
                 </div>
@@ -485,21 +460,18 @@ export default function SubmitManuscriptPage() {
             </SidebarInset>
             <Toaster />
           </div>
-        </SidebarProvider>
-      </DesktopOnlyWrapper>
+        </div className="min-h-screen bg-white flex w-full">
     );
   }
 
   return (
-    <DesktopOnlyWrapper>
-      <SidebarProvider>
+    <div className="min-h-screen bg-white flex w-full">
         <div className="min-h-screen bg-white flex w-full">
-          <OverviewSidebar connected={connected} />
-          <SidebarInset className="flex-1">
+          <Sidebar><OverviewSidebar connected={connected} /></Sidebar>
+          <div className="flex-1">
             <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
               <div className="flex items-center gap-3 px-6 py-4">
-                <SidebarTrigger />
-                <span className="font-medium text-primary">
+                                <span className="font-medium text-primary">
                   Submit Manuscript
                 </span>
               </div>
@@ -668,7 +640,6 @@ export default function SubmitManuscriptPage() {
           </SidebarInset>
           <Toaster />
         </div>
-      </SidebarProvider>
-    </DesktopOnlyWrapper>
+    </div className="min-h-screen bg-white flex w-full">
   );
 }

@@ -17,14 +17,6 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizeable-navbar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  ChevronDownIcon,
   LayoutDashboardIcon,
   FileTextIcon,
   ClipboardCheckIcon,
@@ -34,7 +26,7 @@ import {
 
 function ConditionalSidebarTrigger() {
   try {
-    const sidebarProps = useSidebar();
+    useSidebar();
     return <SidebarTrigger />;
   } catch (error) {
     return null;
@@ -73,14 +65,7 @@ export function Header() {
           name: "Submit",
           link: "/submit-manuscript",
         },
-        {
-          name: "Review",
-          link: "/review-manuscript",
-        },
-        {
-          name: "Profile",
-          link: "/your-profile",
-        },
+
         {
           name: "Published",
           link: "/published-manuscripts",
@@ -101,69 +86,16 @@ export function Header() {
           {authenticated && <NavItems items={navItems} />}
 
           <div className="flex items-center gap-4">
-            {authenticated && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <NavbarButton variant="secondary" className="text-sm">
-                    Menu
-                    <ChevronDownIcon className="ml-1 h-4 w-4" />
-                  </NavbarButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/overview" className="flex items-center">
-                      <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-                      Overview
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/submit-manuscript"
-                      className="flex items-center"
-                    >
-                      <FileTextIcon className="mr-2 h-4 w-4" />
-                      Submit Manuscript
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/review-manuscript"
-                      className="flex items-center"
-                    >
-                      <ClipboardCheckIcon className="mr-2 h-4 w-4" />
-                      Review Manuscript
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/your-profile" className="flex items-center ">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      Register Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/published-manuscripts"
-                      className="flex items-center"
-                    >
-                      <BookOpenIcon className="mr-2 h-4 w-4" />
-                      Published Papers
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-
-            <NavbarButton
+            {/* <NavbarButton
               as={Link}
               href="/register-institution"
               variant="secondary"
               className="text-sm font-semibold -mr-2"
             >
               Register Institution
-            </NavbarButton>
+            </NavbarButton> */}
 
-            <div className="flex items-center">
+            <div className="flex items-center ">
               <WalletConnection />
             </div>
           </div>

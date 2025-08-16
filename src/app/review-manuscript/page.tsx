@@ -20,8 +20,7 @@ import {
   ExternalLinkIcon,
   PenIcon,
 } from "lucide-react";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import SidebarProvider from "@/provider/SidebarProvider";
+import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth";
@@ -38,7 +37,6 @@ import {
   useReviewUtils,
   reviewStatuses,
 } from "@/hooks/review-manuscript";
-import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 export default function ReviewManuscriptPage() {
   const router = useRouter();
@@ -98,17 +96,18 @@ export default function ReviewManuscriptPage() {
 
   if (!connected) {
     return (
-      <DesktopOnlyWrapper>
-        <SidebarProvider>
-          <div className="min-h-screen bg-primary/5 flex w-full">
-            <OverviewSidebar connected={connected} />
-            <SidebarInset className="flex-1">
-              <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-                <div className="flex items-center gap-2 px-4 py-3">
-                  <SidebarTrigger className="w-10 h-10" />
-                  <Separator orientation="vertical" className="h-6" />
-                </div>
+      <div className="min-h-screen bg-primary/5 flex w-full">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+        <div className="flex-1">
+          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-primary">Review Dashboard</span>
               </div>
+            </div>
+          </div>
               <HeaderImage />
               <div className="container max-w-full mx-auto  py-8">
                 <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
@@ -122,22 +121,18 @@ export default function ReviewManuscriptPage() {
               </div>
             </SidebarInset>
           </div>
-        </SidebarProvider>
-      </DesktopOnlyWrapper>
+        </div className="min-h-screen bg-primary/5 flex w-full">
     );
   }
 
   return (
-    <DesktopOnlyWrapper>
-      <SidebarProvider>
+    <div className="min-h-screen bg-primary/5 flex w-full">
         <div className="min-h-screen bg-primary/5 flex w-full">
           <OverviewSidebar connected={connected} />
-          <SidebarInset className="flex-1">
+          <div className="flex-1">
             <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
               <div className="flex items-center gap-2 px-6 py-4">
-                <SidebarTrigger className="w-10 h-10" />
-                <Separator orientation="vertical" className="h-6" />
-              </div>
+                                              </div>
             </div>
             <HeaderImage />
             <div className="container max-w-full mx-auto  py-8">
@@ -429,7 +424,6 @@ export default function ReviewManuscriptPage() {
             </div>
           )}
         </div>
-      </SidebarProvider>
-    </DesktopOnlyWrapper>
+    </div className="min-h-screen bg-primary/5 flex w-full">
   );
 }

@@ -462,7 +462,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.get(
-          `${apiUrl}/cv/user/profile/${walletAddress}`,
+          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
           { headers }
         );
 
@@ -580,6 +580,108 @@ export function useCVRegistration(walletAddress?: string) {
     [authenticated, getAccessToken, apiUrl, setIsLoading]
   );
 
+  const getUserProfileMultiWallet = useCallback(
+    async (walletAddresses: string[]): Promise<UserProfileResponse | null> => {
+      try {
+        setError(null);
+        setIsLoading(true);
+
+        console.log("🔍 Searching for profile across multiple wallets:", walletAddresses);
+
+        let headers = {};
+        if (authenticated) {
+          try {
+            const accessToken = await getAccessToken();
+            if (accessToken) {
+              headers = { Authorization: `Bearer ${accessToken}` };
+              console.log("✅ Using Privy authentication token for multi-wallet lookup");
+            }
+          } catch (tokenError) {
+            console.warn("⚠️ Failed to get Privy access token:", tokenError);
+          }
+        }
+
+        // Try each wallet address until we find CV data
+        for (const walletAddress of walletAddresses) {
+          if (!walletAddress) continue;
+          
+          console.log(`🔍 Checking wallet: ${walletAddress}`);
+          
+          try {
+            const result = await axios.get(
+              `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
+              { headers }
+            );
+
+            if (result.data.success && result.data.profile) {
+              console.log(`✅ Found CV data for wallet: ${walletAddress}`);
+              console.log("📊 Profile data:", JSON.stringify(result.data.profile, null, 2));
+
+              // Set the complete profile data including arrays
+              setCvData({
+                fullName: result.data.profile.personalInfo.fullName,
+                institution: result.data.profile.personalInfo.institution,
+                profession: result.data.profile.personalInfo.profession,
+                field: result.data.profile.personalInfo.field,
+                specialization: result.data.profile.personalInfo.specialization,
+                email: result.data.profile.contact.email,
+                registeredAt: result.data.profile.createdAt,
+                photoUrl:
+                  result.data.profile.profilePhoto ||
+                  result.data.profile.personalInfo.photoUrl,
+                orcid: result.data.profile.contact.orcid,
+                googleScholar: result.data.profile.contact.googleScholar,
+                education: result.data.profile.education || [],
+                experience: result.data.profile.experience || [],
+                publications: result.data.profile.publications || [],
+                awards: result.data.profile.awards || [],
+              });
+
+              // Show success toast with wallet info
+              toast.success("Profile Loaded", {
+                description: `Welcome back, ${result.data.profile.personalInfo.fullName}! (CV found on ${walletAddress.substring(0, 8)}...)`,
+                duration: 3000,
+              });
+
+              return result.data as UserProfileResponse;
+            }
+          } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 404) {
+              console.log(`❌ No CV data found for wallet: ${walletAddress}`);
+              // Continue to next wallet
+              continue;
+            } else {
+              // For non-404 errors, log but continue trying other wallets
+              console.warn(`⚠️ Error checking wallet ${walletAddress}:`, err);
+              continue;
+            }
+          }
+        }
+
+        // If we get here, no wallet had CV data
+        console.log("❌ No CV data found across all wallets");
+        setError("Profile not found across any connected wallets. Please upload your CV first.");
+        toast.error("Profile Not Found", {
+          description: "No CV data found across any connected wallets. Please upload your CV first to create your profile.",
+          duration: 5000,
+        });
+
+        return null;
+      } catch (err) {
+        console.error("Error in multi-wallet profile lookup:", err);
+        setError("Failed to search for profile across wallets");
+        toast.error("Search Failed", {
+          description: "Failed to search for profile across wallets. Please try again.",
+          duration: 4000,
+        });
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [authenticated, getAccessToken, apiUrl, setIsLoading]
+  );
+
   const updateUserProfile = useCallback(
     async (
       walletAddress: string,
@@ -605,7 +707,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.patch(
-          `${apiUrl}/cv/user/profile/${walletAddress}`,
+          `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
           updateData,
           { headers }
         );
@@ -726,10 +828,10 @@ export function useCVRegistration(walletAddress?: string) {
 
         console.log(
           "Uploading profile photo to:",
-          `${apiUrl}/cv/user/profile-photo/${walletAddress}`
+          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`
         );
         const response = await axios.post(
-          `${apiUrl}/cv/user/profile-photo/${walletAddress}`,
+          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`,
           formData,
           { headers }
         );
@@ -847,7 +949,7 @@ export function useCVRegistration(walletAddress?: string) {
         }
 
         const result = await axios.get(
-          `${apiUrl}/cv/user/specialization/${walletAddress}`,
+          `${apiUrl}/parse-cv/user/specialization/${walletAddress}`,
           { headers }
         );
         return result;
@@ -883,7 +985,7 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
-        const result = await axios.post(`${apiUrl}/cv/manual-profile`, {
+        const result = await axios.post(`${apiUrl}/parse-cv/manual-profile`, {
           ...profileData,
           walletAddress,
         });
@@ -936,6 +1038,7 @@ export function useCVRegistration(walletAddress?: string) {
     uploadCV,
     parseCV, // Add the new function to the returned object
     getUserProfile,
+    getUserProfileMultiWallet, // Multi-wallet profile lookup
     updateUserProfile,
     getUserSpecialization,
     uploadProfilePhoto,

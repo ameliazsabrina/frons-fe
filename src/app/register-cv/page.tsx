@@ -31,13 +31,10 @@ import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { useCVRegistration } from "@/hooks/useCVRegistration";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 import HeaderImage from "@/components/header-image";
 
 interface EditableData {
@@ -107,7 +104,7 @@ const UnconnectedView = () => (
 const ConnectedView = () => {
   const { authenticated: connected, user } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const walletAddress = solanaWallets?.[0]?.address ?? "";
+  const walletAddress = getPrimarySolanaWalletAddress(solanaWallets) ?? "";
   const validSolanaPublicKey = walletAddress || "";
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -201,6 +198,9 @@ const ConnectedView = () => {
         title: "✅ CV Verified",
         description:
           "Your CV has been verified successfully. You can now submit manuscripts.",
+        variant: "success",
+        className: "bg-white text-green-600 border-green-500 shadow-lg",
+        duration: 5000,
       });
       setShowProfile(true);
       router.push("/your-profile");
@@ -444,7 +444,6 @@ const ConnectedView = () => {
       <div className="container max-w-5xl mx-auto px-6 pb-12">
         <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
           <CardContent className="space-y-8 ">
-
             {(!cvStatus?.hasCV || !editableData.fullName) && (
               <div className="space-y-8">
                 <div className="text-center space-y-3">
@@ -496,7 +495,7 @@ const ConnectedView = () => {
                                   : "Click to select your CV file"}
                               </span>
                               <span className="text-sm text-muted-foreground block">
-                                Supported formats: PDF, JPG, PNG (max 10MB)
+                                Supported formats: PDF (Max 5MB)
                               </span>
                             </div>
                           </label>
@@ -551,7 +550,7 @@ const ConnectedView = () => {
                         <Button
                           onClick={handleParseCV}
                           disabled={!selectedFile || uploading}
-                          className="w-full font-semibold"
+                          className="w-full !text-md font-semibold py-6"
                         >
                           {uploading ? "Processing..." : "Upload CV"}
                         </Button>
@@ -1387,23 +1386,24 @@ const ConnectedView = () => {
 export default function RegisterCV() {
   const { authenticated: connected } = usePrivy();
   const { wallets: solanaWallets } = useSolanaWallets();
-  const walletAddress = solanaWallets?.[0]?.address ?? "";
+  const walletAddress = getPrimarySolanaWalletAddress(solanaWallets) ?? "";
   const validSolanaPublicKey = walletAddress || "";
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <Sidebar>
         <OverviewSidebar connected={connected} />
-        <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
-            <div className="flex items-center gap-3 px-6 py-4">
-              <SidebarTrigger className="w-10 h-10 hover:bg-primary/10 transition-colors" />
-              <Separator orientation="vertical" className="h-6" />
+      </Sidebar>
+      <div className="flex-1">
+        <div className="border-b border-gray-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+          <div className="flex items-center gap-3 px-6 py-4">
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-primary">Register CV</span>
             </div>
           </div>
-          {!connected ? <UnconnectedView /> : <ConnectedView />}
-        </SidebarInset>
+        </div>
+        {!connected ? <UnconnectedView /> : <ConnectedView />}
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

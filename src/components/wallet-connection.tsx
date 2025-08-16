@@ -144,7 +144,7 @@ export const WalletConnection = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="!rounded-full">
           <p className="text-xs">{userDisplayName}</p>
         </Button>
       </PopoverTrigger>
