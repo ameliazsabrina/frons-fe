@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   BookOpenIcon,
@@ -20,17 +19,14 @@ import {
   CalendarIcon,
   ExternalLinkIcon,
   SearchIcon,
-  FilterIcon,
   AlertCircleIcon,
   FileTextIcon,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth";
 import { Skeleton } from "@/components/ui/skeleton";
-import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { Sidebar } from "@/components/ui/sidebar";
 import { backendAPI } from "@/lib/api";
 import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
 
@@ -71,10 +67,6 @@ const RESEARCH_CATEGORIES = [
 export default function PublishedManuscriptsPage() {
   const { authenticated: connected } = usePrivy();
   const { wallets } = useSolanaWallets();
-  const publicKey = getPrimarySolanaWalletAddress(wallets);
-  const validSolanaPublicKey = isValidSolanaAddress(publicKey)
-    ? publicKey
-    : undefined;
 
   const [manuscripts, setManuscripts] = useState<PublishedManuscript[]>([]);
   const [filteredManuscripts, setFilteredManuscripts] = useState<
@@ -359,17 +351,12 @@ export default function PublishedManuscriptsPage() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-primary/5 flex w-full">
+    <div className="min-h-screen bg-primary/5 flex w-full">
+      <Sidebar>
         <OverviewSidebar connected={connected} />
-        <SidebarInset className="flex-1">
-          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
-              <SidebarTrigger className="w-10 h-10" />
-              <Separator orientation="vertical" className="h-6" />
-            </div>
-          </div>
-          <div className="container max-w-6xl mx-auto px-4 py-8">
+      </Sidebar>
+      <div className="flex-1">
+        <div className="container max-w-6xl mx-auto px-4 py-8">
             <div className="mb-8 text-center">
               <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
                 Published Manuscripts
@@ -605,8 +592,7 @@ export default function PublishedManuscriptsPage() {
               </Card>
             )}
           </div>
-        </SidebarInset>
+        </div>
       </div>
-    </SidebarProvider>
   );
 }

@@ -121,7 +121,10 @@ const UnconnectedView = () => (
         Connect your wallet to view and manage your academic profile
       </p>
     </div>
-    <WalletConnection />
+
+    <div className="flex justify-center mt-4">
+      <WalletConnection />
+    </div>
   </div>
 );
 
@@ -139,6 +142,7 @@ export default function YourProfile() {
   const [saving, setSaving] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const {
     getUserProfileMultiWallet,
@@ -184,7 +188,23 @@ export default function YourProfile() {
         "📊 Searching for profile across wallets:",
         allWalletAddresses
       );
+      console.log("📊 Primary wallet address:", primaryWallet);
+      console.log(
+        "📊 All connected wallets:",
+        solanaWallets.map((w) => ({
+          address: w.address,
+          type: w.walletClientType,
+        }))
+      );
+
       const result = await getUserProfileMultiWallet(allWalletAddresses);
+
+      console.log("📊 getUserProfileMultiWallet result:", {
+        hasResult: !!result,
+        success: result?.success,
+        hasProfile: !!result?.profile,
+        profileKeys: result?.profile ? Object.keys(result.profile) : null,
+      });
 
       if (result?.success && result.profile) {
         console.log("📊 Profile loaded successfully:", result.profile);
@@ -213,10 +233,22 @@ export default function YourProfile() {
           },
           overview: result.profile.overview || "",
           summary: {
-            education: (result.profile as any).education?.length || 0,
-            experience: (result.profile as any).experience?.length || 0,
-            publications: (result.profile as any).publications?.length || 0,
-            awards: (result.profile as any).awards?.length || 0,
+            education:
+              (result.profile as any).summary?.education ||
+              (result.profile as any).education?.length ||
+              0,
+            experience:
+              (result.profile as any).summary?.experience ||
+              (result.profile as any).experience?.length ||
+              0,
+            publications:
+              (result.profile as any).summary?.publications ||
+              (result.profile as any).publications?.length ||
+              0,
+            awards:
+              (result.profile as any).summary?.awards ||
+              (result.profile as any).awards?.length ||
+              0,
           },
           education: (result.profile as any).education || [],
           experience: (result.profile as any).experience || [],
@@ -230,12 +262,16 @@ export default function YourProfile() {
       } else {
         console.log("📊 No profile found or failed to load");
         setError("Profile not found. Please register your CV first.");
-        toast({
-          variant: "destructive",
-          className: "bg-white border-red-500 text-red-600",
-          title: "Profile Not Found",
-          description: "Please register your CV first to create your profile.",
-        });
+        // Only show toast if this is NOT the initial page load
+        if (!isInitialLoad) {
+          toast({
+            variant: "destructive",
+            className: "bg-white border-red-500 text-red-600",
+            title: "Profile Not Found",
+            description:
+              "Please register your CV first to create your profile.",
+          });
+        }
       }
     } catch (err) {
       console.error("📊 Failed to load profile:", err);
@@ -248,8 +284,15 @@ export default function YourProfile() {
       });
     } finally {
       setLoadingProfile(false);
+      setIsInitialLoad(false);
     }
-  }, [connected, solanaWallets, getUserProfileMultiWallet, toast]);
+  }, [
+    connected,
+    solanaWallets,
+    getUserProfileMultiWallet,
+    toast,
+    isInitialLoad,
+  ]);
 
   useEffect(() => {
     if (connected && solanaWallets && solanaWallets.length > 0) {
@@ -524,7 +567,7 @@ export default function YourProfile() {
                   your CV to create your academic profile.
                 </p>
               </div>
-              <Button onClick={() => router.push("/register-cv")} size="lg">
+              <Button onClick={() => router.push("/register-cv")}>
                 Register Your CV
               </Button>
             </div>
@@ -689,6 +732,7 @@ export default function YourProfile() {
 
                     <Button
                       onClick={() => {
+                        setIsInitialLoad(false); // Allow toast for manual refresh
                         loadProfile();
                         toast({
                           variant: "default",
@@ -1104,8 +1148,8 @@ export default function YourProfile() {
                             No overview information available
                           </p>
                           <p className="text-sm text-gray-400">
-                            Click "Edit Profile" to add your professional
-                            overview
+                            Click &ldquo;Edit Profile&rdquo; to add your
+                            professional overview
                           </p>
                         </div>
                       )}

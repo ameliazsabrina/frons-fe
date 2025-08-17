@@ -247,7 +247,7 @@ export default function OverviewPage() {
 
   if (!connected || !isClient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full justify-center items-center">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>

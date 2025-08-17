@@ -10,13 +10,8 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useRouter } from "next/navigation";
 import { useLoading } from "@/context/LoadingContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import SidebarProvider from "@/provider/SidebarProvider";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import {
-  SidebarInset,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import { PanelLeftIcon } from "lucide-react";
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWallet } from "@/utils/wallet";
@@ -40,20 +35,6 @@ import { useCVVerification } from "@/hooks/useCVVerification";
 import { usePayment } from "@/hooks/usePayment";
 import HeaderImage from "@/components/header-image";
 
-function CustomSidebarTrigger() {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={toggleSidebar}
-      className="h-10 w-10 p-0 hover:bg-gray-100 rounded-md"
-    >
-      <PanelLeftIcon className="h-6 w-6" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
-}
 
 export default function SubmitManuscriptPage() {
   const { toast } = useToast();
@@ -313,283 +294,267 @@ export default function SubmitManuscriptPage() {
 
   if (!connected || !validSolanaPublicKey) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen bg-white flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
+        <Sidebar>
           <OverviewSidebar connected={connected} />
-          <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
-                <CustomSidebarTrigger />
-                <span className="font-medium text-primary text-sm sm:text-base">
-                  Submit Manuscript
-                </span>
-              </div>
+        </Sidebar>
+        <div className="flex-1">
+          <HeaderImage />
+          <div className="flex-1 p-4 sm:p-6">
+            <div className="text-center py-8">
+              <h2 className="text-xl sm:text-2xl text-primary mb-4">
+                Authentication Required
+              </h2>
+              <p className="text-muted-foreground mb-8 text-base sm:text-lg px-4">
+                Connect your wallet to submit manuscripts.
+              </p>
+              <WalletConnection />
             </div>
-            <HeaderImage />
-            <div className="flex-1 p-4 sm:p-6">
-              <div className="text-center py-8">
-                <h2 className="text-xl sm:text-2xl text-primary mb-4">
-                  Authentication Required
-                </h2>
-                <p className="text-muted-foreground mb-8 text-base sm:text-lg px-4">
-                  Connect your wallet to submit manuscripts.
-                </p>
-                <WalletConnection />
-              </div>
-            </div>
-          </SidebarInset>
+          </div>
           <Toaster />
         </div>
-      </SidebarProvider>
+      </div>
     );
   }
 
   if (cvChecking || !cvVerified) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen bg-white flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
+        <Sidebar>
           <OverviewSidebar connected={connected} />
-          <SidebarInset className="flex-1">
-            <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-              <div className="flex items-center gap-3 px-4 sm:px-6 py-4">
-                <CustomSidebarTrigger />
-                <span className="font-medium text-primary text-sm sm:text-base">
-                  Submit Manuscript
-                </span>
+        </Sidebar>
+        <div className="flex-1">
+          <HeaderImage />
+          <div className="flex-1 p-4 sm:p-6">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="text-center space-y-4">
+                <Skeleton className="h-8 w-48 mx-auto" />
+                <Skeleton className="h-4 w-64 mx-auto" />
               </div>
-            </div>
-            <HeaderImage />
-            <div className="flex-1 p-4 sm:p-6">
-              <div className="max-w-4xl mx-auto space-y-6">
-                <div className="text-center space-y-4">
-                  <Skeleton className="h-8 w-48 mx-auto" />
-                  <Skeleton className="h-4 w-64 mx-auto" />
+              <div className="space-y-6">
+                <div className="p-6 bg-white rounded-xl border space-y-4">
+                  <Skeleton className="h-6 w-40" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-4/5" />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-18" />
+                  </div>
                 </div>
-                <div className="space-y-6">
-                  <div className="p-6 bg-white rounded-xl border space-y-4">
-                    <Skeleton className="h-6 w-40" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <Skeleton className="h-4 w-4/5" />
-                    </div>
-                    <div className="flex space-x-2">
-                      <Skeleton className="h-6 w-16" />
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-18" />
-                    </div>
+                <div className="p-6 bg-white rounded-xl border space-y-4">
+                  <Skeleton className="h-6 w-32" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
                   </div>
-                  <div className="p-6 bg-white rounded-xl border space-y-4">
-                    <Skeleton className="h-6 w-32" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
-                    <Skeleton className="h-32 w-full" />
-                  </div>
+                  <Skeleton className="h-32 w-full" />
                 </div>
               </div>
             </div>
-          </SidebarInset>
+          </div>
           <Toaster />
         </div>
-      </SidebarProvider>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-white flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
+      <Sidebar>
         <OverviewSidebar connected={connected} />
-        <SidebarInset className="flex-1">
-          <HeaderImage />
-          <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
+      </Sidebar>
+      <div className="flex-1">
+        <HeaderImage />
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
 
-              {submitting && (
-                <SubmissionProgress submitProgress={submitProgress} />
-              )}
+            {submitting && (
+              <SubmissionProgress submitProgress={submitProgress} />
+            )}
 
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-                <CardContent className="p-0">
-                  <Tabs
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                    className="w-full"
+            <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <CardContent className="p-0">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <div className="border-b border-gray-100">
+                    <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none overflow-x-auto">
+                      <TabsTrigger
+                        value="basic-info"
+                        className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                      >
+                        <span className="hidden sm:inline">
+                          Basic Information
+                        </span>
+                        <span className="sm:hidden">Basic</span>
+                        {completedTabs.has("basic-info") && (
+                          <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="authors-keywords"
+                        className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                      >
+                        <span className="hidden sm:inline">
+                          Abstract & Keywords
+                        </span>
+                        <span className="sm:hidden">Abstract</span>
+                        {completedTabs.has("authors-keywords") && (
+                          <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="manuscript-file"
+                        className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
+                      >
+                        <span className="hidden sm:inline">
+                          Manuscript File
+                        </span>
+                        <span className="sm:hidden">File</span>
+                        {completedTabs.has("manuscript-file") && (
+                          <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <TabsContent
+                    value="basic-info"
+                    className="p-4 sm:p-8 space-y-6"
                   >
-                    <div className="border-b border-gray-100">
-                      <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none overflow-x-auto">
-                        <TabsTrigger
-                          value="basic-info"
-                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
-                        >
-                          <span className="hidden sm:inline">
-                            Basic Information
-                          </span>
-                          <span className="sm:hidden">Basic</span>
-                          {completedTabs.has("basic-info") && (
-                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
-                          )}
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="authors-keywords"
-                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
-                        >
-                          <span className="hidden sm:inline">
-                            Abstract & Keywords
-                          </span>
-                          <span className="sm:hidden">Abstract</span>
-                          {completedTabs.has("authors-keywords") && (
-                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
-                          )}
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="manuscript-file"
-                          className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-3 sm:px-6 py-4 relative rounded-none text-xs sm:text-sm whitespace-nowrap"
-                        >
-                          <span className="hidden sm:inline">
-                            Manuscript File
-                          </span>
-                          <span className="sm:hidden">File</span>
-                          {completedTabs.has("manuscript-file") && (
-                            <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 ml-1" />
-                          )}
-                        </TabsTrigger>
-                      </TabsList>
+                    <BasicInformationForm
+                      formData={formData}
+                      authors={authors}
+                      submitting={submitting}
+                      onInputChange={handleInputChange}
+                      onRemoveItem={handleRemoveItem}
+                      onCategoriesChange={handleCategoriesChange}
+                    />
+                    <div className="flex justify-end pt-6">
+                      <Button
+                        type="button"
+                        onClick={() => setActiveTab("authors-keywords")}
+                        disabled={!completedTabs.has("basic-info")}
+                        className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base"
+                      >
+                        <span className="hidden sm:inline">
+                          Next: Abstract & Keywords
+                        </span>
+                        <span className="sm:hidden">Next</span>
+                      </Button>
                     </div>
+                  </TabsContent>
 
-                    <TabsContent
-                      value="basic-info"
-                      className="p-4 sm:p-8 space-y-6"
-                    >
-                      <BasicInformationForm
-                        formData={formData}
-                        authors={authors}
-                        submitting={submitting}
-                        onInputChange={handleInputChange}
-                        onRemoveItem={handleRemoveItem}
-                        onCategoriesChange={handleCategoriesChange}
-                      />
-                      <div className="flex justify-end pt-6">
-                        <Button
-                          type="button"
-                          onClick={() => setActiveTab("authors-keywords")}
-                          disabled={!completedTabs.has("basic-info")}
-                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base"
-                        >
-                          <span className="hidden sm:inline">
-                            Next: Abstract & Keywords
-                          </span>
-                          <span className="sm:hidden">Next</span>
-                        </Button>
-                      </div>
-                    </TabsContent>
+                  <TabsContent
+                    value="authors-keywords"
+                    className="p-4 sm:p-8 space-y-6"
+                  >
+                    <AbstractKeywordsForm
+                      formData={{
+                        abstract: formData.abstract,
+                        keywords: formData.keywords,
+                      }}
+                      keywords={keywords}
+                      submitting={submitting}
+                      onInputChange={handleInputChange}
+                      onRemoveItem={handleRemoveItem}
+                    />
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setActiveTab("basic-info")}
+                        className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
+                      >
+                        <span className="hidden sm:inline">
+                          Previous: Basic Info
+                        </span>
+                        <span className="sm:hidden">Previous</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => setActiveTab("manuscript-file")}
+                        disabled={!completedTabs.has("authors-keywords")}
+                        className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-1 sm:order-2"
+                      >
+                        <span className="hidden sm:inline">
+                          Next: Upload File
+                        </span>
+                        <span className="sm:hidden">Next</span>
+                      </Button>
+                    </div>
+                  </TabsContent>
 
-                    <TabsContent
-                      value="authors-keywords"
-                      className="p-4 sm:p-8 space-y-6"
-                    >
-                      <AbstractKeywordsForm
-                        formData={{
-                          abstract: formData.abstract,
-                          keywords: formData.keywords,
+                  <TabsContent
+                    value="manuscript-file"
+                    className="p-4 sm:p-8 space-y-6"
+                  >
+                    <FileUploadForm
+                      selectedFile={selectedFile}
+                      submitting={submitting}
+                      onFileChange={handleFileChange}
+                      onRemoveFile={handleRemoveFile}
+                    />
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setActiveTab("authors-keywords")}
+                        className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
+                      >
+                        <span className="hidden sm:inline">
+                          Previous: Authors & Keywords
+                        </span>
+                        <span className="sm:hidden">Previous</span>
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={
+                          submitting ||
+                          !cvVerified ||
+                          paymentProcessing ||
+                          !completedTabs.has("basic-info") ||
+                          !completedTabs.has("authors-keywords") ||
+                          !completedTabs.has("manuscript-file")
+                        }
+                        onClick={() => {
+                          console.log("Submit button clicked");
+                          console.log("Button disabled conditions:", {
+                            submitting,
+                            cvVerified,
+                            paymentProcessing,
+                            basicInfoComplete:
+                              completedTabs.has("basic-info"),
+                            authorsKeywordsComplete:
+                              completedTabs.has("authors-keywords"),
+                            manuscriptFileComplete:
+                              completedTabs.has("manuscript-file"),
+                          });
                         }}
-                        keywords={keywords}
-                        submitting={submitting}
-                        onInputChange={handleInputChange}
-                        onRemoveItem={handleRemoveItem}
-                      />
-                      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setActiveTab("basic-info")}
-                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
-                        >
-                          <span className="hidden sm:inline">
-                            Previous: Basic Info
-                          </span>
-                          <span className="sm:hidden">Previous</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => setActiveTab("manuscript-file")}
-                          disabled={!completedTabs.has("authors-keywords")}
-                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-1 sm:order-2"
-                        >
-                          <span className="hidden sm:inline">
-                            Next: Upload File
-                          </span>
-                          <span className="sm:hidden">Next</span>
-                        </Button>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent
-                      value="manuscript-file"
-                      className="p-4 sm:p-8 space-y-6"
-                    >
-                      <FileUploadForm
-                        selectedFile={selectedFile}
-                        submitting={submitting}
-                        onFileChange={handleFileChange}
-                        onRemoveFile={handleRemoveFile}
-                      />
-                      <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setActiveTab("authors-keywords")}
-                          className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base order-2 sm:order-1"
-                        >
-                          <span className="hidden sm:inline">
-                            Previous: Authors & Keywords
-                          </span>
-                          <span className="sm:hidden">Previous</span>
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={
-                            submitting ||
-                            !cvVerified ||
-                            paymentProcessing ||
-                            !completedTabs.has("basic-info") ||
-                            !completedTabs.has("authors-keywords") ||
-                            !completedTabs.has("manuscript-file")
-                          }
-                          onClick={() => {
-                            console.log("Submit button clicked");
-                            console.log("Button disabled conditions:", {
-                              submitting,
-                              cvVerified,
-                              paymentProcessing,
-                              basicInfoComplete:
-                                completedTabs.has("basic-info"),
-                              authorsKeywordsComplete:
-                                completedTabs.has("authors-keywords"),
-                              manuscriptFileComplete:
-                                completedTabs.has("manuscript-file"),
-                            });
-                          }}
-                          className="w-full sm:w-auto min-w-[200px] text-sm sm:text-base order-1 sm:order-2"
-                        >
-                          {paymentProcessing
-                            ? "Processing Payment..."
-                            : submitting
-                            ? "Submitting..."
-                            : "Submit Manuscript"}
-                        </Button>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </form>
-          </div>
-        </SidebarInset>
+                        className="w-full sm:w-auto min-w-[200px] text-sm sm:text-base order-1 sm:order-2"
+                      >
+                        {paymentProcessing
+                          ? "Processing Payment..."
+                          : submitting
+                          ? "Submitting..."
+                          : "Submit Manuscript"}
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
         <Toaster />
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
 
 import { WalletConnection } from "@/components/wallet-connection";
 import {
@@ -27,7 +27,6 @@ import {
 function ConditionalSidebarTrigger() {
   try {
     useSidebar();
-    return <SidebarTrigger />;
   } catch (error) {
     return null;
   }

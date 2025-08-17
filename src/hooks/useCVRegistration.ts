@@ -661,10 +661,6 @@ export function useCVRegistration(walletAddress?: string) {
         // If we get here, no wallet had CV data
         console.log("❌ No CV data found across all wallets");
         setError("Profile not found across any connected wallets. Please upload your CV first.");
-        toast.error("Profile Not Found", {
-          description: "No CV data found across any connected wallets. Please upload your CV first to create your profile.",
-          duration: 5000,
-        });
 
         return null;
       } catch (err) {
