@@ -28,7 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import { Sidebar } from "@/components/ui/sidebar";
 import { backendAPI } from "@/lib/api";
-import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
+import HeaderImage from "@/components/header-image";
 
 interface PublishedManuscript {
   id: number;
@@ -351,21 +351,14 @@ export default function PublishedManuscriptsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary/5 flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
       <Sidebar>
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <div className="container max-w-6xl mx-auto px-4 py-8">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl sm:text-4xl text-primary mb-2 font-spectral  font-bold tracking-tight">
-                Published Manuscripts
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-md max-w-2xl mx-auto">
-                Explore peer-reviewed research papers published on our platform
-              </p>
-            </div>
-
+        <HeaderImage />
+        <div className="flex-1">
+          <div className="container max-w-6xl mx-auto px-4 py-8">
             {/* Search and Filters */}
             <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 mb-6">
               <CardContent className="p-6">
@@ -424,7 +417,10 @@ export default function PublishedManuscriptsPage() {
             {loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(9)].map((_, i) => (
-                  <div key={i} className="p-6 bg-white rounded-xl border space-y-4">
+                  <div
+                    key={i}
+                    className="p-6 bg-white rounded-xl border space-y-4"
+                  >
                     <div className="flex items-start justify-between">
                       <Skeleton className="h-6 w-24" />
                       <Skeleton className="h-6 w-20" />
@@ -594,5 +590,6 @@ export default function PublishedManuscriptsPage() {
           </div>
         </div>
       </div>
+    </div>
   );
 }

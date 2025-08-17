@@ -133,9 +133,21 @@ export const WalletConnection = () => {
     return <Loading variant="inline" text="Loading wallet..." size="sm" />;
   }
 
+  const handleLogin = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await login();
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
   if (!connected) {
     return (
-      <Button onClick={login} className="text-sm font-semibold !rounded-full">
+      <Button
+        onClick={handleLogin}
+        className="text-sm font-semibold !rounded-full"
+      >
         Get Started
       </Button>
     );
@@ -144,7 +156,7 @@ export const WalletConnection = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="!rounded-full">
+        <Button variant="outline" className="rounded-full">
           <p className="text-xs">{userDisplayName}</p>
         </Button>
       </PopoverTrigger>

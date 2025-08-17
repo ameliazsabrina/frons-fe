@@ -9,6 +9,7 @@ import {
   UserIcon,
   BookOpenIcon,
   FilePen,
+  ArrowUpFromLine,
 } from "lucide-react";
 import { WalletConnection } from "./wallet-connection";
 import { motion } from "motion/react";
@@ -27,6 +28,11 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
       icon: <LayoutDashboardIcon className="h-5 w-5" />,
     },
     {
+      label: "Published Manuscripts",
+      href: "/published-manuscripts",
+      icon: <BookOpenIcon className="h-5 w-5" />,
+    },
+    {
       label: "Author Dashboard",
       href: "/author-dashboard",
       icon: <FilePen className="h-5 w-5" />,
@@ -34,7 +40,7 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
     {
       label: "Submit Manuscript",
       href: "/submit-manuscript",
-      icon: <BookOpenIcon className="h-5 w-5" />,
+      icon: <ArrowUpFromLine className="h-5 w-5" />,
     },
     {
       label: "Review Manuscript",

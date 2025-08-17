@@ -4,8 +4,8 @@ import { DM_Sans, Spectral } from "next/font/google";
 import "./globals.css";
 import PrivyProvider from "@/provider/PrivyProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
-import { CustomCursor } from "@/components/ui/custom-cursor";
 import { Toaster } from "@/components/ui/toaster";
+import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -37,11 +37,10 @@ export default function RootLayout({
       >
         <LoadingProvider>
           <PrivyProvider>
-            {/* <DesktopOnlyWrapper> */}
-            {/* <CustomCursor /> */}
-            {children}
-            <Toaster />
-            {/* </DesktopOnlyWrapper> */}
+            <DesktopOnlyWrapper>
+              {children}
+              <Toaster />
+            </DesktopOnlyWrapper>
           </PrivyProvider>
         </LoadingProvider>
       </body>

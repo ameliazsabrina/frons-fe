@@ -66,7 +66,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-dm-sans), "DM Sans", sans-serif;
-    cursor: none; /* Hide default cursor */
   }
 
   a,
@@ -76,7 +75,7 @@
   select,
   [role="button"],
   [tabindex] {
-    cursor: none;
+    cursor: pointer;
   }
 }
 
@@ -219,6 +218,17 @@
   --dynamic-modal-background: #ffffff !important;
   --dynamic-modal-border-color: rgba(22, 0, 126, 0.2) !important;
   --dynamic-modal-text-color: #000000 !important;
+  z-index: 9999 !important;
+}
+
+/* Privy modal fixes for Chrome */
+.privy-modal, [data-privy-modal] {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+.privy-backdrop, [data-privy-backdrop] {
+  z-index: 9998 !important;
 }
 
 /* Loading Animation - Text Highlight */

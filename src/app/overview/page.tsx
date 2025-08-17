@@ -26,6 +26,7 @@ import {
   ReviewActivity,
   OverviewHeader,
 } from "@/components/overview";
+import HeaderImage from "@/components/header-image";
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -278,14 +279,14 @@ export default function OverviewPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
+        <HeaderImage />
         <main className="flex-1">
-          <div className="container max-w-full mx-auto py-8">
+          <div className="container max-w-full mx-auto pb-4 px-32">
             {/* Header */}
             <OverviewHeader userName={getUserDisplayName(user)} />
 
             {loading ? (
               <div className="space-y-6">
-                {/* Stats skeleton */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[...Array(3)].map((_, i) => (
                     <Card key={i} className="p-6">

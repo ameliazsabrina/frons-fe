@@ -50,13 +50,13 @@ export default function AuthorsDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
           <HeaderImage />
-          <div className="container max-w-full mx-auto py-8">
+          <div className="container max-w-full mx-auto pb-4 px-32">
             <div className="space-y-6">
               {/* Header skeleton */}
               <div className="flex justify-between items-center">
