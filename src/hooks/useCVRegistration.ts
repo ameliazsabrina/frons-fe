@@ -702,7 +702,7 @@ export function useCVRegistration(walletAddress?: string) {
           }
         }
 
-        const result = await axios.patch(
+        const result = await axios.put(
           `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
           updateData,
           { headers }

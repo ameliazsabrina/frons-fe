@@ -359,12 +359,14 @@ export default function YourProfile() {
           variant: "success",
           title: "Profile Updated",
           description: "Your profile has been successfully updated.",
+          className: "bg-white border-green-500 text-green-600",
         });
       } else {
         toast({
           variant: "destructive",
           title: "Update Failed",
           description: "Failed to update your profile. Please try again.",
+          className: "bg-white border-red-500 text-red-600",
         });
       }
     } catch (err) {

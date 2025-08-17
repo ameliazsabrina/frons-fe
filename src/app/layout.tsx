@@ -38,7 +38,7 @@ export default function RootLayout({
         <LoadingProvider>
           <PrivyProvider>
             {/* <DesktopOnlyWrapper> */}
-            <CustomCursor />
+            {/* <CustomCursor /> */}
             {children}
             <Toaster />
             {/* </DesktopOnlyWrapper> */}
