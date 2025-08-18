@@ -456,7 +456,7 @@ export default function SubmitManuscriptPage() {
       </Sidebar>
       <div className="flex-1">
         <HeaderImage />
-        <div className="container max-w-full mx-auto  py-12 ">
+        <div className="container max-w-full mx-auto  pb-4 px-32">
           <form onSubmit={handleSubmit} className="space-y-6">
             {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
 

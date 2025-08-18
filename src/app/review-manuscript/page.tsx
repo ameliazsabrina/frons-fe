@@ -101,15 +101,6 @@ export default function ReviewManuscriptPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="flex items-center gap-2 px-4 py-3">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-primary">
-                  Review Dashboard
-                </span>
-              </div>
-            </div>
-          </div>
           <HeaderImage />
           <div className="container max-w-full mx-auto  py-8">
             <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
@@ -127,11 +118,13 @@ export default function ReviewManuscriptPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primary/5 flex w-full">
-      <OverviewSidebar connected={connected} />
+    <div className="min-h-screen bg-white flex w-full">
+      <Sidebar>
+        <OverviewSidebar connected={connected} />
+      </Sidebar>
       <div className="flex-1">
         <HeaderImage />
-        <div className="container max-w-full mx-auto  py-8">
+        <div className="container max-w-full mx-auto pb-4 px-32">
           <div className="mb-8 space-y-4">
             <div className="relative max-w-full">
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

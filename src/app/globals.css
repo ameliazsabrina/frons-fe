@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Cache invalidation comment - v1.1 */
+
 @layer base {
   :root {
     --background: 0 0% 99%;

@@ -209,6 +209,96 @@ export default function YourProfile() {
       if (result?.success && result.profile) {
         console.log("📊 Profile loaded successfully:", result.profile);
 
+        // Deduplicate arrays to prevent display issues
+        const deduplicateArray = <T extends Record<string, any>>(
+          array: T[] | undefined,
+          keyField: keyof T = "id"
+        ): T[] => {
+          if (!array || !Array.isArray(array)) return [];
+
+          const seenIds = new Set();
+          const seenContent = new Set();
+
+          return array.filter((item) => {
+            if (item[keyField] !== undefined && item[keyField] !== null) {
+              if (seenIds.has(item[keyField])) {
+                return false;
+              }
+              seenIds.add(item[keyField]);
+              return true;
+            }
+
+            const contentKey = JSON.stringify(item);
+            if (seenContent.has(contentKey)) {
+              return false;
+            }
+            seenContent.add(contentKey);
+            return true;
+          });
+        };
+
+        // Sanitize the profile data
+        const sanitizedEducation = deduplicateArray(
+          (result.profile as any).education
+        ) as Array<{
+          id?: string;
+          institution: string;
+          degree: string;
+          field: string;
+          startDate: string;
+          endDate: string;
+          gpa?: string;
+          location?: string;
+        }>;
+        const sanitizedExperience = deduplicateArray(
+          (result.profile as any).experience
+        ) as Array<{
+          id?: string;
+          company: string;
+          position: string;
+          startDate: string;
+          endDate: string;
+          description?: string;
+          location?: string;
+          type?: string;
+        }>;
+        const sanitizedPublications = deduplicateArray(
+          (result.profile as any).publications,
+          "title"
+        ) as Array<{
+          id?: string;
+          title: string;
+          authors: string[];
+          venue: string;
+          date: string;
+          doi?: string;
+          url?: string;
+        }>;
+        const sanitizedAwards = deduplicateArray(
+          (result.profile as any).awards,
+          "name"
+        ) as Array<{
+          id?: string;
+          name: string;
+          issuer: string;
+          date: string;
+          description?: string;
+        }>;
+
+        console.log(`🧹 Profile deduplication results:
+          Education: ${(result.profile as any).education?.length || 0} → ${
+          sanitizedEducation.length
+        }
+          Experience: ${(result.profile as any).experience?.length || 0} → ${
+          sanitizedExperience.length
+        }
+          Publications: ${
+            (result.profile as any).publications?.length || 0
+          } → ${sanitizedPublications.length}
+          Awards: ${(result.profile as any).awards?.length || 0} → ${
+          sanitizedAwards.length
+        }`);
+
         const transformedProfile: UserProfile = {
           personalInfo: {
             fullName: result.profile.personalInfo?.fullName || "",
@@ -233,27 +323,15 @@ export default function YourProfile() {
           },
           overview: result.profile.overview || "",
           summary: {
-            education:
-              (result.profile as any).summary?.education ||
-              (result.profile as any).education?.length ||
-              0,
-            experience:
-              (result.profile as any).summary?.experience ||
-              (result.profile as any).experience?.length ||
-              0,
-            publications:
-              (result.profile as any).summary?.publications ||
-              (result.profile as any).publications?.length ||
-              0,
-            awards:
-              (result.profile as any).summary?.awards ||
-              (result.profile as any).awards?.length ||
-              0,
+            education: sanitizedEducation.length,
+            experience: sanitizedExperience.length,
+            publications: sanitizedPublications.length,
+            awards: sanitizedAwards.length,
           },
-          education: (result.profile as any).education || [],
-          experience: (result.profile as any).experience || [],
-          publications: (result.profile as any).publications || [],
-          awards: (result.profile as any).awards || [],
+          education: sanitizedEducation,
+          experience: sanitizedExperience,
+          publications: sanitizedPublications,
+          awards: sanitizedAwards,
         };
 
         console.log("📊 Transformed profile:", transformedProfile);
@@ -404,7 +482,7 @@ export default function YourProfile() {
         </Sidebar>
         <div className="flex-1">
           <HeaderImage />
-          <div className="container max-w-full mx-auto py-8">
+          <div className="container max-w-full mx-auto pb-4 px-32">
             {/* Profile Header skeleton - matching 3-column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               {/* Left column - Profile picture and basic info */}
@@ -587,7 +665,7 @@ export default function YourProfile() {
       <div className="flex-1">
         <HeaderImage />
 
-        <div className="container max-w-full mx-auto py-8">
+        <div className="container max-w-full mx-auto pb-4 px-32">
           {/* Profile Header */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Profile Picture and Basic Info */}

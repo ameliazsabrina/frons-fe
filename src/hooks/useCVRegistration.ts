@@ -12,6 +12,83 @@ import {
 import { useLoading } from "@/context/LoadingContext";
 import axios from "axios";
 
+// Utility function to deduplicate arrays based on id or unique content
+function deduplicateArray<T extends Record<string, any>>(
+  array: T[] | undefined,
+  keyField: keyof T = "id"
+): T[] {
+  if (!array || !Array.isArray(array)) return [];
+
+  // First try to deduplicate by ID if it exists
+  const seenIds = new Set();
+  const seenContent = new Set();
+
+  return array.filter((item) => {
+    // If item has an ID, use that for deduplication
+    if (item[keyField] !== undefined && item[keyField] !== null) {
+      if (seenIds.has(item[keyField])) {
+        return false;
+      }
+      seenIds.add(item[keyField]);
+      return true;
+    }
+
+    // Otherwise, use content-based deduplication
+    const contentKey = JSON.stringify(item);
+    if (seenContent.has(contentKey)) {
+      return false;
+    }
+    seenContent.add(contentKey);
+    return true;
+  });
+}
+
+// Function to sanitize CV data and remove duplicates
+function sanitizeCVData(profile: any): any {
+  if (!profile) return profile;
+
+  const sanitized = { ...profile };
+
+  // Deduplicate education, experience, publications, and awards
+  if (sanitized.education) {
+    sanitized.education = deduplicateArray(sanitized.education);
+    console.log(
+      `🧹 Deduplication: Education reduced from ${
+        profile.education?.length || 0
+      } to ${sanitized.education.length} items`
+    );
+  }
+
+  if (sanitized.experience) {
+    sanitized.experience = deduplicateArray(sanitized.experience);
+    console.log(
+      `🧹 Deduplication: Experience reduced from ${
+        profile.experience?.length || 0
+      } to ${sanitized.experience.length} items`
+    );
+  }
+
+  if (sanitized.publications) {
+    sanitized.publications = deduplicateArray(sanitized.publications, "title");
+    console.log(
+      `🧹 Deduplication: Publications reduced from ${
+        profile.publications?.length || 0
+      } to ${sanitized.publications.length} items`
+    );
+  }
+
+  if (sanitized.awards) {
+    sanitized.awards = deduplicateArray(sanitized.awards, "name");
+    console.log(
+      `🧹 Deduplication: Awards reduced from ${
+        profile.awards?.length || 0
+      } to ${sanitized.awards.length} items`
+    );
+  }
+
+  return sanitized;
+}
+
 interface CVData {
   fullName: string;
   institution: string;
@@ -261,11 +338,9 @@ export function useCVRegistration(walletAddress?: string) {
         formData.append("cv", cv);
         formData.append("walletAddress", walletAddress);
 
-        const result = await axios.post(
-          `${apiUrl}/cv/parse-cv`,
-          formData,
-          { headers }
-        );
+        const result = await axios.post(`${apiUrl}/cv/parse-cv`, formData, {
+          headers,
+        });
 
         if (result.data.success) {
           const newCvData = {
@@ -346,11 +421,11 @@ export function useCVRegistration(walletAddress?: string) {
         setUploadProgress(100);
 
         console.log("📊 Raw API response:", result.data);
-        
+
         if (result.data.success && result.data.data) {
           const cvData = result.data.data; // Backend returns data in result.data.data
           console.log("📋 Parsed CV data structure:", cvData);
-          
+
           const parsedData = {
             fullName: cvData.selfIdentity?.fullName || "",
             title: cvData.selfIdentity?.title || "",
@@ -372,7 +447,7 @@ export function useCVRegistration(walletAddress?: string) {
             publications: cvData.publications || [],
             awards: cvData.awards || [],
           };
-          
+
           console.log("🔄 Transformed parsed data:", parsedData);
 
           setCvData({
@@ -416,9 +491,12 @@ export function useCVRegistration(walletAddress?: string) {
           console.error("❌ CV parsing failed - invalid response structure:", {
             hasSuccess: !!result.data.success,
             hasData: !!result.data.data,
-            actualData: result.data
+            actualData: result.data,
           });
-          throw new Error(result.data.message || "Failed to parse CV - invalid response structure");
+          throw new Error(
+            result.data.message ||
+              "Failed to parse CV - invalid response structure"
+          );
         }
       } catch (err) {
         console.error("Failed to parse CV:", err);
@@ -472,25 +550,32 @@ export function useCVRegistration(walletAddress?: string) {
             JSON.stringify(result.data.profile, null, 2)
           );
 
+          // Sanitize profile data to remove duplicates
+          const sanitizedProfile = sanitizeCVData(result.data.profile);
+          console.log(
+            "Sanitized profile data:",
+            JSON.stringify(sanitizedProfile, null, 2)
+          );
+
           // Set the complete profile data including arrays
           setCvData({
-            fullName: result.data.profile.personalInfo.fullName,
-            institution: result.data.profile.personalInfo.institution,
-            profession: result.data.profile.personalInfo.profession,
-            field: result.data.profile.personalInfo.field,
-            specialization: result.data.profile.personalInfo.specialization,
-            email: result.data.profile.contact.email,
-            registeredAt: result.data.profile.createdAt,
+            fullName: sanitizedProfile.personalInfo.fullName,
+            institution: sanitizedProfile.personalInfo.institution,
+            profession: sanitizedProfile.personalInfo.profession,
+            field: sanitizedProfile.personalInfo.field,
+            specialization: sanitizedProfile.personalInfo.specialization,
+            email: sanitizedProfile.contact.email,
+            registeredAt: sanitizedProfile.createdAt,
             photoUrl:
-              result.data.profile.profilePhoto ||
-              result.data.profile.personalInfo.photoUrl,
-            orcid: result.data.profile.contact.orcid,
-            googleScholar: result.data.profile.contact.googleScholar,
-            // Include all the array data
-            education: result.data.profile.education || [],
-            experience: result.data.profile.experience || [],
-            publications: result.data.profile.publications || [],
-            awards: result.data.profile.awards || [],
+              sanitizedProfile.profilePhoto ||
+              sanitizedProfile.personalInfo.photoUrl,
+            orcid: sanitizedProfile.contact.orcid,
+            googleScholar: sanitizedProfile.contact.googleScholar,
+            // Include all the sanitized array data
+            education: sanitizedProfile.education || [],
+            experience: sanitizedProfile.experience || [],
+            publications: sanitizedProfile.publications || [],
+            awards: sanitizedProfile.awards || [],
           });
 
           console.log("Profile data loaded:", result.data.profile);
@@ -550,6 +635,7 @@ export function useCVRegistration(walletAddress?: string) {
             toast.error("Server Error", {
               description: "Server error occurred. Please try again later.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError("Server error occurred");
           } else {
@@ -586,7 +672,10 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
-        console.log("🔍 Searching for profile across multiple wallets:", walletAddresses);
+        console.log(
+          "🔍 Searching for profile across multiple wallets:",
+          walletAddresses
+        );
 
         let headers = {};
         if (authenticated) {
@@ -594,7 +683,9 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
-              console.log("✅ Using Privy authentication token for multi-wallet lookup");
+              console.log(
+                "✅ Using Privy authentication token for multi-wallet lookup"
+              );
             }
           } catch (tokenError) {
             console.warn("⚠️ Failed to get Privy access token:", tokenError);
@@ -604,9 +695,9 @@ export function useCVRegistration(walletAddress?: string) {
         // Try each wallet address until we find CV data
         for (const walletAddress of walletAddresses) {
           if (!walletAddress) continue;
-          
+
           console.log(`🔍 Checking wallet: ${walletAddress}`);
-          
+
           try {
             const result = await axios.get(
               `${apiUrl}/parse-cv/user/profile/${walletAddress}`,
@@ -615,31 +706,43 @@ export function useCVRegistration(walletAddress?: string) {
 
             if (result.data.success && result.data.profile) {
               console.log(`✅ Found CV data for wallet: ${walletAddress}`);
-              console.log("📊 Profile data:", JSON.stringify(result.data.profile, null, 2));
+              console.log(
+                "📊 Profile data:",
+                JSON.stringify(result.data.profile, null, 2)
+              );
+
+              // Sanitize profile data to remove duplicates
+              const sanitizedProfile = sanitizeCVData(result.data.profile);
+              console.log(
+                "📊 Sanitized profile data:",
+                JSON.stringify(sanitizedProfile, null, 2)
+              );
 
               // Set the complete profile data including arrays
               setCvData({
-                fullName: result.data.profile.personalInfo.fullName,
-                institution: result.data.profile.personalInfo.institution,
-                profession: result.data.profile.personalInfo.profession,
-                field: result.data.profile.personalInfo.field,
-                specialization: result.data.profile.personalInfo.specialization,
-                email: result.data.profile.contact.email,
-                registeredAt: result.data.profile.createdAt,
+                fullName: sanitizedProfile.personalInfo.fullName,
+                institution: sanitizedProfile.personalInfo.institution,
+                profession: sanitizedProfile.personalInfo.profession,
+                field: sanitizedProfile.personalInfo.field,
+                specialization: sanitizedProfile.personalInfo.specialization,
+                email: sanitizedProfile.contact.email,
+                registeredAt: sanitizedProfile.createdAt,
                 photoUrl:
-                  result.data.profile.profilePhoto ||
-                  result.data.profile.personalInfo.photoUrl,
-                orcid: result.data.profile.contact.orcid,
-                googleScholar: result.data.profile.contact.googleScholar,
-                education: result.data.profile.education || [],
-                experience: result.data.profile.experience || [],
-                publications: result.data.profile.publications || [],
-                awards: result.data.profile.awards || [],
+                  sanitizedProfile.profilePhoto ||
+                  sanitizedProfile.personalInfo.photoUrl,
+                orcid: sanitizedProfile.contact.orcid,
+                googleScholar: sanitizedProfile.contact.googleScholar,
+                education: sanitizedProfile.education || [],
+                experience: sanitizedProfile.experience || [],
+                publications: sanitizedProfile.publications || [],
+                awards: sanitizedProfile.awards || [],
               });
 
               // Show success toast with wallet info
               toast.success("Profile Loaded", {
-                description: `Welcome back, ${result.data.profile.personalInfo.fullName}! (CV found on ${walletAddress.substring(0, 8)}...)`,
+                description: `Welcome back, ${
+                  result.data.profile.personalInfo.fullName
+                }! (CV found on ${walletAddress.substring(0, 8)}...)`,
                 duration: 3000,
               });
 
@@ -660,14 +763,17 @@ export function useCVRegistration(walletAddress?: string) {
 
         // If we get here, no wallet had CV data
         console.log("❌ No CV data found across all wallets");
-        setError("Profile not found across any connected wallets. Please upload your CV first.");
+        setError(
+          "Profile not found across any connected wallets. Please upload your CV first."
+        );
 
         return null;
       } catch (err) {
         console.error("Error in multi-wallet profile lookup:", err);
         setError("Failed to search for profile across wallets");
         toast.error("Search Failed", {
-          description: "Failed to search for profile across wallets. Please try again.",
+          description:
+            "Failed to search for profile across wallets. Please try again.",
           duration: 4000,
         });
         return null;

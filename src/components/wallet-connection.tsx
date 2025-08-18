@@ -37,6 +37,17 @@ export const WalletConnection = () => {
   const { wallets, ready: walletsReady } = useSolanaWallets();
   const router = useRouter();
 
+  // Force re-render when authentication state changes
+  const [forceUpdate, setForceUpdate] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (authenticated && !user) {
+        setForceUpdate(prev => prev + 1);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [authenticated, user]);
+
   const [copied, setCopied] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState("Connected User");
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
@@ -45,7 +56,23 @@ export const WalletConnection = () => {
   );
 
   const solanaWallet = getPrimaryWallet(wallets);
-  const connected = authenticated && walletsReady && wallets.length > 0;
+  const connected = authenticated && walletsReady;
+  const hasWallet = wallets.length > 0;
+
+  // Debug authentication state
+  console.log("Auth State:", {
+    authenticated,
+    walletsReady,
+    hasWallet,
+    connected,
+    user: !!user,
+    walletCount: wallets.length,
+    privyReady,
+    forceUpdate
+  });
+
+  // Check if user is actually authenticated by checking multiple sources
+  const isActuallyAuthenticated = authenticated && privyReady && (user || forceUpdate > 0);
 
   useEffect(() => {
     if (user) {
@@ -134,19 +161,24 @@ export const WalletConnection = () => {
   }
 
   const handleLogin = async (e: React.MouseEvent) => {
+    console.log("Get Started button clicked");
     e.preventDefault();
+    e.stopPropagation();
     try {
+      console.log("Attempting login...");
       await login();
+      console.log("Login successful");
     } catch (error) {
       console.error("Login failed:", error);
     }
   };
 
-  if (!connected) {
+  if (!isActuallyAuthenticated) {
     return (
       <Button
         onClick={handleLogin}
         className="text-sm font-semibold !rounded-full"
+        // disabled={false}
       >
         Get Started
       </Button>
