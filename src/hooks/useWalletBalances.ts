@@ -62,33 +62,21 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
       return;
     }
 
-    console.log("🔍 Fetching wallet balances for:", walletAddress);
     setBalances((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const publicKey = new PublicKey(walletAddress);
       const solBalance = await connection.getBalance(publicKey);
       const solAmount = solBalance / LAMPORTS_PER_SOL;
-      console.log("💰 SOL balance:", solAmount);
 
       const tokenBalances: TokenBalance[] = [];
-      console.log(
-        "🪙 Fetching token balances for:",
-        TOKEN_CONFIG.length,
-        "tokens"
-      );
 
       for (const tokenConfig of TOKEN_CONFIG) {
-        console.log(`🔍 Fetching ${tokenConfig.symbol} balance...`);
         try {
           const mintPublicKey = new PublicKey(tokenConfig.mintAddress);
           const associatedTokenAddress = await getAssociatedTokenAddress(
             mintPublicKey,
             publicKey
-          );
-          console.log(
-            `📍 ${tokenConfig.symbol} token account:`,
-            associatedTokenAddress.toString()
           );
 
           try {
@@ -98,11 +86,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             );
             const balance = Number(tokenAccount.amount);
             const uiAmount = balance / Math.pow(10, tokenConfig.decimals);
-
-            console.log(`✅ ${tokenConfig.symbol} balance:`, {
-              balance,
-              uiAmount,
-            });
             tokenBalances.push({
               symbol: tokenConfig.symbol,
               balance,
@@ -111,9 +94,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
               mintAddress: tokenConfig.mintAddress,
             });
           } catch (accountError) {
-            console.log(
-              `⚠️ ${tokenConfig.symbol} account doesn't exist, showing 0 balance`
-            );
             tokenBalances.push({
               symbol: tokenConfig.symbol,
               balance: 0,
@@ -123,10 +103,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             });
           }
         } catch (tokenError) {
-          console.error(
-            `❌ Error fetching ${tokenConfig.symbol} balance:`,
-            tokenError
-          );
 
           tokenBalances.push({
             symbol: tokenConfig.symbol,
@@ -138,7 +114,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
         }
       }
 
-      console.log("📊 Final token balances:", tokenBalances);
       setBalances((prev) => ({
         ...prev,
         sol: solAmount,
@@ -147,7 +122,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
         error: null,
       }));
     } catch (error) {
-      console.error("Error fetching wallet balances:", error);
       setBalances((prev) => ({
         ...prev,
         isLoading: false,

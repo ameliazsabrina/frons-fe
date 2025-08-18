@@ -115,11 +115,9 @@ export default function SubmitManuscriptPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleSubmit called");
 
     const validationError = validateForm();
     if (validationError) {
-      console.log("Validation error:", validationError);
       toast({
         title: "Error",
         description: validationError,
@@ -131,10 +129,6 @@ export default function SubmitManuscriptPage() {
     }
 
     if (!validSolanaPublicKey || !cvVerified) {
-      console.log("Wallet/CV check failed:", {
-        validSolanaPublicKey,
-        cvVerified,
-      }); // Debug log
       toast({
         title: "Error",
         description: "Wallet connection and CV verification required",
@@ -146,18 +140,12 @@ export default function SubmitManuscriptPage() {
     }
 
     try {
-      console.log("Starting submission process..."); // Debug log
       setSubmitting(true);
       setSubmitProgress(0);
       setSuccess(null);
       setIpfsData(null);
 
       setSubmitProgress(10);
-      console.log("About to process payment...");
-      console.log("Payment context:", {
-        walletAddress: validSolanaPublicKey,
-        wallet: solanaWallet,
-      });
       toast({
         title: "Processing Payment",
         description: "Please approve the $50 USDCF payment to escrow...",
@@ -166,7 +154,6 @@ export default function SubmitManuscriptPage() {
       });
 
       const paymentSignature = await processUSDCPayment();
-      console.log("Payment signature received:", paymentSignature); // Debug log
 
       setSubmitProgress(30);
       toast({
@@ -177,14 +164,6 @@ export default function SubmitManuscriptPage() {
 
       setSubmitProgress(50);
 
-      // Detailed logging before submission
-      console.log("📋 Submitting manuscript with details:");
-      console.log("📁 File info:", {
-        name: selectedFile!.name,
-        size: selectedFile!.size,
-        type: selectedFile!.type,
-        lastModified: selectedFile!.lastModified,
-      });
 
       const submissionMetadata = {
         title: formData.title,
@@ -197,9 +176,6 @@ export default function SubmitManuscriptPage() {
         walletAddress: validSolanaPublicKey,
       };
 
-      console.log("📋 Submission metadata:", submissionMetadata);
-      console.log("🌐 API URL:", apiUrl);
-      console.log("🔄 About to call submitManuscript...");
 
       const result = await submitManuscript(
         selectedFile!,
@@ -207,7 +183,6 @@ export default function SubmitManuscriptPage() {
         apiUrl
       );
 
-      console.log("✅ submitManuscript returned result:", result);
 
       if (!result) {
         throw new Error("Failed to submit manuscript");
@@ -254,13 +229,6 @@ export default function SubmitManuscriptPage() {
         router.push("/overview");
       }, 5000);
     } catch (err: any) {
-      console.error("Failed to submit manuscript:", err);
-      console.log("Error details:", {
-        message: err.message,
-        stack: err.stack,
-        paymentError: paymentError,
-        errorObject: err,
-      }); // Debug log
 
       let errorMsg = "Failed to submit manuscript. Please try again.";
       if (paymentError || err.message?.includes("Payment failed")) {
@@ -524,20 +492,7 @@ export default function SubmitManuscriptPage() {
                           !completedTabs.has("authors-keywords") ||
                           !completedTabs.has("manuscript-file")
                         }
-                        onClick={() => {
-                          console.log("Submit button clicked");
-                          console.log("Button disabled conditions:", {
-                            submitting,
-                            cvVerified,
-                            paymentProcessing,
-                            basicInfoComplete:
-                              completedTabs.has("basic-info"),
-                            authorsKeywordsComplete:
-                              completedTabs.has("authors-keywords"),
-                            manuscriptFileComplete:
-                              completedTabs.has("manuscript-file"),
-                          });
-                        }}
+                        onClick={() => {}}
                         className="w-full sm:w-auto min-w-[200px] text-sm sm:text-base order-1 sm:order-2"
                       >
                         {paymentProcessing

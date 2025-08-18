@@ -460,6 +460,10 @@ export default function YourProfile() {
     }
   };
 
+  const handleResubmitCV = async () => {
+    router.push("/register-cv");
+  };
+
   if (!connected) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
@@ -809,24 +813,41 @@ export default function YourProfile() {
                         </>
                       )}
                     </div>
-
-                    <Button
-                      onClick={() => {
-                        setIsInitialLoad(false); // Allow toast for manual refresh
-                        loadProfile();
-                        toast({
-                          variant: "default",
-                          title: "Profile Refreshed",
-                          description: "Your profile data has been refreshed.",
-                        });
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <RefreshCcwIcon className="w-4 h-4 mr-2" />
-                      Refresh
-                    </Button>
+                    <div className="flex space-x-2 w-full">
+                      {!isEditing ? (
+                        <Button onClick={handleResubmitCV} className="flex-1">
+                          <RefreshCcwIcon className="w-4 h-4 mr-2" />
+                          Resubmit CV
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="flex-1"
+                          >
+                            {saving ? (
+                              <>
+                                <Skeleton className="h-4 w-4" />
+                                <span className="ml-2">Saving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <SaveIcon className="w-4 h-4 mr-2" />
+                                Save
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={handleEditCancel}
+                            variant="outline"
+                            disabled={saving}
+                          >
+                            <XIcon className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1166,25 +1187,25 @@ export default function YourProfile() {
                   value="education"
                   className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
                 >
-                  Education ({profile.summary.education})
+                  Education
                 </TabsTrigger>
                 <TabsTrigger
                   value="experience"
                   className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
                 >
-                  Experience ({profile.summary.experience})
+                  Experience
                 </TabsTrigger>
                 <TabsTrigger
                   value="publications"
                   className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
                 >
-                  Publications ({profile.summary.publications})
+                  Publications
                 </TabsTrigger>
                 <TabsTrigger
                   value="awards"
                   className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-white py-3"
                 >
-                  Awards ({profile.summary.awards})
+                  Awards
                 </TabsTrigger>
                 <TabsTrigger
                   value="academic-card"

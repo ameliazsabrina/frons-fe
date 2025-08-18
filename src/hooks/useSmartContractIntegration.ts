@@ -52,11 +52,6 @@ export function useSmartContractIntegration() {
           program.programId
         );
 
-        console.log("Registering Privy user:", {
-          userPda: userPda.toString(),
-          embeddedWallet: publicKey.toString(),
-          privyUserId: userData.privyUserId,
-        });
 
         const tx = await program.methods
           .registerPrivyUser(
@@ -74,10 +69,8 @@ export function useSmartContractIntegration() {
           })
           .rpc();
 
-        console.log("Privy user registration successful:", tx);
         return true;
       } catch (err: any) {
-        console.error("Failed to register Privy user:", err);
         setError(err.message || "Failed to register Privy user");
         return false;
       } finally {
@@ -123,10 +116,8 @@ export function useSmartContractIntegration() {
           })
           .rpc();
 
-        console.log("Migration to Privy successful:", tx);
         return true;
       } catch (err: any) {
-        console.error("Failed to migrate to Privy:", err);
         setError(err.message || "Failed to migrate to Privy");
         return false;
       } finally {
@@ -168,10 +159,8 @@ export function useSmartContractIntegration() {
           })
           .rpc();
 
-        console.log("CV verification successful:", tx);
         return true;
       } catch (err: any) {
-        console.error("Failed to verify CV:", err);
         setError(err.message || "Failed to verify CV");
         return false;
       } finally {
@@ -225,10 +214,8 @@ export function useSmartContractIntegration() {
           .signers([manuscriptKeypair])
           .rpc();
 
-        console.log("Manuscript submission successful:", tx);
         return tx;
       } catch (err: any) {
-        console.error("Failed to submit manuscript:", err);
         setError(err.message || "Failed to submit manuscript");
         return null;
       } finally {
@@ -254,7 +241,6 @@ export function useSmartContractIntegration() {
 
         const programAccount = program.account as any;
         if (!programAccount.user) {
-          console.warn("user account not found in program");
           return false;
         }
         const userAccount = await programAccount.user.fetch(userPda);
@@ -271,7 +257,6 @@ export function useSmartContractIntegration() {
 
         return hasValidEducation && hasCvVerified && hasEnoughPapers;
       } catch (err) {
-        console.error("Failed to check submission requirements:", err);
         return false;
       }
     }, [program, publicKey]);
@@ -290,13 +275,11 @@ export function useSmartContractIntegration() {
 
       const programAccount = program.account as any;
       if (!programAccount.user) {
-        console.warn("user account not found in program");
         return null;
       }
       const userAccount = await programAccount.user.fetch(userPda);
       return userAccount;
     } catch (err) {
-      console.error("Failed to get user account:", err);
       return null;
     }
   }, [program, publicKey]);
