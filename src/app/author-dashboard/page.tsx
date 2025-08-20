@@ -140,7 +140,7 @@ export default function AuthorsDashboardPage() {
       </Sidebar>
       <div className="flex-1">
         <HeaderImage />
-        <div className="container max-w-full mx-auto py-8">
+        <div className="container max-w-full mx-auto pb-8 px-32">
           <AuthorDashboardHeader onNewSubmission={navigateToSubmission} />
           <AuthorStatsGrid stats={stats} />
 

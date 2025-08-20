@@ -96,7 +96,7 @@ export default function ReviewManuscriptPage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-primary/5 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
@@ -110,7 +110,9 @@ export default function ReviewManuscriptPage() {
             <p className="text-muted-foreground mb-4 text-center text-sm">
               Please connect your wallet to access the review dashboard.
             </p>
-            <WalletConnection />
+            <div className="flex justify-center">
+              <WalletConnection />
+            </div>
           </div>
         </div>
       </div>

@@ -13,19 +13,14 @@ import { useLoading } from "@/context/LoadingContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { PanelLeftIcon } from "lucide-react";
+
 import { isValidSolanaAddress } from "@/hooks/useProgram";
 import { getPrimarySolanaWallet } from "@/utils/wallet";
 import { useManuscriptSubmission } from "@/hooks/useManuscriptSubmission";
 import { Toaster } from "@/components/ui/toaster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  FileTextIcon,
-  UsersIcon,
-  UploadIcon,
-  CheckCircleIcon,
-} from "lucide-react";
+import { CheckCircleIcon } from "lucide-react";
 import { BasicInformationForm } from "@/components/manuscript/BasicInformationForm";
 import { AbstractKeywordsForm } from "@/components/manuscript/AbstractKeywordsForm";
 import { FileUploadForm } from "@/components/manuscript/FileUploadForm";
@@ -236,24 +231,14 @@ export default function SubmitManuscriptPage() {
         paymentError,
       });
 
-      console.log("🎯 CRITICAL: About to call processUSDCPayment()");
-      console.log("📞 Function type check:", typeof processUSDCPayment);
-      console.log("🔄 Payment processing state:", paymentProcessing);
-
       toast({
         title: "Processing Payment",
         description:
-          "You're paying $50 USDCF that will be saved in the escrow account. If the manuscript is rejected, you'll get it back.",
+          "You're paying $50 USDC that will be saved in the escrow account. If the manuscript is rejected, the payment will be refunded",
         className: "bg-white border-blue-500 text-blue-600  shadow-lg",
       });
 
-      console.log("🚨 CALLING processUSDCPayment() NOW");
       const paymentSignature = await processUSDCPayment();
-      console.log("✅ Payment signature received:", paymentSignature);
-      console.log(
-        "🎉 Payment completed successfully, signature:",
-        paymentSignature
-      );
 
       setSubmitProgress(30);
       toast({
@@ -263,14 +248,6 @@ export default function SubmitManuscriptPage() {
       });
 
       setSubmitProgress(50);
-
-      console.log("📋 Submitting manuscript with details:");
-      console.log("📁 File info:", {
-        name: selectedFile!.name,
-        size: selectedFile!.size,
-        type: selectedFile!.type,
-        lastModified: selectedFile!.lastModified,
-      });
 
       const submissionMetadata = {
         title: formData.title,
@@ -326,9 +303,6 @@ export default function SubmitManuscriptPage() {
             >
               View Manuscript
             </a>
-            <p className="text-sm mt-2">
-              Payment Transaction: {paymentSignature}
-            </p>
           </div>
         ),
         className: "bg-primary text-white border-none",

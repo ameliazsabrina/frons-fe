@@ -42,7 +42,7 @@ export const WalletConnection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (authenticated && !user) {
-        setForceUpdate(prev => prev + 1);
+        setForceUpdate((prev) => prev + 1);
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -68,11 +68,12 @@ export const WalletConnection = () => {
     user: !!user,
     walletCount: wallets.length,
     privyReady,
-    forceUpdate
+    forceUpdate,
   });
 
   // Check if user is actually authenticated by checking multiple sources
-  const isActuallyAuthenticated = authenticated && privyReady && (user || forceUpdate > 0);
+  const isActuallyAuthenticated =
+    authenticated && privyReady && (user || forceUpdate > 0);
 
   useEffect(() => {
     if (user) {
@@ -188,8 +189,8 @@ export const WalletConnection = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="rounded-full">
-          <p className="text-xs">{userDisplayName}</p>
+        <Button variant="outline" className="!rounded-full">
+          <p className="text-xs ">{userDisplayName}</p>
         </Button>
       </PopoverTrigger>
 

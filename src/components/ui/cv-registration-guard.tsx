@@ -102,9 +102,9 @@ export function CVRegistrationGuard({
         description: "You can now submit manuscripts.",
       });
       setHasShownToast(true);
-      router.push("/author-dashboard");
+      // Remove automatic redirect - let user navigate manually
     }
-  }, [localStatus, hasShownToast, toast, router]);
+  }, [localStatus, hasShownToast, toast]);
 
   useEffect(() => {
     // Only redirect if we're sure there's no CV data in the database

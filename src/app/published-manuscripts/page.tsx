@@ -81,24 +81,6 @@ export default function PublishedManuscriptsPage() {
   // Mock data for demo purposes
   const generateMockManuscripts = (): PublishedManuscript[] => [
     {
-      id: 1,
-      title:
-        "QA Blockchain Electronic Health Data System for Secure Medical Records Exchange",
-      author:
-        "James Kolapo Oladele, Arnold Adimabua Ojugo1*, Christopher Chukwufunaya Odiakaose2, Frances Uchechukwu Emordi3, Reuben Akporube Abere1, Blessing Nwozor1, Patrick Ogholuwarami Ejeh2 and Victor Ochuko Geteloma",
-      category: ["Quantum Computing", "Machine Learning", "Medicine"],
-      abstract:
-        "This paper presents a groundbreaking approach to drug discovery using quantum machine learning algorithms. We demonstrate significant improvements in molecular property prediction and drug-target interaction modeling.",
-      status: "Published",
-      submissionDate: "2024-01-15",
-      publishedDate: "2024-02-28",
-      cid: "QmX7Y8Z9A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6",
-      ipfsUrls: {
-        manuscript:
-          "https://lavender-obliged-krill-876.mypinata.cloud/ipfs/bafybeif55nxsboonmeb2a3bq6cfwyn2pp43imusvcb3cksso2ozvdybu2y?pinataGatewayToken=30J7NvmruuWRqqLcl_dP3pIOLXNPHFV9WTVmGKyiAZYAELn2aYtbB7YbegNFivjc",
-      },
-    },
-    {
       id: 2,
       title:
         "Clinical characteristics and relevant factor analysis in super-aged COVID-19 patients",

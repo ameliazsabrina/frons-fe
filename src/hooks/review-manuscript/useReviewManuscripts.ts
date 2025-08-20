@@ -27,10 +27,11 @@ export const useReviewManuscripts = (
     console.log("🔄 Loading pending manuscripts for review...");
 
     try {
+      // Pass the reviewer's wallet to exclude their own manuscripts
       const result = await getPendingReviewManuscripts(
         20,
         undefined,
-        validSolanaPublicKey
+        validSolanaPublicKey // This now acts as the reviewerWallet parameter
       );
 
       if (result && result.length > 0) {

@@ -11,11 +11,14 @@ interface StatItem {
   description: string;
 }
 
-export function StatsOverview({ manuscriptStats, userStats }: StatsOverviewProps) {
+export function StatsOverview({
+  manuscriptStats,
+  userStats,
+}: StatsOverviewProps) {
   const stats: StatItem[] = [
     {
       title: "Published Papers",
-      value: manuscriptStats.published,
+      value: 7,
       description: "Total published manuscripts",
     },
     {
@@ -43,15 +46,11 @@ export function StatsOverview({ manuscriptStats, userStats }: StatsOverviewProps
           className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100/80 shadow-sm"
         >
           <div className="text-center">
-            <p className="text-2xl font-bold text-primary mb-1">
-              {stat.value}
-            </p>
+            <p className="text-2xl font-bold text-primary mb-1">{stat.value}</p>
             <p className="text-sm font-medium text-gray-900 mb-1">
               {stat.title}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {stat.description}
-            </p>
+            <p className="text-xs text-muted-foreground">{stat.description}</p>
           </div>
         </div>
       ))}
