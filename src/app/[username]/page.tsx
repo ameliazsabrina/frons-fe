@@ -36,7 +36,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
         <Header />
-        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <Skeleton className="w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl" />
 
           <Card className="mb-8 shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
@@ -92,7 +92,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
         <Header />
-        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <div className="flex items-center justify-center min-h-[60vh]">
             <Card className="max-w-md mx-auto shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
               <CardContent className="p-8 text-center">
@@ -109,12 +109,6 @@ export default function PublicProfilePage() {
                     ? `No user found with username "@${username}"`
                     : "This profile is temporarily unavailable"}
                 </p>
-                <Button asChild className="w-full sm:w-auto">
-                  <Link href="/">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Home
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
           </div>
@@ -126,7 +120,7 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
       <Header />
-      <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
         {profile.headerImage && (
           <div className="relative w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl overflow-hidden shadow-lg">
             <Image
@@ -135,30 +129,6 @@ export default function PublicProfilePage() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            <div className="absolute top-4 left-4">
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="bg-white/90 hover:bg-white border-white/20"
-              >
-                <Link href="/">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!profile.headerImage && (
-          <div className="mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
           </div>
         )}
 

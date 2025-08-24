@@ -775,6 +775,7 @@ export function useCVRegistration(walletAddress?: string) {
           description:
             "Failed to search for profile across wallets. Please try again.",
           duration: 4000,
+          className: "text-red-600 bg-white border border-red-500",
         });
         return null;
       } finally {
@@ -855,6 +856,7 @@ export function useCVRegistration(walletAddress?: string) {
             toast.error("Authentication Required", {
               description: "Please log in to update your profile.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError("Authentication required");
           } else if (err.response?.status === 400) {
@@ -862,6 +864,7 @@ export function useCVRegistration(walletAddress?: string) {
               description:
                 err.response?.data?.message || "Please check your input data.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError(err.response?.data?.message || "Invalid data");
           } else {
@@ -870,6 +873,7 @@ export function useCVRegistration(walletAddress?: string) {
                 err.response?.data?.message ||
                 "Failed to update profile. Please try again.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError(err.response?.data?.message || "Update failed");
           }
@@ -877,6 +881,7 @@ export function useCVRegistration(walletAddress?: string) {
           toast.error("Network Error", {
             description: "Failed to connect to server. Please try again.",
             duration: 4000,
+            className: "text-red-600 bg-white border border-red-500",
           });
           setError("Network error");
         }
@@ -965,6 +970,7 @@ export function useCVRegistration(walletAddress?: string) {
             description:
               response.data.message || "Failed to upload profile photo",
             duration: 4000,
+            className: "text-red-600 bg-white border border-red-500",
           });
           setError(response.data.message || "Failed to upload profile photo");
           return {
@@ -982,12 +988,14 @@ export function useCVRegistration(walletAddress?: string) {
               description:
                 "Profile not found. Please create your profile first.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError("Profile not found");
           } else if (err.response?.status === 413) {
             toast.error("File Too Large", {
               description: "Profile photo must be less than 5MB.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError("File too large");
           } else if (err.response?.status === 400) {
@@ -996,6 +1004,7 @@ export function useCVRegistration(walletAddress?: string) {
                 err.response?.data?.message ||
                 "Please select a valid image file.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError(err.response?.data?.message || "Invalid file");
           } else {
@@ -1004,6 +1013,7 @@ export function useCVRegistration(walletAddress?: string) {
                 err.response?.data?.message ||
                 "Failed to upload photo. Please try again.",
               duration: 4000,
+              className: "text-red-600 bg-white border border-red-500",
             });
             setError(err.response?.data?.message || "Upload failed");
           }
@@ -1012,6 +1022,7 @@ export function useCVRegistration(walletAddress?: string) {
             description:
               "Failed to upload photo. Please check your connection.",
             duration: 4000,
+            className: "text-red-600 bg-white border border-red-500",
           });
           setError("Network error");
         }

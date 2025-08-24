@@ -287,10 +287,6 @@ const ConnectedView = () => {
       const result = await parseCV(selectedFile);
 
       if (result.success && result.data) {
-        console.log(
-          "📄 CV data received in register-cv component:",
-          JSON.stringify(result.data, null, 2)
-        );
 
         // Ensure all arrays are properly included in editableData
         const completeData = {
@@ -315,10 +311,6 @@ const ConnectedView = () => {
           awards: result.data.awards || [],
         };
 
-        console.log(
-          "🔄 Complete editable data with arrays:",
-          JSON.stringify(completeData, null, 2)
-        );
 
         setEditableData(completeData);
         setShowPreview(true);
@@ -558,6 +550,16 @@ const ConnectedView = () => {
       const result = await response.json();
 
       if (result.success) {
+        toast({
+          title: "Registration Complete!",
+          description: "Your username has been set successfully. Redirecting to your profile...",
+          className: "bg-white text-green-600 border-green-500 shadow-lg",
+        });
+        
+        // Redirect to your-profile page after a short delay
+        setTimeout(() => {
+          router.push("/your-profile");
+        }, 1500);
       } else {
         toast({
           title: "Failed to Set Username",
@@ -760,31 +762,11 @@ const ConnectedView = () => {
                 </div>
               ) : currentStep === 1 && showPreview ? (
                 <div className="space-y-8">
-                  <div className="flex items-center justify-between ">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <Badge variant="outline" className="text-green-600">
-                          <CheckCircleIcon className="h-4 w-4 mr-2" />
-                          CV Parsed Successfully
-                        </Badge>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBackToUpload}
-                      className="flex items-center space-x-2 border-gray-300 hover:bg-gray-50"
-                    >
-                      <ArrowLeftIcon className="h-4 w-4" />
-                      <span>Back</span>
-                    </Button>
-                  </div>
-
                   <Tabs defaultValue="overview" className="w-full">
                     <TabsList className="grid w-full grid-cols-6 bg-gray-50 p-1 rounded-xl h-12 gap-1">
                       <TabsTrigger
                         value="overview"
-                        className="q   text-xs font-medium data-[state=active]:bg-white data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none"
+                        className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none"
                       >
                         Overview
                       </TabsTrigger>
@@ -940,7 +922,304 @@ const ConnectedView = () => {
                       </div>
                     </TabsContent>
 
-                    {/* Add other TabsContent sections here - publications, experience, etc. */}
+                    <TabsContent value="docis" className="space-y-6 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="step1-orcid"
+                            className="text-sm font-medium text-primary"
+                          >
+                            ORCID ID
+                          </Label>
+                          <Input
+                            id="step1-orcid"
+                            value={editableData.orcid || ""}
+                            onChange={(e) =>
+                              setEditableData((prev) => ({
+                                ...prev,
+                                orcid: e.target.value,
+                              }))
+                            }
+                            placeholder="https://orcid.org/0000-0000-0000-0000"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="step1-googleScholar"
+                            className="text-sm font-medium text-primary"
+                          >
+                            Google Scholar Profile
+                          </Label>
+                          <Input
+                            id="step1-googleScholar"
+                            value={editableData.googleScholar || ""}
+                            onChange={(e) =>
+                              setEditableData((prev) => ({
+                                ...prev,
+                                googleScholar: e.target.value,
+                              }))
+                            }
+                            placeholder="https://scholar.google.com/citations?user=..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="step1-linkedIn"
+                            className="text-sm font-medium text-primary"
+                          >
+                            LinkedIn Profile
+                          </Label>
+                          <Input
+                            id="step1-linkedIn"
+                            value={editableData.linkedIn}
+                            onChange={(e) =>
+                              setEditableData((prev) => ({
+                                ...prev,
+                                linkedIn: e.target.value,
+                              }))
+                            }
+                            placeholder="https://linkedin.com/in/..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="step1-github"
+                            className="text-sm font-medium text-primary"
+                          >
+                            GitHub Profile
+                          </Label>
+                          <Input
+                            id="step1-github"
+                            value={editableData.github}
+                            onChange={(e) =>
+                              setEditableData((prev) => ({
+                                ...prev,
+                                github: e.target.value,
+                              }))
+                            }
+                            placeholder="https://github.com/..."
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent
+                      value="publications"
+                      className="space-y-6 mt-6"
+                    >
+                      {editableData.publications &&
+                      editableData.publications.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="space-y-3">
+                            {editableData.publications.map((pub, index) => (
+                              <div
+                                key={index}
+                                className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                              >
+                                <div className="space-y-3">
+                                  <h4 className="font-semibold text-gray-900 text-lg leading-tight">
+                                    {pub.title}
+                                  </h4>
+                                  <div className="text-sm text-gray-600 space-y-1">
+                                    {pub.authors && pub.authors.length > 0 && (
+                                      <div>
+                                        <span className="font-medium">
+                                          Authors:
+                                        </span>{" "}
+                                        {Array.isArray(pub.authors)
+                                          ? pub.authors.join(", ")
+                                          : pub.authors}
+                                      </div>
+                                    )}
+                                    {pub.venue && (
+                                      <div>
+                                        <span className="font-medium">
+                                          Published in:
+                                        </span>{" "}
+                                        {pub.venue}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                                    {pub.date && <span>{pub.date}</span>}
+                                    {pub.doi && <span>DOI: {pub.doi}</span>}
+                                  </div>
+                                  {pub.url && (
+                                    <div className="pt-2">
+                                      <a
+                                        href={pub.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:text-primary/80 font-medium text-sm"
+                                      >
+                                        View Publication →
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                          <BookOpenIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-600 mb-2">
+                            No Publications Found
+                          </h4>
+                          <p className="text-gray-500">
+                            No publications were found in your CV
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="experience" className="space-y-6 mt-6">
+                      {editableData.experience &&
+                      editableData.experience.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="space-y-3">
+                            {editableData.experience.map((exp, index) => (
+                              <div
+                                key={index}
+                                className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                              >
+                                <div className="space-y-3">
+                                  <h4 className="font-semibold text-gray-900 text-lg">
+                                    {exp.position}
+                                  </h4>
+                                  <div className="text-base text-gray-600">
+                                    <span className="font-medium">
+                                      {exp.company}
+                                    </span>
+                                    {exp.location && (
+                                      <span className="text-gray-500">
+                                        {" "}
+                                        • {exp.location}
+                                      </span>
+                                    )}
+                                    {exp.type && (
+                                      <span className="text-gray-500">
+                                        {" "}
+                                        • {exp.type}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-gray-500 font-medium">
+                                    {exp.startDate && exp.endDate
+                                      ? `${exp.startDate} - ${exp.endDate}`
+                                      : exp.startDate
+                                      ? `Started ${exp.startDate}`
+                                      : exp.endDate
+                                      ? `Ended ${exp.endDate}`
+                                      : ""}
+                                  </div>
+                                  {exp.description && (
+                                    <div className="text-sm text-gray-700 leading-relaxed">
+                                      {exp.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <BriefcaseIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500">
+                            No experience found in your CV
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="education" className="space-y-6 mt-6">
+                      {editableData.education &&
+                      editableData.education.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="space-y-3">
+                            {editableData.education.map((edu, index) => (
+                              <div
+                                key={index}
+                                className="p-4 bg-gray-50 rounded-lg border"
+                              >
+                                <div className="space-y-2">
+                                  <div className="font-medium text-gray-900">
+                                    {edu.degree}{" "}
+                                    {edu.field && `in ${edu.field}`}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {edu.institution}{" "}
+                                    {edu.location && `• ${edu.location}`}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {edu.startDate && edu.endDate
+                                      ? `${edu.startDate} - ${edu.endDate}`
+                                      : edu.startDate
+                                      ? `Started ${edu.startDate}`
+                                      : edu.endDate
+                                      ? `Ended ${edu.endDate}`
+                                      : ""}
+                                    {edu.gpa && ` • GPA: ${edu.gpa}`}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <GraduationCapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500">
+                            No education found in your CV
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="awards" className="space-y-6 mt-6">
+                      {editableData.awards && editableData.awards.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="space-y-3">
+                            {editableData.awards.map((award, index) => (
+                              <div
+                                key={index}
+                                className="p-4 bg-gray-50 rounded-lg border"
+                              >
+                                <div className="space-y-2">
+                                  <div className="font-medium text-gray-900">
+                                    {award.name}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {award.issuer &&
+                                      `Issued by: ${award.issuer}`}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {award.date && `Date: ${award.date}`}
+                                  </div>
+                                  {award.description && (
+                                    <div className="text-sm text-gray-700 mt-2">
+                                      {award.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <AwardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500">
+                            No awards found in your CV
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
                   </Tabs>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
