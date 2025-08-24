@@ -60,16 +60,6 @@ export const WalletConnection = () => {
   const hasWallet = wallets.length > 0;
 
   // Debug authentication state
-  console.log("Auth State:", {
-    authenticated,
-    walletsReady,
-    hasWallet,
-    connected,
-    user: !!user,
-    walletCount: wallets.length,
-    privyReady,
-    forceUpdate,
-  });
 
   // Check if user is actually authenticated by checking multiple sources
   const isActuallyAuthenticated =
@@ -162,13 +152,10 @@ export const WalletConnection = () => {
   }
 
   const handleLogin = async (e: React.MouseEvent) => {
-    console.log("Get Started button clicked");
     e.preventDefault();
     e.stopPropagation();
     try {
-      console.log("Attempting login...");
       await login();
-      console.log("Login successful");
     } catch (error) {
       console.error("Login failed:", error);
     }

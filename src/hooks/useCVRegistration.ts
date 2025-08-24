@@ -52,38 +52,18 @@ function sanitizeCVData(profile: any): any {
   // Deduplicate education, experience, publications, and awards
   if (sanitized.education) {
     sanitized.education = deduplicateArray(sanitized.education);
-    console.log(
-      `🧹 Deduplication: Education reduced from ${
-        profile.education?.length || 0
-      } to ${sanitized.education.length} items`
-    );
   }
 
   if (sanitized.experience) {
     sanitized.experience = deduplicateArray(sanitized.experience);
-    console.log(
-      `🧹 Deduplication: Experience reduced from ${
-        profile.experience?.length || 0
-      } to ${sanitized.experience.length} items`
-    );
   }
 
   if (sanitized.publications) {
     sanitized.publications = deduplicateArray(sanitized.publications, "title");
-    console.log(
-      `🧹 Deduplication: Publications reduced from ${
-        profile.publications?.length || 0
-      } to ${sanitized.publications.length} items`
-    );
   }
 
   if (sanitized.awards) {
     sanitized.awards = deduplicateArray(sanitized.awards, "name");
-    console.log(
-      `🧹 Deduplication: Awards reduced from ${
-        profile.awards?.length || 0
-      } to ${sanitized.awards.length} items`
-    );
   }
 
   return sanitized;
@@ -206,7 +186,6 @@ export function useCVRegistration(walletAddress?: string) {
         const result = await axios.get(
           `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
         );
-        console.log(result.data);
         setCvStatus(result.data as CVStatus);
 
         if (result.data.success && result.data.hasCV && result.data.userInfo) {
@@ -265,25 +244,17 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
 
         if (!walletAddress || walletAddress.trim() === "") {
-          console.log(
-            "❌ No wallet address provided to checkCVRegistrationPrivy"
-          );
-          setError("Wallet address required for CV verification");
+            setError("Wallet address required for CV verification");
           return false;
         }
 
         // For now, just use the working endpoint regardless of Privy auth
         // TODO: Implement proper Privy authentication once the backend supports it correctly
-        console.log(
-          "🔍 Using working CV check endpoint for wallet:",
-          walletAddress
-        );
 
         const result = await axios.get(
           `${apiUrl}/manuscripts/check-cv-status/${walletAddress}`
         );
 
-        console.log("CV Status API Response:", result.data);
         setCvStatus(result.data as CVStatus);
 
         if (result.data.success && result.data.hasCV && result.data.userInfo) {
@@ -327,10 +298,8 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers.Authorization = `Bearer ${accessToken}`;
-              console.log("✅ Using Privy authentication token for uploadCV");
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 
@@ -403,7 +372,6 @@ export function useCVRegistration(walletAddress?: string) {
         formData.append("cv", file);
         formData.append("walletAddress", walletAddress);
 
-        console.log(`Uploading CV for wallet address: ${walletAddress}`);
 
         const result = await axios.post(`${apiUrl}/parse-cv/upload`, formData, {
           headers: {
@@ -420,11 +388,9 @@ export function useCVRegistration(walletAddress?: string) {
         clearInterval(progressInterval);
         setUploadProgress(100);
 
-        console.log("📊 Raw API response:", result.data);
 
         if (result.data.success && result.data.data) {
           const cvData = result.data.data; // Backend returns data in result.data.data
-          console.log("📋 Parsed CV data structure:", cvData);
 
           const parsedData = {
             fullName: cvData.selfIdentity?.fullName || "",
@@ -448,7 +414,6 @@ export function useCVRegistration(walletAddress?: string) {
             awards: cvData.awards || [],
           };
 
-          console.log("🔄 Transformed parsed data:", parsedData);
 
           setCvData({
             fullName: parsedData.fullName,
@@ -530,12 +495,8 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
-              console.log(
-                "✅ Using Privy authentication token for getUserProfile"
-              );
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 
@@ -545,17 +506,9 @@ export function useCVRegistration(walletAddress?: string) {
         );
 
         if (result.data.success) {
-          console.log(
-            "Full profile data from API:",
-            JSON.stringify(result.data.profile, null, 2)
-          );
 
           // Sanitize profile data to remove duplicates
           const sanitizedProfile = sanitizeCVData(result.data.profile);
-          console.log(
-            "Sanitized profile data:",
-            JSON.stringify(sanitizedProfile, null, 2)
-          );
 
           // Set the complete profile data including arrays
           setCvData({
@@ -578,20 +531,6 @@ export function useCVRegistration(walletAddress?: string) {
             awards: sanitizedProfile.awards || [],
           });
 
-          console.log("Profile data loaded:", result.data.profile);
-          if (result.data.profile.profilePhoto) {
-            console.log(
-              "Profile photo URL found:",
-              result.data.profile.profilePhoto
-            );
-          } else if (result.data.profile.personalInfo.photoUrl) {
-            console.log(
-              "Profile photo URL found in personalInfo:",
-              result.data.profile.personalInfo.photoUrl
-            );
-          } else {
-            console.log("No profile photo URL found in the response");
-          }
 
           // Show success toast
           toast.success("Profile Loaded", {
@@ -606,7 +545,6 @@ export function useCVRegistration(walletAddress?: string) {
         if (axios.isAxiosError(err)) {
           if (err.response?.status === 404) {
             // 404 is expected for users without CVs - don't log as error
-            console.log("No CV profile found - user needs to upload CV first");
             const responseData = err.response.data;
             if (
               responseData?.message ===
@@ -672,10 +610,6 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
-        console.log(
-          "🔍 Searching for profile across multiple wallets:",
-          walletAddresses
-        );
 
         let headers = {};
         if (authenticated) {
@@ -683,12 +617,8 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
-              console.log(
-                "✅ Using Privy authentication token for multi-wallet lookup"
-              );
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 
@@ -696,7 +626,6 @@ export function useCVRegistration(walletAddress?: string) {
         for (const walletAddress of walletAddresses) {
           if (!walletAddress) continue;
 
-          console.log(`🔍 Checking wallet: ${walletAddress}`);
 
           try {
             const result = await axios.get(
@@ -705,18 +634,9 @@ export function useCVRegistration(walletAddress?: string) {
             );
 
             if (result.data.success && result.data.profile) {
-              console.log(`✅ Found CV data for wallet: ${walletAddress}`);
-              console.log(
-                "📊 Profile data:",
-                JSON.stringify(result.data.profile, null, 2)
-              );
 
               // Sanitize profile data to remove duplicates
               const sanitizedProfile = sanitizeCVData(result.data.profile);
-              console.log(
-                "📊 Sanitized profile data:",
-                JSON.stringify(sanitizedProfile, null, 2)
-              );
 
               // Set the complete profile data including arrays
               setCvData({
@@ -750,19 +670,16 @@ export function useCVRegistration(walletAddress?: string) {
             }
           } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 404) {
-              console.log(`❌ No CV data found for wallet: ${walletAddress}`);
               // Continue to next wallet
               continue;
             } else {
               // For non-404 errors, log but continue trying other wallets
-              console.warn(`⚠️ Error checking wallet ${walletAddress}:`, err);
               continue;
             }
           }
         }
 
         // If we get here, no wallet had CV data
-        console.log("❌ No CV data found across all wallets");
         setError(
           "Profile not found across any connected wallets. Please upload your CV first."
         );
@@ -800,12 +717,8 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
-              console.log(
-                "✅ Using Privy authentication token for updateUserProfile"
-              );
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 
@@ -814,7 +727,6 @@ export function useCVRegistration(walletAddress?: string) {
           updateData,
           { headers }
         );
-        console.log(result.data);
 
         if (result.data.success) {
           if (result.data.profile) {
@@ -908,11 +820,6 @@ export function useCVRegistration(walletAddress?: string) {
 
         // Compress the image before uploading
         const compressedPhoto = await compressImage(photo);
-        console.log(
-          `Original size: ${photo.size / 1024}KB, Compressed size: ${
-            compressedPhoto.size / 1024
-          }KB`
-        );
 
         // Get Privy access token for authentication
         let headers: any = { "Content-Type": "multipart/form-data" };
@@ -921,38 +828,22 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers.Authorization = `Bearer ${accessToken}`;
-              console.log(
-                "✅ Using Privy authentication token for uploadProfilePhoto"
-              );
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 
         const formData = new FormData();
         formData.append("profilePhoto", compressedPhoto);
 
-        console.log(
-          "Uploading profile photo to:",
-          `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`
-        );
         const response = await axios.post(
           `${apiUrl}/parse-cv/user/profile-photo/${walletAddress}`,
           formData,
           { headers }
         );
 
-        console.log(
-          "Profile photo upload response:",
-          JSON.stringify(response.data, null, 2)
-        );
 
         if (response.data.success) {
-          console.log(
-            "Profile photo URL from response:",
-            response.data.profilePhoto
-          );
 
           // Show success toast
           toast.success("Photo Updated", {
@@ -1052,12 +943,8 @@ export function useCVRegistration(walletAddress?: string) {
             const accessToken = await getAccessToken();
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
-              console.log(
-                "✅ Using Privy authentication token for getUserSpecialization"
-              );
             }
           } catch (tokenError) {
-            console.warn("⚠️ Failed to get Privy access token:", tokenError);
           }
         }
 

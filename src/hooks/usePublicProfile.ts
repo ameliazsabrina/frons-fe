@@ -73,8 +73,6 @@ export function usePublicProfile(username: string) {
         const apiUrl =
           process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
-        console.log(`🔍 Fetching profile for username: ${username}`);
-        console.log(`🌐 API URL: ${apiUrl}/user/profile/${username}`);
 
         const response = await fetch(`${apiUrl}/user/profile/${username}`);
 
@@ -88,13 +86,10 @@ export function usePublicProfile(username: string) {
         }
 
         const data = await response.json();
-        console.log(`✅ API Response:`, data);
 
         if (data.success) {
-          console.log(`🎉 Profile loaded successfully:`, data.data);
           setProfile(data.data);
         } else {
-          console.error(`❌ API returned error:`, data);
           setError("Failed to load profile");
         }
       } catch (err) {
