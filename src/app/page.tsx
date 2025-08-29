@@ -4,9 +4,11 @@ import { Header } from "@/components/header";
 import { Hero } from "@/components/landing/Hero";
 import { ProblemAgitation } from "@/components/landing/ProblemAgitation";
 import { Vision } from "@/components/landing/Vision";
-import { Steps } from "@/components/landing/Steps";
+// import { Steps } from "@/components/landing/Steps";
 import { Features } from "@/components/landing/Features";
 import { PublishingAdvantages } from "@/components/landing/PublishingAdvantages";
+// import { Pricing } from "@/components/landing/Pricing";
+import { Faq } from "@/components/landing/Faq";
 import { CTA } from "@/components/landing/Cta";
 import { Footer } from "@/components/landing/Footer";
 import { Loading } from "@/components/ui/loading";
@@ -39,8 +41,10 @@ export default function Home() {
       <ProblemAgitation />
       <Vision />
       <Features />
-      <Steps />
+      {/* <Steps /> */}
       <PublishingAdvantages />
+      {/* <Pricing /> */}
+      <Faq />
       <CTA />
       <Footer />
     </div>

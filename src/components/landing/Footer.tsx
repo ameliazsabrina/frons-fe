@@ -1,45 +1,54 @@
 "use client";
-import React from "react";
 import Image from "next/image";
-import { X, Linkedin, Github } from "lucide-react";
+import { Twitter, Linkedin, ArrowDownRight } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 py-12">
-      <div className="container max-w-4xl mx-auto px-4">
-        <div className="text-center space-y-6">
-          <div className="flex items-center justify-center space-x-2">
-            <Image
-              src="/headerlogo.svg"
-              alt="Fronsciers Logo"
-              width={24}
-              height={24}
-              className="rounded-md w-12 h-12"
-              onLoad={() => console.log("Footer logo loaded successfully")}
-              onError={() => console.error("Footer logo failed to load")}
-            />
-          </div>
+    <footer className="bg-white">
+      <div className="bg-primary rounded-t-3xl overflow-hidden mx-4">
+        <div className="py-12 px-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            <div className="flex justify-center md:justify-start">
+              <div className="flex items-center space-x-3">
+                <Image
+                  src="/logowhite.svg"
+                  alt="Fronsciers Logo"
+                  width={32}
+                  height={32}
+                  className="rounded-md w-32 h-32"
+                />
+              </div>
+            </div>
 
-          <p className="text-gray-600 text-sm max-w-xs lg:max-w-md mx-auto tracking-tight">
-            Revolutionizing academic publishing through blockchain technology.
-          </p>
-
-          <div className="flex justify-center space-x-6">
-            <div className="text-gray-400 hover:text-gray-600 transition-colors">
-              <Link href="https://x.com/fronsciers">
-                <X className="w-4 h-4" />
+            <div className="flex justify-center space-x-6">
+              <Link
+                href="https://x.com/fronsciers"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <Twitter className="w-5 h-5" />
+              </Link>
+              <Link
+                href="https://www.linkedin.com/company/fronsciers"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <Linkedin className="w-5 h-5" />
               </Link>
             </div>
-            <div className="text-gray-400 hover:text-gray-600 transition-colors">
-              <Link href="https://www.linkedin.com/company/fronsciers">
-                <Linkedin className="w-4 h-4" />
+
+            <div className="flex justify-center md:justify-end">
+              <Link href="mailto:hello@fronsciers.com">
+                <Button variant="outline" size="lg" className="px-8 py-4">
+                  Contact Us
+                  <ArrowDownRight className="ml-2 w-4 h-4" />
+                </Button>
               </Link>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-gray-200">
-            <p className="text-gray-500 text-xs">
+          <div className="pt-8 mt-8 border-t border-white/20 text-center">
+            <p className="text-white/70 text-xs">
               © 2025 Fronsciers. All rights reserved.
             </p>
           </div>
