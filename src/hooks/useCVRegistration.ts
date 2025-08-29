@@ -80,6 +80,7 @@ interface CVData {
   photoUrl?: string;
   orcid?: string;
   googleScholar?: string;
+  username?: string; // Add username field
   education?: Array<{
     institution?: string;
     degree?: string;
@@ -524,6 +525,7 @@ export function useCVRegistration(walletAddress?: string) {
               sanitizedProfile.personalInfo.photoUrl,
             orcid: sanitizedProfile.contact.orcid,
             googleScholar: sanitizedProfile.contact.googleScholar,
+            username: sanitizedProfile.username, // Include username from backend
             // Include all the sanitized array data
             education: sanitizedProfile.education || [],
             experience: sanitizedProfile.experience || [],
@@ -652,6 +654,7 @@ export function useCVRegistration(walletAddress?: string) {
                   sanitizedProfile.personalInfo.photoUrl,
                 orcid: sanitizedProfile.contact.orcid,
                 googleScholar: sanitizedProfile.contact.googleScholar,
+                username: sanitizedProfile.username, // Include username from backend
                 education: sanitizedProfile.education || [],
                 experience: sanitizedProfile.experience || [],
                 publications: sanitizedProfile.publications || [],

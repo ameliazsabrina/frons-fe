@@ -15,7 +15,7 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function Feature() {
+export function Steps() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const subtitleRef = useRef<HTMLParagraphElement>(null);

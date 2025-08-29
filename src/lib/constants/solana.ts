@@ -36,9 +36,9 @@ export const DECISION_TYPES = {
 } as const;
 
 export const CONTRACT_CONSTANTS = {
-  SUBMISSION_FEE: 50_000_000_000, // 50 SOL
-  FRONS_REWARD: 100_000_000, // 0.1 SOL
-  REVIEWER_REWARD: 60_000_000, // 0.06 SOL
+  SUBMISSION_FEE: 50_000, // $50 USDCF, 3 decimals (50 * 10^3)
+  FRONS_REWARD: 100, // $0.1 USDCF, 3 decimals (0.1 * 10^3)
+  REVIEWER_REWARD: 60, // $0.06 USDCF, 3 decimals (0.06 * 10^3)
   MIN_REVIEWS: 3,
   CURRENT_YEAR: 2024,
   DOCI_PREFIX: "10.fronsciers/manuscript",

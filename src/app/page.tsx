@@ -2,8 +2,10 @@
 import { useEffect } from "react";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/landing/Hero";
+import { ProblemAgitation } from "@/components/landing/ProblemAgitation";
 import { Vision } from "@/components/landing/Vision";
-import { Feature } from "@/components/landing/Feature";
+import { Steps } from "@/components/landing/Steps";
+import { Features } from "@/components/landing/Features";
 import { PublishingAdvantages } from "@/components/landing/PublishingAdvantages";
 import { CTA } from "@/components/landing/Cta";
 import { Footer } from "@/components/landing/Footer";
@@ -34,8 +36,10 @@ export default function Home() {
     <div className="bg-white">
       <Header />
       <Hero />
+      <ProblemAgitation />
       <Vision />
-      <Feature />
+      <Features />
+      <Steps />
       <PublishingAdvantages />
       <CTA />
       <Footer />

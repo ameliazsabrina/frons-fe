@@ -76,14 +76,6 @@ export default function SubmitManuscriptPage() {
 
   const { processUSDCPayment, paymentProcessing, paymentError } = paymentHook;
 
-  console.log("🔧 Payment hook initialized:", {
-    processUSDCPayment: typeof processUSDCPayment,
-    paymentProcessing,
-    paymentError,
-    walletAddress: validSolanaPublicKey,
-    wallet: !!solanaWallet,
-  });
-
   const { submitManuscript } = useManuscriptSubmission({
     checkCVRegistration: undefined,
   });
@@ -161,38 +153,17 @@ export default function SubmitManuscriptPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("🔥 handleSubmit called");
-    console.log("📊 Payment hook state at submit:", {
-      processUSDCPayment: typeof processUSDCPayment,
-      paymentProcessing,
-      paymentError,
-      walletAddress: validSolanaPublicKey,
-      wallet: !!solanaWallet,
-      walletConnected: !!solanaWallet?.address,
-    });
 
     setShowValidationErrors(true);
 
     const validationError = validateFormWithTabs();
     if (validationError) {
-      console.log("Validation error:", validationError);
       navigateToErrorTab(validationError);
 
-      toast({
-        title: "Validation Error",
-        description: validationError,
-        variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
-        duration: 5000,
-      });
       return;
     }
 
     if (!validSolanaPublicKey || !cvVerified) {
-      console.log("Wallet/CV check failed:", {
-        validSolanaPublicKey,
-        cvVerified,
-      });
       toast({
         title: "Error",
         description: "Wallet connection and CV verification required",
@@ -204,32 +175,12 @@ export default function SubmitManuscriptPage() {
     }
 
     try {
-      console.log("🚀 Starting submission process...");
-      console.log("📋 Current form state:", {
-        formData,
-        selectedFile: selectedFile?.name,
-        validSolanaPublicKey,
-        cvVerified,
-        paymentProcessing,
-        submitting,
-      });
-
       setSubmitting(true);
       setSubmitProgress(0);
       setSuccess(null);
       setIpfsData(null);
 
       setSubmitProgress(10);
-      console.log("💳 About to process payment...");
-      console.log("💰 Payment context:", {
-        walletAddress: validSolanaPublicKey,
-        wallet: !!solanaWallet,
-        walletConnected: !!solanaWallet?.address,
-        walletAddress2: solanaWallet?.address,
-        processUSDCPayment: typeof processUSDCPayment,
-        paymentProcessing,
-        paymentError,
-      });
 
       toast({
         title: "Processing Payment",
@@ -260,17 +211,11 @@ export default function SubmitManuscriptPage() {
         walletAddress: validSolanaPublicKey,
       };
 
-      console.log("📋 Submission metadata:", submissionMetadata);
-      console.log("🌐 API URL:", apiUrl);
-      console.log("🔄 About to call submitManuscript...");
-
       const result = await submitManuscript(
         selectedFile!,
         submissionMetadata,
         apiUrl
       );
-
-      console.log("✅ submitManuscript returned result:", result);
 
       if (!result) {
         throw new Error("Failed to submit manuscript");
@@ -315,18 +260,26 @@ export default function SubmitManuscriptPage() {
       }, 5000);
     } catch (err: any) {
       console.error("Failed to submit manuscript:", err);
-      console.log("Error details:", {
-        message: err.message,
-        stack: err.stack,
-        paymentError: paymentError,
-        errorObject: err,
-      });
 
       let errorMsg = "Failed to submit manuscript. Please try again.";
       if (paymentError || err.message?.includes("Payment failed")) {
         errorMsg =
           paymentError ||
           "Payment failed. Please ensure you have sufficient USDCF balance.";
+      } else if (
+        err.message?.toLowerCase().includes("insufficient") ||
+        err.message?.toLowerCase().includes("balance") ||
+        err.message?.toLowerCase().includes("usdc") ||
+        err.message?.toLowerCase().includes("usdcf") ||
+        err.message?.includes("token amount") ||
+        err.message?.includes("0x1") || // Solana insufficient funds error
+        err.code === "INSUFFICIENT_BALANCE" ||
+        err.response?.data?.code === "INSUFFICIENT_BALANCE" ||
+        err.response?.data?.code === "INSUFFICIENT_GAS_FUNDS" ||
+        err.response?.data?.message?.toLowerCase().includes("insufficient")
+      ) {
+        errorMsg =
+          "Insufficient USDC/USDCF balance. Please add funds to your wallet and try again.";
       } else if (err.response?.data?.code === "CV_REQUIRED") {
         errorMsg = err.response.data.message;
         setTimeout(() => router.push("/register-cv"), 2000);
@@ -561,23 +514,9 @@ export default function SubmitManuscriptPage() {
                           !completedTabs.has("authors-keywords") ||
                           !completedTabs.has("manuscript-file")
                         }
-                        onClick={() => {
-                          console.log("Submit button clicked");
-                          console.log("Button disabled conditions:", {
-                            submitting,
-                            cvVerified,
-                            paymentProcessing,
-                            basicInfoComplete: completedTabs.has("basic-info"),
-                            authorsKeywordsComplete:
-                              completedTabs.has("authors-keywords"),
-                            manuscriptFileComplete:
-                              completedTabs.has("manuscript-file"),
-                          });
-                        }}
-                        className="min-w-[200px]"
                       >
                         {paymentProcessing
-                          ? "Processing Payment..."
+                          ? "Processing..."
                           : submitting
                           ? "Submitting..."
                           : "Submit Manuscript"}

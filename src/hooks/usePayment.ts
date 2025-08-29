@@ -119,9 +119,9 @@ export function usePayment({ walletAddress, wallet }: UsePaymentProps) {
           );
         }
 
-        const transferAmount = amount * Math.pow(10, 6); // Convert to microUSDC
+        const transferAmount = amount * Math.pow(10, 3); // Convert to base USDCF units (3 decimals)
         console.log(
-          `💰 Adding transfer instruction: ${amount} USDC (${transferAmount} microUSDC)`
+          `💰 Adding transfer instruction: ${amount} USDCF (${transferAmount} base units)`
         );
         transaction.add(
           createTransferInstruction(

@@ -7,80 +7,69 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const splitTextIntoChars = (text: string) => {
-  return text.split("").map((char, index) => (
-    <span key={index} className="char inline-block">
-      {char === " " ? "\u00A0" : char}
-    </span>
-  ));
-};
-
 export function Vision() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const titleElement = titleRef.current;
-      if (titleElement) {
-        const tl = gsap.timeline({ paused: true });
-        const chars = titleElement.querySelectorAll(".char");
-
-        tl.from(chars, {
-          yPercent: -120,
-          duration: 0.3,
-          ease: "power1.out",
-          stagger: { amount: 0.7 },
-        });
-
-        ScrollTrigger.create({
-          trigger: titleElement,
-          start: "top 80%",
-          end: "bottom 20%",
-          onEnter: () => tl.play(),
-          onLeave: () => tl.reverse(),
-          onEnterBack: () => tl.play(),
-          onLeaveBack: () => tl.reverse(),
-        });
-      }
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top top",
+        pin: true,
+        pinSpacing: false,
+      });
 
       gsap.fromTo(
-        contentRef.current,
-        { opacity: 0, y: 30 },
+        titleRef.current,
+        { opacity: 0, x: -100 },
         {
           opacity: 1,
-          y: 0,
+          x: 0,
           duration: 1,
-          delay: 0.3,
-          ease: "power3.out",
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: contentRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
+            trigger: titleRef.current,
+            start: "top bottom-=100px",
+            end: "bottom center",
             toggleActions: "play none none reverse",
           },
         }
       );
 
-      // Image animation
       gsap.fromTo(
-        imageRef.current,
-        {
-          opacity: 0,
-          y: 30,
-        },
+        textRef.current,
+        { opacity: 0, x: -80 },
         {
           opacity: 1,
-          y: 0,
-          duration: 1.2,
+          x: 0,
+          duration: 0.8,
+          delay: 0.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: textRef.current,
+            start: "top bottom-=50px",
+            end: "bottom center",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+
+      gsap.fromTo(
+        imageRef.current,
+        { opacity: 0, x: 100 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1,
           delay: 0.3,
           ease: "power2.out",
           scrollTrigger: {
             trigger: imageRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
+            start: "top bottom-=50px",
+            end: "bottom center",
             toggleActions: "play none none reverse",
           },
         }
@@ -91,32 +80,49 @@ export function Vision() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-white">
+    <section ref={sectionRef} className="h-screen pin-panel">
       <div className="container max-w-7xl mx-auto px-4">
-        <Separator className="mb-16" />
-        <div className="text-center ">
-          <h2
-            ref={titleRef}
-            className="font-spectral tracking-tight font-semibold text-primary word mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl"
-          >
-            {splitTextIntoChars("Fronsciers's Vision")}
-          </h2>
-          <div ref={imageRef} className="flex justify-center">
-            <Image
-              src="/vision.svg"
-              alt="Fronsciers's Vision"
-              width={700}
-              height={700}
-              priority
-              onLoad={() => console.log("Vision image loaded successfully")}
-              onError={() => console.error("Vision image failed to load")}
-            />
-          </div>
+        <Separator />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="text-left order-2 lg:order-1">
+              <h2
+                ref={titleRef}
+                className="text-4xl sm:text-5xl md:text-6xl font-spectral font-bold text-primary mb-8 tracking-tight"
+              >
+                Fronsciers Vision
+              </h2>
+              <p
+                ref={textRef}
+                className="text-base lg:text-2xl text-muted-foreground tracking-tight leading-relaxed"
+              >
+                Fronsciers envisions a collaborative ecosystem where Authors,
+                Peer Reviewers, and Readers continuously strengthen one another.
+                Authors share new knowledge, Peer Reviewers ensure quality and
+                credibility, and Readers engage with and build upon the
+                research.{" "}
+                <span className="font-semibold">
+                  {" "}
+                  Together, this cycle of contribution drives innovation and
+                  keeps the community growing stronger.{" "}
+                </span>{" "}
+              </p>
+            </div>
 
-          <p className=" text-lg lg:text-3xl text-gray-600 max-w-2xl mx-auto tracking-tight leading-tight">
-            Fronsciers grows as the communities keep contribute to the
-            innovations
-          </p>
+            <div
+              ref={imageRef}
+              className="flex justify-center order-1 lg:order-2"
+            >
+              <Image
+                src="/vision.svg"
+                alt="Fronsciers's Vision"
+                width={600}
+                height={600}
+                priority
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -47,6 +47,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcademicCardSection } from "@/components/profile/academic-card/AcademicCardSection";
 
 interface UserProfile {
+  username?: string;
   personalInfo: {
     fullName: string;
     title: string;
@@ -300,6 +301,7 @@ export default function YourProfile() {
         }`);
 
         const transformedProfile: UserProfile = {
+          username: (result.profile as any).username || "",
           personalInfo: {
             fullName: result.profile.personalInfo?.fullName || "",
             title: result.profile.personalInfo?.title || "",
@@ -756,6 +758,11 @@ export default function YourProfile() {
                           <h1 className="text-2xl font-semibold text-primary">
                             {profile.personalInfo.fullName}
                           </h1>
+                          {profile.username && (
+                            <p className="text-sm text-primary/70 font-medium">
+                              @{profile.username}
+                            </p>
+                          )}
                           <p className="text-lg text-muted-foreground">
                             {profile.personalInfo.title ||
                               profile.personalInfo.profession}
@@ -813,41 +820,14 @@ export default function YourProfile() {
                         </>
                       )}
                     </div>
-                    <div className="flex space-x-2 w-full">
-                      {!isEditing ? (
+                    {!isEditing && (
+                      <div className="flex space-x-2 w-full">
                         <Button onClick={handleResubmitCV} className="flex-1">
                           <RefreshCcwIcon className="w-4 h-4 mr-2" />
                           Resubmit CV
                         </Button>
-                      ) : (
-                        <>
-                          <Button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="flex-1"
-                          >
-                            {saving ? (
-                              <>
-                                <Skeleton className="h-4 w-4" />
-                                <span className="ml-2">Saving...</span>
-                              </>
-                            ) : (
-                              <>
-                                <SaveIcon className="w-4 h-4 mr-2" />
-                                Save
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            onClick={handleEditCancel}
-                            variant="outline"
-                            disabled={saving}
-                          >
-                            <XIcon className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -855,6 +835,42 @@ export default function YourProfile() {
 
             {/* Profile Details and Stats */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Username Section */}
+              <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-primary">
+                    Username
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {profile.username ? (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-lg">@{profile.username}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Your unique username on the platform
+                        </p>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        Set
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground mb-3">
+                        No username set yet. You can set a username once.
+                      </p>
+                      <Button
+                        onClick={() => router.push("/register-cv?step=2")}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        Set Username
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Academic Information */}
               <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                 <CardHeader>
@@ -1137,14 +1153,18 @@ export default function YourProfile() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <div className="flex items-center justify-center"></div>
+                      <div className="flex items-center justify-center">
+                        <GraduationCapIcon className="w-5 h-5 text-primary/70 mb-2" />
+                      </div>
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.education}
                       </p>
                       <p className="text-sm text-muted-foreground">Education</p>
                     </div>
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <div className="flex items-center justify-center"></div>
+                      <div className="flex items-center justify-center">
+                        <BriefcaseIcon className="w-5 h-5 text-primary/70 mb-2" />
+                      </div>
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.experience}
                       </p>
@@ -1153,7 +1173,9 @@ export default function YourProfile() {
                       </p>
                     </div>
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <div className="flex items-center justify-center "></div>
+                      <div className="flex items-center justify-center">
+                        <BookOpenIcon className="w-5 h-5 text-primary/70 mb-2" />
+                      </div>
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.publications}
                       </p>
@@ -1162,7 +1184,9 @@ export default function YourProfile() {
                       </p>
                     </div>
                     <div className="text-center p-4 bg-primary/5 rounded-lg">
-                      <div className="flex items-center justify-center "></div>
+                      <div className="flex items-center justify-center">
+                        <AwardIcon className="w-5 h-5 text-primary/70 mb-2" />
+                      </div>
                       <p className="text-2xl font-bold text-primary">
                         {profile.summary.awards}
                       </p>

@@ -32,7 +32,7 @@ const TOKEN_CONFIG = [
   {
     symbol: "USDC",
     mintAddress: DEVNET_USDCF_ADDRESS,
-    decimals: 6,
+    decimals: 9,
   },
 ];
 
@@ -103,7 +103,6 @@ export function useWalletBalances(walletAddress?: string): WalletBalances {
             });
           }
         } catch (tokenError) {
-
           tokenBalances.push({
             symbol: tokenConfig.symbol,
             balance: 0,

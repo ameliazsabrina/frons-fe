@@ -155,6 +155,7 @@ const ConnectedView = () => {
   const [settingUsername, setSettingUsername] = useState(false);
   const [profileJustCreated, setProfileJustCreated] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // 1: CV Review, 2: Username Setup, 3: Complete
+  const [checkingUsernameStatus, setCheckingUsernameStatus] = useState(true);
   const { isLoading } = useLoading();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -187,35 +188,64 @@ const ConnectedView = () => {
   }, [error, toast]);
 
   useEffect(() => {
-    const checkProfile = async () => {
-      if (!validSolanaPublicKey) return;
+    const checkUsernameStatus = async () => {
+      if (!connected || !validSolanaPublicKey) {
+        setCheckingUsernameStatus(false);
+        return;
+      }
 
       try {
-        const result = await getUserProfile(validSolanaPublicKey);
-        if (result?.success && !profileJustCreated) {
-          // User already has a profile, show the complete success card
-          // But only if they didn't just create it (to avoid overriding username step)
+        const authToken = await getAccessToken();
+        const apiBaseUrl =
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+        
+        const response = await fetch(`${apiBaseUrl}/auth/username/status`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.data.hasUsername) {
+          // User already has username, redirect to resubmit CV page
+          toast({
+            title: "Profile Found",
+            description: "You already have a profile. Redirecting to resubmit CV...",
+            className: "bg-white text-blue-600 border-blue-500 shadow-lg",
+            duration: 3000,
+          });
+          
+          setTimeout(() => {
+            router.push("/resubmit-cv");
+          }, 1000);
+          return;
+        }
+        
+        // Check if user has CV but no username (continue with regular flow)
+        const profileResult = await getUserProfile(validSolanaPublicKey);
+        if (profileResult?.success && !profileJustCreated) {
           setShowProfile(true);
         }
       } catch (err) {
-        console.error("Failed to get user profile:", err);
-        toast({
-          title: "Error",
-          description: "Failed to load user profile",
-          variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
-          duration: 5000,
-        });
+        console.error("Failed to check username status:", err);
+        // Continue with regular flow if check fails
+      } finally {
+        setCheckingUsernameStatus(false);
       }
     };
 
     if (connected && validSolanaPublicKey) {
-      checkProfile();
+      checkUsernameStatus();
+    } else {
+      setCheckingUsernameStatus(false);
     }
   }, [
     connected,
     validSolanaPublicKey,
     getUserProfile,
+    getAccessToken,
+    router,
     toast,
     profileJustCreated,
   ]);
@@ -598,8 +628,24 @@ const ConnectedView = () => {
 
           <Card className="shadow-2xl border-0 rounded-3xl bg-white overflow-hidden">
             <CardContent className="p-8">
-              {/* Step Progress Indicator */}
-              {(currentStep === 1 || currentStep === 2) && (
+              {checkingUsernameStatus ? (
+                <div className="space-y-6 p-8 text-center">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full mx-auto flex items-center justify-center">
+                    <Loader2Icon className="h-5 w-5 text-primary animate-spin" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-lg font-medium text-gray-900">
+                      Checking your profile...
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Please wait while we verify your account status
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Step Progress Indicator */}
+                  {(currentStep === 1 || currentStep === 2) && (
                 <div className="mb-8">
                   <div className="flex items-center justify-center space-x-4 mb-6">
                     <div className="flex items-center">
@@ -2245,6 +2291,8 @@ const ConnectedView = () => {
                     </Tabs>
                   </div>
                 )
+              )}
+                </>
               )}
             </CardContent>
           </Card>
