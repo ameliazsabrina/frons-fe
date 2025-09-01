@@ -342,7 +342,7 @@ export default function YourProfile() {
       } else {
         console.log("📊 No profile found or failed to load");
         setError("Profile not found. Please register your CV first.");
-        // Only show toast if this is NOT the initial page load
+
         if (!isInitialLoad) {
           toast({
             variant: "destructive",
@@ -468,7 +468,7 @@ export default function YourProfile() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full  ">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
@@ -482,7 +482,7 @@ export default function YourProfile() {
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
@@ -636,7 +636,7 @@ export default function YourProfile() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
@@ -664,7 +664,7 @@ export default function YourProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
       <Sidebar>
         <OverviewSidebar connected={connected} />
       </Sidebar>
@@ -833,45 +833,7 @@ export default function YourProfile() {
               </Card>
             </div>
 
-            {/* Profile Details and Stats */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Username Section */}
-              <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-primary">
-                    Username
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {profile.username ? (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-lg">@{profile.username}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Your unique username on the platform
-                        </p>
-                      </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
-                        Set
-                      </Badge>
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground mb-3">
-                        No username set yet. You can set a username once.
-                      </p>
-                      <Button
-                        onClick={() => router.push("/register-cv?step=2")}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        Set Username
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Academic Information */}
               <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-primary">
