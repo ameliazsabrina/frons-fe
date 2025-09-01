@@ -113,14 +113,14 @@ export default function AuthorsDashboardPage() {
 
   if (!isWalletConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         <Sidebar>
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
           <HeaderImage />
-          <div className="container max-w-full mx-auto py-8">
-            <h2 className="text-2xl font-semibold text-primary mb-2">
+          <div className="container max-w-full mx-auto py-8 justify-center">
+            <h2 className="text-2xl font-semibold text-primary mb-2 text-center justify-center">
               Authentication Required
             </h2>
             <p className="text-muted-foreground mb-4 text-sm">
@@ -134,7 +134,7 @@ export default function AuthorsDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
       <Sidebar>
         <OverviewSidebar connected={connected} />
       </Sidebar>

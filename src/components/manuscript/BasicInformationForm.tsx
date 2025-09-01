@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { XIcon } from "lucide-react";
 import { ResearchCategorySelector } from "@/components/ui/research-category-selector";
 
@@ -30,20 +30,21 @@ export function BasicInformationForm({
   onCategoriesChange,
 }: BasicInformationFormProps) {
   return (
-    <Card className=" shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-      <CardHeader className="border-b border-gray-100/50 pb-6">
+    <>
+      <div className="border-b border-gray-100/50 pb-6 p-6">
         <div className="flex items-center space-x-3">
           <div>
-            <CardTitle className="text-2xl text-primary font-bold">
+            <h2 className="text-2xl text-primary font-semibold">
               Basic Information
-            </CardTitle>
+            </h2>
             <p className="text-muted-foreground mt-1">
               Provide essential details about your manuscript
             </p>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-8">
+        <Separator className="mt-6" />
+      </div>
+      <div className="space-y-6 px-6">
         <div className="space-y-3">
           <Label
             htmlFor="title"
@@ -112,7 +113,7 @@ export function BasicInformationForm({
             onCategoriesChange={onCategoriesChange}
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </>
   );
 }

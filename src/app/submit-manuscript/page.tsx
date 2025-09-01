@@ -317,8 +317,8 @@ export default function SubmitManuscriptPage() {
         </Sidebar>
         <div className="flex-1">
           <HeaderImage />
-          <div className="container max-w-full mx-auto  py-8">
-            <div className="text-center py-8">
+          <div className="container max-w-full mx-auto py-8 justify-center">
+            <div className="text-center py-8 justify-center">
               <h2 className="text-2xl text-primary mb-4 font-semibold">
                 Authentication Required
               </h2>
@@ -343,31 +343,68 @@ export default function SubmitManuscriptPage() {
         <div className="flex-1">
           <HeaderImage />
           <div className="container max-w-full mx-auto pb-4 px-32">
-            <div className="max-w-full mx-auto space-y-6">
-              <div className="text-center space-y-4">
-                <Skeleton className="h-8 w-64 mx-auto" />
-                <Skeleton className="h-4 w-48 mx-auto" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-4 p-6 bg-white rounded-xl">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-4/5" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-4 p-6 bg-white rounded-xl">
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-4 p-6 bg-white rounded-xl">
-                  <Skeleton className="h-6 w-36" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
+            <div className="space-y-6">
+              {/* Form Container Skeleton */}
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <CardContent className="p-0">
+                  {/* Tab Navigation Skeleton */}
+                  <div className="border-b border-gray-100">
+                    <div className="flex w-full justify-start bg-transparent p-0 h-auto">
+                      <div className="flex items-center space-x-2 px-6 py-4">
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                      <div className="flex items-center space-x-2 px-6 py-4">
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                      <div className="flex items-center space-x-2 px-6 py-4">
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Basic Information Form Skeleton */}
+                  <div className="p-8 space-y-6">
+                    {/* Header Section */}
+                    <div className="border-b border-gray-100/50 pb-6 p-6">
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <Skeleton className="h-8 w-48" />
+                          <Skeleton className="h-4 w-64 mt-1" />
+                        </div>
+                      </div>
+                      <div className="mt-6">
+                        <Skeleton className="h-px w-full" />
+                      </div>
+                    </div>
+
+                    {/* Form Content */}
+                    <div className="space-y-6 px-6">
+                      {/* Title Field */}
+                      <div className="space-y-3">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+
+                      {/* Author Field */}
+                      <div className="space-y-3">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+
+                      {/* Category Field */}
+                      <div className="space-y-3">
+                        <Skeleton className="h-5 w-36" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    </div>
+
+                    {/* Next Button */}
+                    <div className="flex justify-end pt-6">
+                      <Skeleton className="h-10 w-48" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

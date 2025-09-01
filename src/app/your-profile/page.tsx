@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,88 +29,20 @@ import {
 } from "lucide-react";
 import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
-import { usePrivy } from "@privy-io/react-auth";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import { isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
-import { useCVRegistration } from "@/hooks/useCVRegistration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WalletConnection } from "@/components/wallet-connection";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
 import { useReviewerEligibility } from "@/hooks/useReviewerEligibility";
 import { Badge } from "@/components/ui/badge";
-
 import HeaderImage from "@/components/header-image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcademicCardSection } from "@/components/profile/academic-card/AcademicCardSection";
 
-interface UserProfile {
-  username?: string;
-  personalInfo: {
-    fullName: string;
-    title: string;
-    profession: string;
-    institution: string;
-    location: string;
-    field: string;
-    specialization: string;
-    photoUrl?: string;
-  };
-  contact: {
-    email: string;
-    phone?: string;
-    linkedIn?: string;
-    github?: string;
-    website?: string;
-    orcid?: string;
-    googleScholar?: string;
-  };
-  overview?: string;
-  summary: {
-    education: number;
-    experience: number;
-    publications: number;
-    awards: number;
-  };
-  education?: Array<{
-    id?: string;
-    institution: string;
-    degree: string;
-    field: string;
-    startDate: string;
-    endDate: string;
-    gpa?: string;
-    location?: string;
-  }>;
-  experience?: Array<{
-    id?: string;
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    description?: string;
-    location?: string;
-    type?: string;
-  }>;
-  publications?: Array<{
-    id?: string;
-    title: string;
-    authors: string[];
-    venue: string;
-    date: string;
-    doi?: string;
-    url?: string;
-  }>;
-  awards?: Array<{
-    id?: string;
-    name: string;
-    issuer: string;
-    date: string;
-    description?: string;
-  }>;
-}
+// Custom hooks
+import { useWalletConnection } from "@/hooks/useWalletConnection";
+import { useProfileData } from "@/hooks/useProfileData";
+import { useProfileEdit } from "@/hooks/useProfileEdit";
 
 const UnconnectedView = () => (
   <div className="container max-w-full mx-auto py-8">
@@ -130,340 +62,56 @@ const UnconnectedView = () => (
 );
 
 export default function YourProfile() {
-  const { authenticated: connected } = usePrivy();
-  const { wallets: solanaWallets } = useSolanaWallets();
-
-  const walletAddress = getPrimarySolanaWalletAddress(solanaWallets);
   const router = useRouter();
   const { toast } = useToast();
-
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<any>({});
-  const [saving, setSaving] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
+  
+  // Custom hooks
+  const { connected, solanaWallets, walletAddress } = useWalletConnection();
   const {
-    getUserProfileMultiWallet,
-    updateUserProfile,
-    error: cvError,
-  } = useCVRegistration(walletAddress);
+    profile,
+    loadingProfile,
+    error,
+    isInitialLoad,
+    loadProfile,
+    updateProfile,
+    cvError,
+  } = useProfileData(walletAddress);
+  const {
+    isEditing,
+    editData,
+    saving,
+    handleEditStart,
+    handleEditCancel,
+    handleInputChange,
+    handleOverviewChange,
+    handleSave,
+  } = useProfileEdit();
 
   const { eligibilityResult } = useReviewerEligibility();
 
-  const loadProfile = useCallback(async () => {
-    if (!connected || !solanaWallets || solanaWallets.length === 0) return;
-
-    try {
-      setLoadingProfile(true);
-      setError(null);
-
-      // Collect all possible wallet addresses
-      const allWalletAddresses: string[] = [];
-
-      // Add primary wallet (Privy embedded wallet preferred)
-      const primaryWallet = getPrimarySolanaWalletAddress(solanaWallets);
-      if (primaryWallet && isValidSolanaAddress(primaryWallet)) {
-        allWalletAddresses.push(primaryWallet);
-      }
-
-      // Add all other connected wallets
-      solanaWallets.forEach((wallet) => {
-        if (
-          wallet.address &&
-          isValidSolanaAddress(wallet.address) &&
-          !allWalletAddresses.includes(wallet.address)
-        ) {
-          allWalletAddresses.push(wallet.address);
-        }
-      });
-
-      if (allWalletAddresses.length === 0) {
-        setError("No valid wallet addresses found");
-        return;
-      }
-
-      console.log(
-        "📊 Searching for profile across wallets:",
-        allWalletAddresses
-      );
-      console.log("📊 Primary wallet address:", primaryWallet);
-      console.log(
-        "📊 All connected wallets:",
-        solanaWallets.map((w) => ({
-          address: w.address,
-          type: w.walletClientType,
-        }))
-      );
-
-      const result = await getUserProfileMultiWallet(allWalletAddresses);
-
-      console.log("📊 getUserProfileMultiWallet result:", {
-        hasResult: !!result,
-        success: result?.success,
-        hasProfile: !!result?.profile,
-        profileKeys: result?.profile ? Object.keys(result.profile) : null,
-      });
-
-      if (result?.success && result.profile) {
-        console.log("📊 Profile loaded successfully:", result.profile);
-
-        // Deduplicate arrays to prevent display issues
-        const deduplicateArray = <T extends Record<string, any>>(
-          array: T[] | undefined,
-          keyField: keyof T = "id"
-        ): T[] => {
-          if (!array || !Array.isArray(array)) return [];
-
-          const seenIds = new Set();
-          const seenContent = new Set();
-
-          return array.filter((item) => {
-            if (item[keyField] !== undefined && item[keyField] !== null) {
-              if (seenIds.has(item[keyField])) {
-                return false;
-              }
-              seenIds.add(item[keyField]);
-              return true;
-            }
-
-            const contentKey = JSON.stringify(item);
-            if (seenContent.has(contentKey)) {
-              return false;
-            }
-            seenContent.add(contentKey);
-            return true;
-          });
-        };
-
-        // Sanitize the profile data
-        const sanitizedEducation = deduplicateArray(
-          (result.profile as any).education
-        ) as Array<{
-          id?: string;
-          institution: string;
-          degree: string;
-          field: string;
-          startDate: string;
-          endDate: string;
-          gpa?: string;
-          location?: string;
-        }>;
-        const sanitizedExperience = deduplicateArray(
-          (result.profile as any).experience
-        ) as Array<{
-          id?: string;
-          company: string;
-          position: string;
-          startDate: string;
-          endDate: string;
-          description?: string;
-          location?: string;
-          type?: string;
-        }>;
-        const sanitizedPublications = deduplicateArray(
-          (result.profile as any).publications,
-          "title"
-        ) as Array<{
-          id?: string;
-          title: string;
-          authors: string[];
-          venue: string;
-          date: string;
-          doi?: string;
-          url?: string;
-        }>;
-        const sanitizedAwards = deduplicateArray(
-          (result.profile as any).awards,
-          "name"
-        ) as Array<{
-          id?: string;
-          name: string;
-          issuer: string;
-          date: string;
-          description?: string;
-        }>;
-
-        console.log(`🧹 Profile deduplication results:
-          Education: ${(result.profile as any).education?.length || 0} → ${
-          sanitizedEducation.length
-        }
-          Experience: ${(result.profile as any).experience?.length || 0} → ${
-          sanitizedExperience.length
-        }
-          Publications: ${
-            (result.profile as any).publications?.length || 0
-          } → ${sanitizedPublications.length}
-          Awards: ${(result.profile as any).awards?.length || 0} → ${
-          sanitizedAwards.length
-        }`);
-
-        const transformedProfile: UserProfile = {
-          username: (result.profile as any).username || "",
-          personalInfo: {
-            fullName: result.profile.personalInfo?.fullName || "",
-            title: result.profile.personalInfo?.title || "",
-            profession: result.profile.personalInfo?.profession || "",
-            institution: result.profile.personalInfo?.institution || "",
-            location: result.profile.personalInfo?.location || "",
-            field: result.profile.personalInfo?.field || "",
-            specialization: result.profile.personalInfo?.specialization || "",
-            photoUrl:
-              result.profile.profilePhoto ||
-              result.profile.personalInfo?.photoUrl,
-          },
-          contact: {
-            email: result.profile.contact?.email || "",
-            phone: result.profile.contact?.phone || "",
-            linkedIn: result.profile.contact?.linkedIn || "",
-            github: result.profile.contact?.github || "",
-            website: result.profile.contact?.website || "",
-            orcid: result.profile.contact?.orcid || "",
-            googleScholar: result.profile.contact?.googleScholar || "",
-          },
-          overview: result.profile.overview || "",
-          summary: {
-            education: sanitizedEducation.length,
-            experience: sanitizedExperience.length,
-            publications: sanitizedPublications.length,
-            awards: sanitizedAwards.length,
-          },
-          education: sanitizedEducation,
-          experience: sanitizedExperience,
-          publications: sanitizedPublications,
-          awards: sanitizedAwards,
-        };
-
-        console.log("📊 Transformed profile:", transformedProfile);
-        console.log("📊 Overview content:", transformedProfile.overview);
-        setProfile(transformedProfile);
-      } else {
-        console.log("📊 No profile found or failed to load");
-        setError("Profile not found. Please register your CV first.");
-
-        if (!isInitialLoad) {
-          toast({
-            variant: "destructive",
-            className: "bg-white border-red-500 text-red-600",
-            title: "Profile Not Found",
-            description:
-              "Please register your CV first to create your profile.",
-          });
-        }
-      }
-    } catch (err) {
-      console.error("📊 Failed to load profile:", err);
-      const errorMessage = "Failed to load profile. Please try again.";
-      setError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Error Loading Profile",
-        description: errorMessage,
-      });
-    } finally {
-      setLoadingProfile(false);
-      setIsInitialLoad(false);
-    }
-  }, [
-    connected,
-    solanaWallets,
-    getUserProfileMultiWallet,
-    toast,
-    isInitialLoad,
-  ]);
-
   useEffect(() => {
-    if (connected && solanaWallets && solanaWallets.length > 0) {
-      loadProfile();
-    } else {
-      setLoadingProfile(false);
-    }
-  }, [connected, solanaWallets, loadProfile]);
-
-  // Handle editing
-  const handleEditStart = () => {
-    setIsEditing(true);
-    setEditData(JSON.parse(JSON.stringify(profile))); // Deep copy
-  };
-
-  const handleEditCancel = () => {
-    setIsEditing(false);
-    setEditData({});
-  };
-
-  const handleInputChange = (section: string, field: string, value: string) => {
-    setEditData((prev: any) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleOverviewChange = (value: string) => {
-    setEditData((prev: any) => ({
-      ...prev,
-      overview: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    if (!walletAddress) {
-      toast({
-        variant: "destructive",
-        title: "No Wallet Connected",
-        description: "Please connect a wallet to update your profile.",
-      });
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const updatePayload = {
-        personalInfo: editData.personalInfo,
-        contact: editData.contact,
-        overview: editData.overview,
-      };
-
-      const result = await updateUserProfile(walletAddress, updatePayload);
-
-      if (result?.success) {
-        await loadProfile(); // Reload profile
-        setIsEditing(false);
-        setEditData({});
-        toast({
-          variant: "success",
-          title: "Profile Updated",
-          description: "Your profile has been successfully updated.",
-          className: "bg-white border-green-500 text-green-600",
-        });
-      } else {
+    const reloadProfile = async () => {
+      await loadProfile(connected, solanaWallets || []);
+      
+      if (error && !isInitialLoad) {
         toast({
           variant: "destructive",
-          title: "Update Failed",
-          description: "Failed to update your profile. Please try again.",
           className: "bg-white border-red-500 text-red-600",
+          title: "Profile Not Found",
+          description: "Please register your CV first to create your profile.",
         });
       }
-    } catch (err) {
-      console.error("Failed to save profile:", err);
-      toast({
-        variant: "destructive",
-        title: "Error Saving Profile",
-        description:
-          "An error occurred while saving your profile. Please try again.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+    };
+
+    reloadProfile();
+  }, [connected, solanaWallets, loadProfile, error, isInitialLoad, toast]);
 
   const handleResubmitCV = async () => {
     router.push("/register-cv");
+  };
+
+  const reloadProfileForSave = async () => {
+    await loadProfile(connected, solanaWallets || []);
   };
 
   if (!connected) {
@@ -489,33 +137,26 @@ export default function YourProfile() {
         <div className="flex-1">
           <HeaderImage />
           <div className="container max-w-full mx-auto pb-4 px-32">
-            {/* Profile Header skeleton - matching 3-column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              {/* Left column - Profile picture and basic info */}
               <div className="lg:col-span-1">
                 <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center space-y-4">
-                      {/* Profile picture skeleton */}
                       <Skeleton className="w-32 h-32 rounded-full" />
 
-                      {/* Name and title skeleton */}
                       <div className="text-center space-y-2">
                         <Skeleton className="h-6 w-32" />
                         <Skeleton className="h-4 w-28" />
                         <Skeleton className="h-4 w-36" />
                       </div>
 
-                      {/* Edit button skeleton */}
                       <Skeleton className="h-9 w-24" />
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Right columns - Contact info and summary */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Contact information card skeleton */}
                 <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                   <CardHeader>
                     <Skeleton className="h-6 w-40" />
@@ -530,7 +171,6 @@ export default function YourProfile() {
                       ))}
                     </div>
 
-                    {/* Academic profiles section */}
                     <div className="border-t pt-4 mt-4">
                       <Skeleton className="h-4 w-32 mb-3" />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -545,7 +185,6 @@ export default function YourProfile() {
                   </CardContent>
                 </Card>
 
-                {/* Summary stats card skeleton */}
                 <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                   <CardHeader>
                     <Skeleton className="h-6 w-32" />
@@ -570,9 +209,7 @@ export default function YourProfile() {
               </div>
             </div>
 
-            {/* Main tabs skeleton */}
             <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
-              {/* Tabs list skeleton */}
               <div className="w-full h-auto grid grid-cols-6 bg-gray-50/50 p-0 rounded-lg">
                 {[
                   "Overview",
@@ -593,7 +230,6 @@ export default function YourProfile() {
                 ))}
               </div>
 
-              {/* Tab content skeleton */}
               <div className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -601,7 +237,6 @@ export default function YourProfile() {
                     <Skeleton className="h-4 w-32" />
                   </div>
 
-                  {/* Content sections */}
                   <div className="space-y-6">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="space-y-3">
@@ -620,7 +255,6 @@ export default function YourProfile() {
                     ))}
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex justify-end space-x-3 pt-6 border-t">
                     <Skeleton className="h-9 w-20" />
                     <Skeleton className="h-9 w-16" />
@@ -672,9 +306,7 @@ export default function YourProfile() {
         <HeaderImage />
 
         <div className="container max-w-full mx-auto pb-4 px-32">
-          {/* Profile Header */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            {/* Profile Picture and Basic Info */}
             <div className="lg:col-span-1">
               <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                 <CardContent className="p-6">
@@ -780,11 +412,10 @@ export default function YourProfile() {
                       )}
                     </div>
 
-                    {/* Action buttons */}
                     <div className="flex space-x-2 w-full">
                       {!isEditing ? (
                         <Button
-                          onClick={handleEditStart}
+                          onClick={() => handleEditStart(profile)}
                           className="flex-1"
                           variant="outline"
                         >
@@ -794,7 +425,7 @@ export default function YourProfile() {
                       ) : (
                         <>
                           <Button
-                            onClick={handleSave}
+                            onClick={() => handleSave(updateProfile, reloadProfileForSave)}
                             disabled={saving}
                             className="flex-1"
                           >
@@ -888,7 +519,6 @@ export default function YourProfile() {
                 </CardContent>
               </Card>
 
-              {/* Contact Information */}
               <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-primary">
@@ -1039,7 +669,6 @@ export default function YourProfile() {
                     </div>
                   </div>
 
-                  {/* Academic profiles */}
                   {(profile.contact.orcid ||
                     profile.contact.googleScholar ||
                     isEditing) && (
@@ -1105,7 +734,6 @@ export default function YourProfile() {
                 </CardContent>
               </Card>
 
-              {/* Summary Stats */}
               <Card className="shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-primary">

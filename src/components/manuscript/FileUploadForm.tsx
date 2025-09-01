@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { UploadIcon, FileTextIcon } from "lucide-react";
 
 interface FileUploadFormProps {
@@ -20,20 +20,21 @@ export function FileUploadForm({
   onRemoveFile,
 }: FileUploadFormProps) {
   return (
-    <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
-      <CardHeader className="border-b border-gray-100/50 pb-6">
+    <>
+      <div className="border-b border-gray-100/50 pb-6 p-6">
         <div className="flex items-center space-x-3">
           <div>
-            <CardTitle className="text-2xl text-primary font-bold">
+            <h2 className="text-2xl text-primary font-semibold">
               Manuscript File
-            </CardTitle>
+            </h2>
             <p className="text-muted-foreground mt-1">
               Upload your research document
             </p>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-8">
+        <Separator className="mt-6" />
+      </div>
+      <div className="space-y-6 px-6">
         <div className="space-y-3">
           <Label className="text-base font-semibold text-primary">
             Upload Manuscript (PDF) *
@@ -98,7 +99,7 @@ export function FileUploadForm({
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </>
   );
 }

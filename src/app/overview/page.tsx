@@ -254,7 +254,7 @@ export default function OverviewPage() {
         </Sidebar>
         <div className="flex-1">
           <div className="container max-w-full mx-auto py-8 flex flex-col items-center justify-center">
-            <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
+            <h2 className="text-2xl font-semibold text-primary mb-2 text-center justify-center">
               Authentication Required
             </h2>
             <p className="text-muted-foreground mb-4 text-sm text-center">
@@ -274,7 +274,7 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
       <Sidebar>
         <OverviewSidebar connected={connected} />
       </Sidebar>

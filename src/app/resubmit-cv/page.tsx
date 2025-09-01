@@ -206,13 +206,12 @@ const ConnectedView = () => {
     if (cvStatus?.hasCV) {
       toast({
         title: "CV Updated",
-        description:
-          "Your CV has been updated successfully.",
+        description: "Your CV has been updated successfully.",
         variant: "success",
         className: "bg-white text-green-600 border-green-500 shadow-lg",
         duration: 5000,
       });
-      
+
       // Redirect to profile after successful update
       setTimeout(() => {
         router.push("/your-profile");
@@ -323,7 +322,7 @@ const ConnectedView = () => {
           description: "Redirecting to your profile...",
           className: "bg-white text-green-600 border-green-500 shadow-lg",
         });
-        
+
         setTimeout(() => {
           router.push("/your-profile");
         }, 1500);
@@ -425,10 +424,11 @@ const ConnectedView = () => {
       if (result.success) {
         toast({
           title: "Profile Updated",
-          description: "Your profile has been updated successfully! Redirecting...",
+          description:
+            "Your profile has been updated successfully! Redirecting...",
           className: "bg-white text-green-600 border-green-500 shadow-lg",
         });
-        
+
         setTimeout(() => {
           router.push("/your-profile");
         }, 1500);
@@ -464,7 +464,8 @@ const ConnectedView = () => {
               Resubmit Your CV
             </h1>
             <p className="text-md text-muted-foreground max-w-3xl mx-auto">
-              Update your academic profile by resubmitting your CV or updating your details manually
+              Update your academic profile by resubmitting your CV or updating
+              your details manually
             </p>
           </div>
 
@@ -537,7 +538,8 @@ const ConnectedView = () => {
                                   {selectedFile.name}
                                 </h4>
                                 <p className="text-sm text-gray-600">
-                                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                  {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
+                                  MB
                                 </p>
                               </div>
                             </div>
@@ -614,7 +616,9 @@ const ConnectedView = () => {
                             disabled={confirmingRegistration}
                             className="flex-1 h-12 rounded-xl font-medium text-base"
                           >
-                            {confirmingRegistration ? "Updating..." : "Confirm Update"}
+                            {confirmingRegistration
+                              ? "Updating..."
+                              : "Confirm Update"}
                             <ArrowRightIcon className="h-4 w-4 ml-2" />
                           </Button>
                         </div>
@@ -625,7 +629,10 @@ const ConnectedView = () => {
                   <TabsContent value="manual" className="space-y-8 mt-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                        <Label
+                          htmlFor="fullName"
+                          className="text-sm font-medium text-gray-700"
+                        >
                           Full Name *
                         </Label>
                         <Input
@@ -645,7 +652,10 @@ const ConnectedView = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-primary">
+                        <Label
+                          htmlFor="email"
+                          className="text-sm font-medium text-primary"
+                        >
                           Email Address *
                         </Label>
                         <Input
@@ -664,7 +674,10 @@ const ConnectedView = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="institution" className="text-sm font-medium text-primary">
+                        <Label
+                          htmlFor="institution"
+                          className="text-sm font-medium text-primary"
+                        >
                           Institution *
                         </Label>
                         <Input
@@ -683,7 +696,10 @@ const ConnectedView = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="profession" className="text-sm font-medium text-primary">
+                        <Label
+                          htmlFor="profession"
+                          className="text-sm font-medium text-primary"
+                        >
                           Profession *
                         </Label>
                         <Input
@@ -702,7 +718,10 @@ const ConnectedView = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="field" className="text-sm font-medium text-primary">
+                        <Label
+                          htmlFor="field"
+                          className="text-sm font-medium text-primary"
+                        >
                           Field of Study *
                         </Label>
                         <Input
@@ -721,7 +740,10 @@ const ConnectedView = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="specialization" className="text-sm font-medium text-primary">
+                        <Label
+                          htmlFor="specialization"
+                          className="text-sm font-medium text-primary"
+                        >
                           Specialization *
                         </Label>
                         <Input
@@ -762,7 +784,7 @@ export default function ResubmitCV() {
   const { authenticated: connected } = usePrivy();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex w-full">
+    <div className="min-h-screen bg-white flex w-full">
       <Sidebar>
         <OverviewSidebar connected={connected} />
       </Sidebar>

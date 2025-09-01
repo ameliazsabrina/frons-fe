@@ -34,7 +34,7 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <Skeleton className="w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl" />
@@ -90,7 +90,7 @@ export default function PublicProfilePage() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -118,7 +118,7 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
+    <div className="min-h-screen bg-white">
       <Header />
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
         {profile.headerImage && (
