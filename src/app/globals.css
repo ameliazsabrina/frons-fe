@@ -84,6 +84,7 @@
 @layer components {
   .font-spectral {
     font-family: "Spectral", serif;
+    font-style: italic;
   }
 }
 
@@ -224,12 +225,14 @@
 }
 
 /* Privy modal fixes for Chrome */
-.privy-modal, [data-privy-modal] {
+.privy-modal,
+[data-privy-modal] {
   z-index: 9999 !important;
   pointer-events: auto !important;
 }
 
-.privy-backdrop, [data-privy-backdrop] {
+.privy-backdrop,
+[data-privy-backdrop] {
   z-index: 9998 !important;
 }
 

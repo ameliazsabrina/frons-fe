@@ -1,28 +1,17 @@
 import type { Metadata } from "next";
 import { DM_Sans, Spectral } from "next/font/google";
-
-import "./globals.css";
-import PrivyProvider from "@/provider/PrivyProvider";
+import Providers from "@/provider/PrivyProvider";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { Toaster } from "@/components/ui/toaster";
-import { DesktopOnlyWrapper } from "@/components/ui/desktop-only-wrapper";
+import "./globals.css";
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-dm-sans",
-});
-
-const spectral = Spectral({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-spectral",
-});
+const dmSans = DM_Sans({ subsets: ["latin"] });
+// const spectral = Spectral({ subsets: ["latin"], weight: ["200", "300", "400", "500", "600", "700", "800"] });
 
 export const metadata: Metadata = {
-  title: "Fronsciers - Revolutionary Blockchain Academic Publishing",
+  title: "Fronsciers - Decentralized Academic Publishing",
   description:
-    "Modernizing academic research publication through decentralized technologies, tokenized incentives, and community-driven peer review on Solana blockchain.",
+    "Decentralized academic publishing platform with blockchain technology",
 };
 
 export default function RootLayout({
@@ -32,17 +21,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${dmSans.variable} ${spectral.variable} font-sans antialiased`}
-      >
-        <LoadingProvider>
-          <PrivyProvider>
-            <DesktopOnlyWrapper>
-              {children}
-              <Toaster />
-            </DesktopOnlyWrapper>
-          </PrivyProvider>
-        </LoadingProvider>
+      <body className={dmSans.className}>
+        <Providers>
+          <LoadingProvider>
+            {children}
+            <Toaster />
+          </LoadingProvider>
+        </Providers>
       </body>
     </html>
   );

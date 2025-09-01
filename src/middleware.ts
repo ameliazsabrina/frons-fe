@@ -1,24 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const UNAUTHENTICATED_PAGES = ["/", "/refresh"];
+const CARD_UNAUTHENTICATED_PAGES = ["/", "/waiting-list", "/card"];
 
-// Function to check if a path should be publicly accessible
 function isPublicUserProfile(pathname: string): boolean {
-  // Match pattern: /[username] where username contains only letters, numbers, underscores, hyphens
   const usernamePattern = /^\/[a-zA-Z0-9_-]+$/;
   return usernamePattern.test(pathname);
 }
 
+
 export const config = {
   matcher: [
-    "/((?!api|_next|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico|.*\\.webp).*)"
+    "/((?!api|_next|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico|.*\\.webp).*)",
   ],
 };
 
 export async function middleware(req: NextRequest) {
+  const hostname = req.headers.get("host") || "";
+  const pathname = req.nextUrl.pathname;
+  
+  const isCardSubdomain =
+    hostname.startsWith("card.") ||
+    hostname === "card.fronsciers.com" ||
+    hostname.includes("card.localhost") ||
+    hostname === "card.fronsciers.local";
+
+  // Handle card subdomain routing
+  if (isCardSubdomain) {
+    const url = req.nextUrl.clone();
+    if (url.pathname === "/") {
+      url.pathname = "/(card)";
+    } else if (!url.pathname.startsWith("/(card)")) {
+      url.pathname = `/(card)${url.pathname}`;
+    }
+    // Card subdomain is public, no auth required
+    return NextResponse.rewrite(url);
+  }
+
+  // Handle main domain auth
   const cookieAuthToken = req.cookies.get("privy-token");
   const cookieSession = req.cookies.get("privy-session");
-  const pathname = req.nextUrl.pathname;
 
   if (req.nextUrl.searchParams.get("privy_oauth_code")) {
     return NextResponse.next();
@@ -28,7 +49,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (UNAUTHENTICATED_PAGES.includes(pathname) || isPublicUserProfile(pathname)) {
+  // Public pages on main domain
+  if (
+    UNAUTHENTICATED_PAGES.some(
+      (page) => pathname === page || pathname.startsWith(`${page}/`)
+    ) ||
+    isPublicUserProfile(pathname)
+  ) {
     return NextResponse.next();
   }
 
@@ -45,7 +72,8 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!definitelyAuthenticated && !maybeAuthenticated) {
-    return NextResponse.redirect(new URL("/", req.url));
+    const homeUrl = new URL("/", req.url);
+    return NextResponse.redirect(homeUrl);
   }
 
   return NextResponse.next();

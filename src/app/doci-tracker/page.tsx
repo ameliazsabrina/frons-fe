@@ -430,9 +430,8 @@ export default function DocisPage() {
               </CardContent>
             </Card>
           ) : manuscripts.length === 0 ? (
-            <Card className="shadow-sm border border-gray-100 rounded-xl bg-white/80 hover:shadow-lg transition-all duration-200">
+            <Card className=" ">
               <CardContent className="p-8 text-center">
-                <FileTextIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-primary mb-2">
                   No DOCIs Found
                 </h2>

@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Support for subdomains - handled by middleware instead
+  skipTrailingSlashRedirect: true,
+  
   // Disable caching during development
   ...(process.env.NODE_ENV === 'development' && {
     headers: async () => [
@@ -14,7 +17,7 @@ const nextConfig = {
       },
     ],
   }),
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+  webpack: (config, { isServer, webpack }) => {
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /\/__tests__\//,
