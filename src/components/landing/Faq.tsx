@@ -149,9 +149,9 @@ export function Faq() {
             <h2 className="text-4xl lg:text-6xl font-spectral font-bold text-primary mb-6 leading-tight">
               Got Questions?
               <br />
-              We've Got Answers.
+              We&apos;ve Got Answers.
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+            <p className="text-lg text-muted-foreground tracking-tight mb-8">
               Find answers to common questions about Fronsciers and how our
               decentralized academic publishing platform revolutionizes research
               publication with blockchain technology.
@@ -172,7 +172,7 @@ export function Faq() {
                     onClick={() => toggleFAQ(index)}
                     className="w-full py-6 text-left flex items-center justify-between gap-4 transition-colors duration-200"
                   >
-                    <h3 className="text-lg lg:text-xl font-medium text-primary">
+                    <h3 className="text-lg lg:text-xl font-medium text-primary tracking-tight">
                       {faq.question}
                     </h3>
                     <div className="flex-shrink-0">
@@ -199,7 +199,7 @@ export function Faq() {
                       }
                     `}
                   >
-                    <p className="text-muted-foreground leading-relaxed pr-8">
+                    <p className="text-muted-foreground tracking-tight pr-8">
                       {faq.answer}
                     </p>
                   </div>

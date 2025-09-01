@@ -125,7 +125,7 @@ export function Features() {
   return (
     <section
       ref={sectionRef}
-      className="min-h-[700px] bg-primary rounded-3xl overflow-hidden mx-4 justify-center"
+      className="min-h-[600px] bg-primary rounded-3xl overflow-hidden mx-4 justify-center"
     >
       <div className="py-24 px-4 max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-start justify-center">

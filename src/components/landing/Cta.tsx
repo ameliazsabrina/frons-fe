@@ -129,7 +129,7 @@ export function CTA() {
             <Link href="/register-cv">
               <Button
                 size="lg"
-                className="group bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg font-semibold transition-all duration-300"
+                className="group bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg  transition-all duration-300"
               >
                 Get Started Now
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -139,7 +139,7 @@ export function CTA() {
               <Button
                 variant="outline"
                 size="lg"
-                className="px-8 py-4 text-lg font-semibold transition-all duration-300"
+                className="px-8 py-4 text-lg  transition-all duration-300"
               >
                 Browse Research
               </Button>
