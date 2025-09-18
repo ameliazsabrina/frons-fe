@@ -20,15 +20,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             connectors: toSolanaWalletConnectors(),
           },
         },
-        // Disable embedded wallets (not needed for external wallet support)
-        embeddedWallets: {
-          ethereum: {
-            createOnLogin: "off",
-          },
-          solana: {
-            createOnLogin: "off",
-          },
-        },
+        // Completely remove embedded wallets to avoid HTTPS requirement
       }}
     >
       {children}

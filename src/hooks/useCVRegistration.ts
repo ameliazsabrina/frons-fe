@@ -245,7 +245,7 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
 
         if (!walletAddress || walletAddress.trim() === "") {
-            setError("Wallet address required for CV verification");
+          setError("Wallet address required for CV verification");
           return false;
         }
 
@@ -300,8 +300,7 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers.Authorization = `Bearer ${accessToken}`;
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         const formData = new FormData();
@@ -373,7 +372,6 @@ export function useCVRegistration(walletAddress?: string) {
         formData.append("cv", file);
         formData.append("walletAddress", walletAddress);
 
-
         const result = await axios.post(`${apiUrl}/parse-cv/upload`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -388,7 +386,6 @@ export function useCVRegistration(walletAddress?: string) {
 
         clearInterval(progressInterval);
         setUploadProgress(100);
-
 
         if (result.data.success && result.data.data) {
           const cvData = result.data.data; // Backend returns data in result.data.data
@@ -414,7 +411,6 @@ export function useCVRegistration(walletAddress?: string) {
             publications: cvData.publications || [],
             awards: cvData.awards || [],
           };
-
 
           setCvData({
             fullName: parsedData.fullName,
@@ -497,8 +493,7 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         const result = await axios.get(
@@ -507,7 +502,6 @@ export function useCVRegistration(walletAddress?: string) {
         );
 
         if (result.data.success) {
-
           // Sanitize profile data to remove duplicates
           const sanitizedProfile = sanitizeCVData(result.data.profile);
 
@@ -532,7 +526,6 @@ export function useCVRegistration(walletAddress?: string) {
             publications: sanitizedProfile.publications || [],
             awards: sanitizedProfile.awards || [],
           });
-
 
           // Show success toast
           toast.success("Profile Loaded", {
@@ -612,7 +605,6 @@ export function useCVRegistration(walletAddress?: string) {
         setError(null);
         setIsLoading(true);
 
-
         let headers = {};
         if (authenticated) {
           try {
@@ -620,14 +612,12 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         // Try each wallet address until we find CV data
         for (const walletAddress of walletAddresses) {
           if (!walletAddress) continue;
-
 
           try {
             const result = await axios.get(
@@ -636,7 +626,6 @@ export function useCVRegistration(walletAddress?: string) {
             );
 
             if (result.data.success && result.data.profile) {
-
               // Sanitize profile data to remove duplicates
               const sanitizedProfile = sanitizeCVData(result.data.profile);
 
@@ -721,8 +710,7 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         const result = await axios.put(
@@ -747,7 +735,6 @@ export function useCVRegistration(walletAddress?: string) {
             });
           }
 
-          // Show success toast
           toast.success("Profile Updated", {
             description: "Your profile has been successfully updated!",
             duration: 3000,
@@ -832,8 +819,7 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers.Authorization = `Bearer ${accessToken}`;
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         const formData = new FormData();
@@ -845,9 +831,7 @@ export function useCVRegistration(walletAddress?: string) {
           { headers }
         );
 
-
         if (response.data.success) {
-
           // Show success toast
           toast.success("Photo Updated", {
             description: "Your profile photo has been updated successfully!",
@@ -947,8 +931,7 @@ export function useCVRegistration(walletAddress?: string) {
             if (accessToken) {
               headers = { Authorization: `Bearer ${accessToken}` };
             }
-          } catch (tokenError) {
-          }
+          } catch (tokenError) {}
         }
 
         const result = await axios.get(
