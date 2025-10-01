@@ -2,7 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircleIcon } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import { type WalletBalances, type TokenBalance } from "@/hooks/useWalletBalances";
+import {
+  type WalletBalances,
+  type TokenBalance,
+} from "@/hooks/useWalletBalances";
 
 interface WalletPanelProps {
   walletBalances: WalletBalances;
@@ -10,36 +13,28 @@ interface WalletPanelProps {
 
 export function WalletPanel({ walletBalances }: WalletPanelProps) {
   console.log("🎨 WalletPanel rendering with balances:", walletBalances);
-  
+
   return (
-    <Card className="bg-white/80 backdrop-blur-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">Wallet Overview</CardTitle>
+    <Card className="bg-white border border-gray-100">
+      <CardHeader className="pb-3 lg:pb-4">
+        <CardTitle className="text-sm lg:text-lg font-medium">Wallet Overview</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="pt-0">
+        <div className="space-y-2 lg:space-y-3">
           {walletBalances.isLoading ? (
             <Loading variant="inline" text="Loading balances..." size="sm" />
           ) : walletBalances.error ? (
-            <div className="text-center py-4">
-              <AlertCircleIcon className="h-6 w-6 text-red-500 mx-auto mb-2" />
-              <p className="text-sm text-red-600">{walletBalances.error}</p>
+            <div className="text-center py-3 lg:py-4">
+              <AlertCircleIcon className="h-5 w-5 lg:h-6 lg:w-6 text-red-500 mx-auto mb-2" />
+              <p className="text-xs lg:text-sm text-red-600">{walletBalances.error}</p>
             </div>
           ) : (
             <>
-              {/* SOL Balance */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium text-sm">SOL</span>
-                <span className="font-semibold">
-                  {walletBalances.sol.toFixed(4)}
-                </span>
-              </div>
-
               {/* Token Balances */}
               {walletBalances.tokens.map((token: TokenBalance) => (
                 <div
                   key={token.symbol}
-                  className={`flex items-center justify-between p-3 rounded-lg ${
+                  className={`flex items-center justify-between p-2 lg:p-3 rounded-lg ${
                     token.symbol === "FRONS"
                       ? "bg-primary/10 border border-primary/20"
                       : "bg-gray-50"
@@ -47,27 +42,21 @@ export function WalletPanel({ walletBalances }: WalletPanelProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`font-medium text-sm ${
+                      className={`font-medium text-xs lg:text-sm ${
                         token.symbol === "FRONS" ? "text-primary" : ""
                       }`}
                     >
                       {token.symbol}
                     </span>
-                    {token.symbol === "FRONS" && (
-                      <Badge variant="secondary" className="text-xs">
-                        Rewards
-                      </Badge>
-                    )}
                   </div>
                   <div className="text-right">
                     <span
-                      className={`font-semibold ${
+                      className={`font-semibold text-xs lg:text-sm ${
                         token.symbol === "FRONS" ? "text-primary" : ""
                       }`}
                     >
                       {token.uiAmount.toLocaleString(undefined, {
-                        maximumFractionDigits:
-                          token.symbol === "USDCF" ? 2 : 4,
+                        maximumFractionDigits: token.symbol === "USDCF" ? 2 : 4,
                       })}
                     </span>
                     {token.symbol === "USDCF" && (

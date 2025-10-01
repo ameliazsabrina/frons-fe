@@ -8,6 +8,7 @@ import { PublishingAdvantages } from "@/components/landing/PublishingAdvantages"
 // import { Pricing } from "@/components/landing/Pricing";
 import { Faq } from "@/components/landing/Faq";
 import { CTA } from "@/components/landing/Cta";
+import { Ctanew } from "@/components/landing/Cta2";
 import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
@@ -20,9 +21,10 @@ export default function Home() {
       <Features />
       {/* <Steps /> */}
       <PublishingAdvantages />
-      {/* <Pricing /> */}
+      <Ctanew />
       <Faq />
-      <CTA />
+      {/* <CTA /> */}
+
       <Footer />
     </div>
   );

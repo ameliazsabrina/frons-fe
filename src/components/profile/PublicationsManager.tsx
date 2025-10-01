@@ -303,7 +303,7 @@ export function PublicationsManager({
                 variant="outline"
                 className="mr-2"
               >
-{loadingCVPublications ? (
+                {loadingCVPublications ? (
                   <>
                     <RefreshCwIcon className="h-4 w-4 mr-2 animate-spin" />
                     Loading CV...

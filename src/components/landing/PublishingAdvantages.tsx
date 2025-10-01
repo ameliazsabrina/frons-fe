@@ -65,12 +65,13 @@ export function PublishingAdvantages() {
 
   return (
     <div ref={containerRef} className="bg-white lg:-mt-20 -mt-10 z-30">
-      <header className="h-[25vh] lg:h-[40vh] w-full flex flex-col items-center justify-center pt-0">
-        <div className="w-full mb-16 px-4 sm:px-8 lg:px-16"></div>
-        <h1 className="text-center font-spectral font-semibold text-primary text-4xl  md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl">
+      {/* <header className="h-[25vh] lg:h-[40vh] w-full flex flex-col items-center justify-center pt-0"> */}
+      <div className="w-full pt-36 mb-12 px-4 sm:px-8 lg:px-16">
+        <h1 className="text-center font-semibold text-primary text-3xl  md:text-6xl ">
           With Fronsciers,
         </h1>
-      </header>
+      </div>
+      {/* </header> */}
 
       <main className="w-full justify-center ml-4 lg:ml-16">
         <section
@@ -83,7 +84,7 @@ export function PublishingAdvantages() {
           }}
         >
           <h2
-            className="text-3xl lg:text-5xl xl:text-6xl 2xl:text-7xl whitespace-nowrap"
+            className="text-2xl md:text-4xl whitespace-nowrap"
             style={{
               position: "sticky",
               top: "calc(50% - 0.5lh)",
@@ -121,7 +122,7 @@ export function PublishingAdvantages() {
                 ref={(el) => {
                   if (el) itemsRef.current[index] = el;
                 }}
-                className="text-3xl lg:text-5xl xl:text-6xl 2xl:text-7xl"
+                className="text-2xl md:text-4xl"
                 style={
                   {
                     "--i": index,

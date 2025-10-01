@@ -1,6 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,7 +57,6 @@ export default function AuthorsDashboardPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto pb-4 px-32">
             <div className="space-y-6">
               {/* Header skeleton */}
@@ -120,7 +119,6 @@ export default function AuthorsDashboardPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto py-8 justify-center">
             <h2 className="text-2xl font-semibold text-primary mb-2 text-center justify-center">
               Authentication Required
@@ -141,7 +139,6 @@ export default function AuthorsDashboardPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
         <div className="container max-w-full mx-auto pb-8 px-32">
           <AuthorDashboardHeader onNewSubmission={navigateToSubmission} />
           <AuthorStatsGrid stats={stats} />

@@ -1,35 +1,47 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  BookOpenIcon,
+  UserIcon,
+  CalendarIcon,
+  ExternalLinkIcon,
+  SearchIcon,
+  AlertCircleIcon,
+  FileTextIcon,
+  PlusIcon,
+} from "lucide-react";
 import { usePrivy, useSolanaWallets } from "@privy-io/react-auth";
-import { usePageReady } from "@/hooks/usePageReady";
-import { useLoading } from "@/context/LoadingContext";
-import { PlusIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useProgram, isValidSolanaAddress } from "@/hooks/useProgram";
-import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
-import { usePDAs } from "@/hooks/usePDAs";
-import { PublicKey } from "@solana/web3.js";
-import { useOverview } from "@/hooks/useOverview";
-import { useWalletBalances } from "@/hooks/useWalletBalances";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sidebar } from "@/components/ui/sidebar";
 import { OverviewSidebar } from "@/components/overview-sidebar";
 import {
-  StatsOverview,
-  QuickActions,
-  WalletPanel,
-  ReviewActivity,
-  OverviewHeader,
-} from "@/components/overview";
-import HeaderImage from "@/components/header-image";
+  useManuscriptsOverview,
+  PublishedManuscript,
+} from "@/hooks/useManuscriptsOverview";
+import { useWalletBalances } from "@/hooks/useWalletBalances";
+import { getPrimarySolanaWalletAddress } from "@/utils/wallet";
+import { isValidSolanaAddress } from "@/hooks/useProgram";
+import { usePageReady } from "@/hooks/usePageReady";
+import { useLoading } from "@/context/LoadingContext";
+import { useToast } from "@/hooks/use-toast";
+import { WalletPanel } from "@/components/overview";
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -41,21 +53,33 @@ export default function OverviewPage() {
     ? publicKey
     : undefined;
 
-  const { manuscriptStats, userStats, loading, error } = useOverview(
-    connected,
-    validSolanaPublicKey
-  );
+  // Combined data using new hook
+  const {
+    manuscriptStats,
+    userStats,
+    overviewLoading,
+    overviewError,
+    manuscripts,
+    manuscriptsLoading,
+    manuscriptsError,
+    filterManuscripts,
+    refreshData,
+    loading: combinedLoading,
+    categories,
+  } = useManuscriptsOverview(connected, validSolanaPublicKey);
+
   const walletBalances = useWalletBalances(validSolanaPublicKey);
   const { toast } = useToast();
 
-  const [isClient, setIsClient] = useState(false);
-  const [program, setProgram] = useState<any>(null);
-  const [pdas, setPdas] = useState<any>(null);
+  // Filter state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [sortBy, setSortBy] = useState("newest");
+  const [filteredManuscripts, setFilteredManuscripts] = useState<
+    PublishedManuscript[]
+  >([]);
 
-  const { program: solanaProgram } = useProgram();
-  const { pdas: solanaPDAs } = usePDAs(
-    validSolanaPublicKey ? new PublicKey(validSolanaPublicKey) : undefined
-  );
+  const [isClient, setIsClient] = useState(false);
 
   const { isReady, progress } = usePageReady({
     checkImages: false,
@@ -67,27 +91,26 @@ export default function OverviewPage() {
 
   const { setIsLoading } = useLoading();
 
+  // Filter manuscripts when search criteria change
+  useEffect(() => {
+    const filtered = filterManuscripts(searchTerm, selectedCategory, sortBy);
+    setFilteredManuscripts(filtered);
+  }, [manuscripts, searchTerm, selectedCategory, sortBy, filterManuscripts]);
+
   // Show toast notification for errors
   useEffect(() => {
-    if (error) {
+    if (overviewError) {
       toast({
         variant: "destructive",
         title: "Error Loading Overview",
-        description: error,
+        description: overviewError,
       });
     }
-  }, [error, toast]);
+  }, [overviewError, toast]);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (isClient && connected && validSolanaPublicKey) {
-      setProgram(solanaProgram);
-      setPdas(solanaPDAs);
-    }
-  }, [isClient, connected, validSolanaPublicKey, solanaProgram, solanaPDAs]);
 
   useEffect(() => {
     setIsLoading(!isReady);
@@ -114,132 +137,151 @@ export default function OverviewPage() {
     return "User";
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "Unknown date";
+    }
+  };
+
+  const openManuscript = (manuscript: PublishedManuscript) => {
+    if (manuscript.ipfsUrls?.manuscript) {
+      window.open(manuscript.ipfsUrls.manuscript, "_blank");
+    } else if (manuscript.cid) {
+      window.open(`https://ipfs.io/ipfs/${manuscript.cid}`, "_blank");
+    }
+  };
+
   if (!isReady) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
           <main className="flex-1">
-            <div className="container max-w-full mx-auto py-8">
-              {/* Header skeleton */}
-              <div className="mb-8">
-                <Skeleton className="h-8 w-48 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-
-              {/* StatsOverview skeleton - 4 columns */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100/80 shadow-sm"
-                  >
-                    <div className="text-center space-y-2">
-                      <Skeleton className="h-8 w-12 mx-auto" />
-                      <Skeleton className="h-4 w-24 mx-auto" />
-                      <Skeleton className="h-3 w-20 mx-auto" />
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+              {/* User Info Skeleton - Mobile Only */}
+              {connected && (
+                <div className="mb-6 lg:hidden">
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 mb-4">
+                    <Skeleton className="h-4 w-32 mb-3" />
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-4" />
+                      </div>
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-4" />
+                      </div>
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-18" />
+                        <Skeleton className="h-3 w-4" />
+                      </div>
                     </div>
                   </div>
-                ))}
+                  {/* Wallet Panel Skeleton */}
+                  <div className="p-4 bg-white rounded-lg border border-gray-100">
+                    <Skeleton className="h-4 w-24 mb-3" />
+                    <div className="space-y-2">
+                      <div className="p-2 bg-gray-50 rounded-lg flex justify-between">
+                        <Skeleton className="h-3 w-12" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded-lg flex justify-between">
+                        <Skeleton className="h-3 w-10" />
+                        <Skeleton className="h-3 w-14" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Header skeleton */}
+              <div className="mb-4 sm:mb-6">
+                <Skeleton className="h-6 sm:h-8 w-32 sm:w-48 mb-2" />
+                <Skeleton className="h-3 sm:h-4 w-48 sm:w-64" />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Left column - QuickActions */}
-                <div className="lg:col-span-3 space-y-6">
-                  {/* Quick Actions header */}
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-9 w-32" />
+              {/* Search and filters skeleton */}
+              <div className="mb-4 sm:mb-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
+                  <Skeleton className="h-9 w-full sm:max-w-md" />
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Skeleton className="h-9 w-24 flex-1 sm:flex-none" />
+                    <Skeleton className="h-9 w-20 flex-shrink-0" />
                   </div>
+                </div>
+              </div>
 
-                  {/* QuickActions grid - 6 cards in 3 columns */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[...Array(6)].map((_, i) => (
-                      <Card
+              {/* Manuscripts grid skeleton */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
+                <div className="col-span-1 lg:col-span-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div
                         key={i}
-                        className={`group transition-all duration-200 ${
-                          i === 0
-                            ? "ring-2 ring-primary/20 bg-primary/5"
-                            : "bg-white/80"
-                        }`}
+                        className="p-3 sm:p-4 bg-white rounded-lg border border-gray-100 space-y-3"
                       >
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1 space-y-2">
-                              <Skeleton className="h-5 w-24" />
-                              <Skeleton className="h-4 w-32" />
-                              <Skeleton className="h-4 w-28" />
-                            </div>
-                            {i === 1 && <Skeleton className="h-5 w-16 ml-2" />}
-                          </div>
-                          <Skeleton className="h-9 w-full" />
-                        </CardContent>
-                      </Card>
+                        <div className="flex items-start justify-between">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-3 w-3 rounded" />
+                        </div>
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-3 w-20" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-3 w-full" />
+                          <Skeleton className="h-3 w-3/4" />
+                        </div>
+                        <div className="flex justify-between items-center pt-1">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-10" />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Right sidebar */}
-                <div className="space-y-6">
-                  {/* WalletPanel skeleton */}
-                  <Card className="bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <Skeleton className="h-5 w-28" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {/* SOL Balance */}
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <Skeleton className="h-4 w-8" />
-                          <Skeleton className="h-4 w-16" />
-                        </div>
-
-                        {/* Token balances */}
-                        {[...Array(2)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`flex items-center justify-between p-3 rounded-lg ${
-                              i === 0
-                                ? "bg-primary/10 border border-primary/20"
-                                : "bg-gray-50"
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <Skeleton className="h-4 w-12" />
-                              {i === 0 && <Skeleton className="h-4 w-12" />}
-                            </div>
-                            <div className="text-right space-y-1">
-                              <Skeleton className="h-4 w-16" />
-                              {i === 1 && <Skeleton className="h-3 w-12" />}
-                            </div>
-                          </div>
-                        ))}
+                {/* Sidebar skeleton - Desktop only */}
+                <div className="hidden lg:block space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <Skeleton className="h-4 w-32 mb-3" />
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-4" />
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* ReviewActivity skeleton */}
-                  <Card className="bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <Skeleton className="h-5 w-28" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center space-y-3">
-                        <div className="space-y-2">
-                          <Skeleton className="h-8 w-8 mx-auto" />
-                          <Skeleton className="h-4 w-24 mx-auto" />
-                        </div>
-                        <Separator />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-28 mx-auto" />
-                          <Skeleton className="h-5 w-32 mx-auto" />
-                        </div>
-                        <Skeleton className="h-9 w-full" />
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-4" />
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-18" />
+                        <Skeleton className="h-3 w-4" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border border-gray-100">
+                    <Skeleton className="h-4 w-24 mb-3" />
+                    <div className="space-y-2">
+                      <div className="p-2 bg-gray-50 rounded-lg flex justify-between">
+                        <Skeleton className="h-3 w-12" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded-lg flex justify-between">
+                        <Skeleton className="h-3 w-10" />
+                        <Skeleton className="h-3 w-14" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -278,100 +320,277 @@ export default function OverviewPage() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        <HeaderImage />
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
         <main className="flex-1">
-          <div className="container max-w-full mx-auto pb-4 px-32">
-            {/* Header */}
-            <OverviewHeader userName={getUserDisplayName(user)} />
-
-            {loading ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i} className="p-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Skeleton className="h-4 w-24" />
-                          <Skeleton className="h-5 w-5 rounded" />
-                        </div>
-                        <Skeleton className="h-8 w-16" />
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-                {/* Quick actions skeleton */}
-                <Card className="p-6">
-                  <Skeleton className="h-6 w-32 mb-4" />
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="space-y-2">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-4 w-20 mx-auto" />
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <div className="mb-6">
-                  <PlusIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                    Unable to Load Overview
-                  </h2>
-                  <p className="text-gray-600">
-                    There was an error loading your overview data. Please try
-                    refreshing the page.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                >
-                  Refresh Page
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* Statistics Overview */}
-                <StatsOverview
-                  userStats={userStats}
-                  manuscriptStats={manuscriptStats}
-                />
-
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                  <div className="lg:col-span-3 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-semibold text-gray-900">
-                        Quick Actions
-                      </h2>
-                      <Button size="sm" asChild>
-                        <Link href="/submit-manuscript">
-                          <PlusIcon className="h-4 w-4 mr-2" />
-                          New Submission
-                        </Link>
-                      </Button>
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            {/* User Info - Mobile Only - Above Title */}
+            {connected && (
+              <div className="mb-6 lg:hidden">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">
+                    Welcome back, {getUserDisplayName(user)}
+                  </h3>
+                  <div className="space-y-2 text-xs text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Submissions</span>
+                      <span>{userStats?.manuscriptsSubmitted || 0}</span>
                     </div>
-                    <QuickActions manuscriptStats={manuscriptStats} />
+                    <div className="flex justify-between">
+                      <span>Reviews</span>
+                      <span>{userStats?.reviewsCompleted || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Published</span>
+                      <span>{userStats?.manuscriptsPublished || 0}</span>
+                    </div>
                   </div>
+                </div>
 
-                  {/* Sidebar */}
-                  <div className="space-y-6">
-                    <WalletPanel walletBalances={walletBalances} />
+                <WalletPanel walletBalances={walletBalances} />
+              </div>
+            )}
 
-                    {/* Review Summary */}
-                    <ReviewActivity
-                      manuscriptStats={manuscriptStats}
-                      userStats={userStats}
+            {/* Minimalist Header */}
+            <div className="mb-4 sm:mb-6">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1">
+                Latest Research
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500">
+                {filteredManuscripts.length} manuscripts available
+              </p>
+            </div>
+
+            {/* Search and Filters - Ultra Minimal */}
+            <div className="mb-4 sm:mb-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-3 items-start sm:items-center justify-between">
+                <div className="w-full sm:flex-1">
+                  <div className="relative w-full sm:max-w-md">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 h-9 text-sm w-full"
                     />
                   </div>
                 </div>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                  >
+                    <SelectTrigger className="w-auto h-auto text-xs flex-1 sm:flex-none">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent className="text-xs w-56 min-w-56">
+                      {categories.map((category) => (
+                        <SelectItem
+                          key={category}
+                          value={category}
+                          className="text-xs"
+                        >
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button asChild size="sm" className="h-9 flex-shrink-0">
+                    <Link href="/submit-manuscript">
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      Submit
+                    </Link>
+                  </Button>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Main Content - Manuscripts First */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
+              {/* Manuscripts - Primary Content */}
+              <div className="col-span-1 lg:col-span-4">
+                {/* Loading State */}
+                {manuscriptsLoading && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="p-3 sm:p-4 bg-white rounded-lg border border-gray-100 space-y-3"
+                      >
+                        <div className="flex items-start justify-between">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-3 w-3 rounded" />
+                        </div>
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-3 w-20" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-3 w-full" />
+                          <Skeleton className="h-3 w-3/4" />
+                        </div>
+                        <div className="flex justify-between items-center pt-1">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-10" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error State */}
+                {manuscriptsError && (
+                  <Alert className="border-red-100 bg-red-50 mb-4">
+                    <AlertCircleIcon className="h-4 w-4" />
+                    <AlertDescription className="text-red-700 text-sm">
+                      {manuscriptsError}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={refreshData}
+                        className="ml-3 h-7 text-xs"
+                      >
+                        Retry
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Manuscripts Grid */}
+                {!manuscriptsLoading && filteredManuscripts.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {filteredManuscripts.map((manuscript) => (
+                      <div
+                        key={manuscript.id}
+                        onClick={() => openManuscript(manuscript)}
+                        className="cursor-pointer group"
+                      >
+                        <Card className="h-full border border-gray-100 hover:border-gray-200 transition-all duration-200 bg-white hover:shadow-sm">
+                          <CardContent className="p-3 sm:p-4 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs px-2 py-1 bg-gray-100 text-gray-700"
+                              >
+                                {manuscript.category[0] || "Research"}
+                              </Badge>
+                              <div className="flex items-center space-x-1 text-gray-400 group-hover:text-gray-600 transition-colors">
+                                <ExternalLinkIcon className="h-3 w-3" />
+                              </div>
+                            </div>
+
+                            <h3 className="font-medium text-sm sm:text-base text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
+                              {manuscript.title}
+                            </h3>
+
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                              <UserIcon className="h-3 w-3" />
+                              <span className="line-clamp-1 text-xs">
+                                {manuscript.author}
+                              </span>
+                            </div>
+
+                            {manuscript.abstract && (
+                              <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                {manuscript.abstract}
+                              </p>
+                            )}
+
+                            <div className="flex items-center justify-between pt-1">
+                              <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                <CalendarIcon className="h-3 w-3" />
+                                <span>
+                                  {formatDate(manuscript.publishedDate)}
+                                </span>
+                              </div>
+
+                              {manuscript.category.length > 1 && (
+                                <div className="flex items-center space-x-1">
+                                  {manuscript.category
+                                    .slice(1, 2)
+                                    .map((cat, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0.5 border-gray-200 text-gray-500"
+                                      >
+                                        {cat}
+                                      </Badge>
+                                    ))}
+                                  {manuscript.category.length > 2 && (
+                                    <span className="text-xs text-gray-400">
+                                      +{manuscript.category.length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {!manuscriptsLoading && filteredManuscripts.length === 0 && (
+                  <div className="text-center py-8 sm:py-12">
+                    <h3 className="text-base font-medium text-gray-600 mb-2">
+                      No manuscripts found
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-4 max-w-sm mx-auto">
+                      {searchTerm || selectedCategory !== "All Categories"
+                        ? "Try adjusting your search criteria"
+                        : "No published research available yet"}
+                    </p>
+                    {(searchTerm || selectedCategory !== "All Categories") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedCategory("All Categories");
+                        }}
+                        className="h-8 text-xs"
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* User Info */}
+              {connected && (
+                <div className="space-y-4 lg:block hidden">
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                      Welcome back, {getUserDisplayName(user)}
+                    </h3>
+                    <div className="space-y-2 text-xs text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Submissions</span>
+                        <span>{userStats?.manuscriptsSubmitted || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Reviews</span>
+                        <span>{userStats?.reviewsCompleted || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Published</span>
+                        <span>{userStats?.manuscriptsPublished || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <WalletPanel walletBalances={walletBalances} />
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </div>

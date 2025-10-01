@@ -1,6 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
@@ -170,7 +170,6 @@ export default function SubmitManuscriptPage() {
         title: "Error",
         description: "Wallet connection and CV verification required",
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
         duration: 5000,
       });
       return;
@@ -302,8 +301,6 @@ export default function SubmitManuscriptPage() {
         title: "Error",
         description: errorMsg,
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
-        duration: 5000,
       });
     } finally {
       setSubmitting(false);
@@ -318,7 +315,6 @@ export default function SubmitManuscriptPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto py-8 justify-center">
             <div className="text-center py-8 justify-center">
               <h2 className="text-2xl text-primary mb-4 font-semibold">
@@ -343,7 +339,6 @@ export default function SubmitManuscriptPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto pb-4 px-32">
             <div className="space-y-6">
               {/* Form Container Skeleton */}
@@ -421,7 +416,6 @@ export default function SubmitManuscriptPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
         <div className="container max-w-full mx-auto  pb-4 px-32">
           <form onSubmit={handleSubmit} className="space-y-6">
             {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}

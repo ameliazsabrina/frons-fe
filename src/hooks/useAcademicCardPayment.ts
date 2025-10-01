@@ -43,14 +43,17 @@ export function useAcademicCardPayment() {
   const apiBaseUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
-  // Configure axios instance with useMemo to prevent recreation on every render
-  const apiClient = useMemo(() => axios.create({
-    baseURL: apiBaseUrl,
-    timeout: 30000,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }), [apiBaseUrl]);
+  const apiClient = useMemo(
+    () =>
+      axios.create({
+        baseURL: apiBaseUrl,
+        timeout: 30000,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    [apiBaseUrl]
+  );
 
   // Check if user has access to Academic Card
   const checkPaymentStatus =
@@ -281,21 +284,17 @@ export function useAcademicCardPayment() {
   );
 
   return {
-    // State
     isLoading,
     error,
     paymentStatus,
 
-    // Actions
     checkPaymentStatus,
     initiatePayment,
     verifyPayment,
     handlePaymentCallback,
 
-    // Utilities
     formatCurrency,
 
-    // Computed properties
     hasAccess: paymentStatus?.hasAccess || false,
     isPaymentPending: paymentStatus?.paymentStatus === "pending",
     isPaymentCompleted: paymentStatus?.paymentStatus === "completed",

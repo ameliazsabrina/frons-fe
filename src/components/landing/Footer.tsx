@@ -23,7 +23,7 @@ export function Footer() {
   return (
     <footer className="bg-white">
       <div className="bg-primary rounded-t-3xl overflow-hidden mx-4">
-        <div className="py-16 px-6 max-w-3xl mx-auto">
+        <div className="py-16 px-6 max-w-4xl mx-auto">
           <div className="flex flex-col items-center text-center space-y-6">
             <div className="flex items-center">
               <Image
@@ -36,7 +36,7 @@ export function Footer() {
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-2xl lg:text-3xl font-spectral font-bold text-white leading-tight ">
+              <h3 className="text-2xl md:text-3xl font-semibold text-white">
                 Get started with revolutionary academic publishing
               </h3>
               <p className="text-white/80 text-lg">

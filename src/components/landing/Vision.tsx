@@ -80,21 +80,21 @@ export function Vision() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="h-screen pin-panel">
+    <section ref={sectionRef} className="h-fit pin-panel bg-gray-50">
       <div className="container max-w-7xl mx-auto px-4">
         <Separator />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="text-left order-2 lg:order-1">
-              <h2
+              {/* <h2
                 ref={titleRef}
                 className="text-4xl sm:text-5xl md:text-6xl font-spectral font-bold text-primary mb-8 tracking-tight"
               >
                 Fronsciers Vision
-              </h2>
+              </h2> */}
               <p
                 ref={textRef}
-                className="text-base lg:text-2xl text-muted-foreground tracking-tight leading-relaxed"
+                className="text-base md:text-xl text-muted-foreground"
               >
                 Fronsciers envisions a collaborative ecosystem where Authors,
                 Peer Reviewers, and Readers continuously strengthen one another.
@@ -102,7 +102,7 @@ export function Vision() {
                 credibility, and Readers engage with and build upon the
                 research.{" "}
                 <span className="font-semibold">
-                  {" "}
+                  <br />
                   Together, this cycle of contribution drives innovation and
                   keeps the community growing stronger.{" "}
                 </span>{" "}

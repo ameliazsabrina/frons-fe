@@ -281,8 +281,6 @@ export default function DocisPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
-
         <div className="container max-w-full mx-auto pb-4 px-32">
           <div className="mb-8">
             <div className="max-w-2xl mx-auto">

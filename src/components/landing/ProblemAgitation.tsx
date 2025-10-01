@@ -40,20 +40,14 @@ export function ProblemAgitation() {
   }, []);
 
   return (
-    <div className="container max-w-7xl mx-auto px-4">
+    <div className="container max-w-4xl mx-auto px-4">
       <Separator className="mb-16" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          <div className="text-left tracking-tight">
-            <h2 className="text-6xl font-spectral font-bold text-primary">
-              The Challenge
-            </h2>
-          </div>
-
-          <div className="text-left">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 lg:gap-12 items-center">
+          <div className="text-center">
             <p
               ref={textRef}
-              className="text-base lg:text-2xl text-muted-foreground tracking-tight leading-tight mb-16"
+              className="text-base md:text-xl text-muted-foreground mb-16"
             >
               Publishing research today is slow, costly, and often gatekept.
               Authors face months of waiting, unclear review processes, and

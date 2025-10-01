@@ -1,6 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import type React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +94,6 @@ interface EditableData {
 
 const UnconnectedView = () => (
   <>
-    <HeaderImage />
     <div className="container max-w-4xl mx-auto px-6 py-16">
       <div className="text-center space-y-8">
         <div className="space-y-4">
@@ -385,7 +384,7 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to register profile. Please try again.",
           variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
+
           duration: 5000,
         });
       }
@@ -395,7 +394,7 @@ const ConnectedView = () => {
         title: "Registration Failed",
         description: "Failed to register profile. Please try again.",
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
+
         duration: 5000,
       });
     } finally {
@@ -471,7 +470,6 @@ const ConnectedView = () => {
         title: "Missing Required Fields",
         description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
         duration: 5000,
       });
       return;
@@ -483,7 +481,6 @@ const ConnectedView = () => {
         title: "Invalid Email",
         description: "Please enter a valid email address",
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
         duration: 5000,
       });
       return;
@@ -508,7 +505,6 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to create profile. Please try again.",
           variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
           duration: 5000,
         });
       }
@@ -518,7 +514,6 @@ const ConnectedView = () => {
         title: "Profile Creation Failed",
         description: "Failed to create profile. Please try again.",
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
         duration: 5000,
       });
     } finally {
@@ -597,7 +592,6 @@ const ConnectedView = () => {
           title: "Failed to Set Username",
           description: result.message || "Please try again.",
           variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
         });
       }
     } catch (error) {
@@ -614,7 +608,6 @@ const ConnectedView = () => {
 
   return (
     <>
-      <HeaderImage />
       <div className="container max-w-6xl mx-auto px-6 py-8">
         <div className="space-y-8">
           <div className="text-center space-y-4">

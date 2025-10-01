@@ -131,16 +131,10 @@ export function Features() {
         <div className="grid lg:grid-cols-2 gap-16 items-start justify-center">
           <div className="lg:sticky lg:top-24">
             <div className="space-y-6">
-              <h2
-                ref={titleRef}
-                className="text-4xl lg:text-5xl font-spectral font-bold text-white leading-tight"
-              >
-                What You Get
+              <h2 ref={titleRef} className="text-4xl md:text-5xl text-white">
+                Fronsciers Features
               </h2>
-              <p
-                ref={subtitleRef}
-                className="text-xl text-white/80 leading-tight tracking-tight"
-              >
+              <p ref={subtitleRef} className="text-xl text-white/80">
                 Experience the future of academic publishing with our
                 comprehensive platform designed for researchers and academics
                 who demand excellence.
@@ -164,12 +158,10 @@ export function Features() {
                       </div>
                     </div>
                     <div className="flex-1 space-y-2">
-                      <h3 className="text-2xl font-bold text-white tracking-tight">
+                      <h3 className="text-xl  text-white tracking-tight">
                         {feature.title}
                       </h3>
-                      <p className="text-white/80 tracking-tight">
-                        {feature.description}
-                      </p>
+                      <p className="text-white/80">{feature.description}</p>
                       {index < features.length - 1 && (
                         <Separator className="bg-white/20 mt-6" />
                       )}

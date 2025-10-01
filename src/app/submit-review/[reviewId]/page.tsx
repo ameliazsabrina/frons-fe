@@ -324,7 +324,6 @@ export default function SubmitReviewPage() {
         title: "Submission Failed",
         description: errorMessage,
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500",
       });
     } finally {
       setSubmitting(false);
@@ -338,7 +337,6 @@ export default function SubmitReviewPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto py-8">
             <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
               Review Submission
@@ -363,7 +361,6 @@ export default function SubmitReviewPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-4xl mx-auto px-4 py-8">
             <div className="space-y-6">
               <Skeleton className="h-8 w-64" />
@@ -392,7 +389,6 @@ export default function SubmitReviewPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-4xl mx-auto px-4 py-8">
             <Card>
               <CardContent className="p-8 text-center">
@@ -422,7 +418,6 @@ export default function SubmitReviewPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
         <div className="container max-w-4xl mx-auto ">
           <div className="mb-6">
             <Button

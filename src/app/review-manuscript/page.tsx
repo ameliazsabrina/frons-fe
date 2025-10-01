@@ -101,7 +101,6 @@ export default function ReviewManuscriptPage() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto  py-8">
             <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
               Review Dashboard
@@ -125,7 +124,6 @@ export default function ReviewManuscriptPage() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
         <div className="container max-w-full mx-auto pb-4 px-32">
           <div className="mb-8 space-y-4">
             <div className="relative max-w-full">

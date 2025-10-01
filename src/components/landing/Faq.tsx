@@ -141,17 +141,17 @@ export function Faq() {
   };
 
   return (
-    <div ref={sectionRef} className="py-16  bg-white">
+    <div ref={sectionRef} className="pb-16  bg-white">
       <div className="container max-w-7xl mx-auto px-6 lg:px-8">
         <Separator className="w-full mb-16" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div ref={leftSectionRef} className="lg:sticky lg:top-24">
-            <h2 className="text-4xl lg:text-6xl font-spectral font-bold text-primary mb-6 leading-tight">
+            <h2 className="text-2xl md:text-5xl font-semibold text-primary mb-6 ">
               Got Questions?
               <br />
               We&apos;ve Got Answers.
             </h2>
-            <p className="text-lg text-muted-foreground tracking-tight mb-8">
+            <p className="text-lg text-muted-foreground mb-8">
               Find answers to common questions about Fronsciers and how our
               decentralized academic publishing platform revolutionizes research
               publication with blockchain technology.
@@ -172,7 +172,7 @@ export function Faq() {
                     onClick={() => toggleFAQ(index)}
                     className="w-full py-6 text-left flex items-center justify-between gap-4 transition-colors duration-200"
                   >
-                    <h3 className="text-lg lg:text-xl font-medium text-primary tracking-tight">
+                    <h3 className="text-lg lg:text-xl font-medium text-primary ">
                       {faq.question}
                     </h3>
                     <div className="flex-shrink-0">
@@ -199,9 +199,7 @@ export function Faq() {
                       }
                     `}
                   >
-                    <p className="text-muted-foreground tracking-tight pr-8">
-                      {faq.answer}
-                    </p>
+                    <p className="text-muted-foreground  pr-8">{faq.answer}</p>
                   </div>
                 </div>
               </div>

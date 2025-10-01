@@ -64,7 +64,7 @@ const UnconnectedView = () => (
 export default function YourProfile() {
   const router = useRouter();
   const { toast } = useToast();
-  
+
   // Custom hooks
   const { connected, solanaWallets, walletAddress } = useWalletConnection();
   const {
@@ -92,7 +92,7 @@ export default function YourProfile() {
   useEffect(() => {
     const reloadProfile = async () => {
       await loadProfile(connected, solanaWallets || []);
-      
+
       if (error && !isInitialLoad) {
         toast({
           variant: "destructive",
@@ -121,7 +121,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <UnconnectedView />
         </div>
       </div>
@@ -135,7 +134,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto pb-4 px-32">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               <div className="lg:col-span-1">
@@ -275,7 +273,6 @@ export default function YourProfile() {
           <OverviewSidebar connected={connected} />
         </Sidebar>
         <div className="flex-1">
-          <HeaderImage />
           <div className="container max-w-full mx-auto py-8">
             <div className="text-center">
               <div className="mb-6">
@@ -303,8 +300,6 @@ export default function YourProfile() {
         <OverviewSidebar connected={connected} />
       </Sidebar>
       <div className="flex-1">
-        <HeaderImage />
-
         <div className="container max-w-full mx-auto pb-4 px-32">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div className="lg:col-span-1">
@@ -425,7 +420,9 @@ export default function YourProfile() {
                       ) : (
                         <>
                           <Button
-                            onClick={() => handleSave(updateProfile, reloadProfileForSave)}
+                            onClick={() =>
+                              handleSave(updateProfile, reloadProfileForSave)
+                            }
                             disabled={saving}
                             className="flex-1"
                           >
