@@ -93,23 +93,13 @@ interface EditableData {
 }
 
 const UnconnectedView = () => (
-  <>
-    <div className="container max-w-4xl mx-auto px-6 py-16">
-      <div className="text-center space-y-8">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-primary">
-            Resubmit Your CV
-          </h1>
-          <p className="text-md text-muted-foreground max-w-2xl mx-auto">
-            Connect your wallet to resubmit your CV and update your profile
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <WalletConnection />
-        </div>
+  <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 justify-center">
+    <div className="text-center space-y-8">
+      <div className="flex justify-center">
+        <WalletConnection />
       </div>
     </div>
-  </>
+  </div>
 );
 
 const ConnectedView = () => {
@@ -192,7 +182,6 @@ const ConnectedView = () => {
           title: "Error",
           description: "Failed to load user profile",
           variant: "destructive",
-          duration: 5000,
         });
       }
     };
@@ -208,8 +197,6 @@ const ConnectedView = () => {
         title: "CV Updated",
         description: "Your CV has been updated successfully.",
         variant: "success",
-        className: "bg-white text-green-600 border-green-500 shadow-lg",
-        duration: 5000,
       });
 
       // Redirect to profile after successful update
@@ -320,7 +307,6 @@ const ConnectedView = () => {
         toast({
           title: "Profile Updated Successfully",
           description: "Redirecting to your profile...",
-          className: "bg-white text-green-600 border-green-500 shadow-lg",
         });
 
         setTimeout(() => {
@@ -332,7 +318,6 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to update profile. Please try again.",
           variant: "destructive",
-          duration: 5000,
         });
       }
     } catch (err) {
@@ -341,7 +326,6 @@ const ConnectedView = () => {
         title: "Update Failed",
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
-        duration: 5000,
       });
     } finally {
       setConfirmingRegistration(false);
@@ -395,7 +379,6 @@ const ConnectedView = () => {
         title: "Missing Required Fields",
         description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
-        duration: 5000,
       });
       return;
     }
@@ -406,7 +389,6 @@ const ConnectedView = () => {
         title: "Invalid Email",
         description: "Please enter a valid email address",
         variant: "destructive",
-        duration: 5000,
       });
       return;
     }
@@ -422,7 +404,6 @@ const ConnectedView = () => {
           title: "Profile Updated",
           description:
             "Your profile has been updated successfully! Redirecting...",
-          className: "bg-white text-green-600 border-green-500 shadow-lg",
         });
 
         setTimeout(() => {
@@ -434,7 +415,6 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to update profile. Please try again.",
           variant: "destructive",
-          duration: 5000,
         });
       }
     } catch (err) {
@@ -443,14 +423,13 @@ const ConnectedView = () => {
         title: "Profile Update Failed",
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
-        duration: 5000,
       });
     }
   };
 
   return (
     <>
-      <div className="container max-w-6xl mx-auto px-6 py-8">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-3xl font-semibold text-primary">
@@ -778,11 +757,15 @@ export default function ResubmitCV() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        {!connected ? <UnconnectedView /> : <ConnectedView />}
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          {!connected ? <UnconnectedView /> : <ConnectedView />}
+        </main>
       </div>
     </div>
   );

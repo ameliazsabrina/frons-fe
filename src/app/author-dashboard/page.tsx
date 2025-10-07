@@ -53,60 +53,64 @@ export default function AuthorsDashboardPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-full mx-auto pb-4 px-32">
-            <div className="space-y-6">
-              {/* Header skeleton */}
-              <div className="flex justify-between items-center">
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-64" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-                <Skeleton className="h-10 w-32" />
-              </div>
-
-              {/* Stats grid skeleton */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i} className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-5 w-5 rounded" />
-                      </div>
-                      <Skeleton className="h-8 w-16" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Main content skeleton */}
-              <Card>
-                <div className="p-8 space-y-6">
-                  <div className="flex space-x-4 border-b">
-                    {[...Array(3)].map((_, i) => (
-                      <Skeleton key={i} className="h-8 w-24" />
-                    ))}
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+              <div className="space-y-6">
+                {/* Header skeleton */}
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-4 w-48" />
                   </div>
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="border rounded-lg p-4">
-                        <Skeleton className="h-6 w-3/4 mb-2" />
-                        <Skeleton className="h-4 w-1/2 mb-4" />
-                        <div className="flex space-x-2">
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+
+                {/* Stats grid skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-5 w-5 rounded" />
                         </div>
+                        <Skeleton className="h-8 w-16" />
                       </div>
-                    ))}
-                  </div>
+                    </Card>
+                  ))}
                 </div>
-              </Card>
+
+                {/* Main content skeleton */}
+                <Card>
+                  <div className="p-8 space-y-6">
+                    <div className="flex space-x-4 border-b">
+                      {[...Array(3)].map((_, i) => (
+                        <Skeleton key={i} className="h-8 w-24" />
+                      ))}
+                    </div>
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="border rounded-lg p-4">
+                          <Skeleton className="h-6 w-3/4 mb-2" />
+                          <Skeleton className="h-4 w-1/2 mb-4" />
+                          <div className="flex space-x-2">
+                            <Skeleton className="h-6 w-16" />
+                            <Skeleton className="h-6 w-20" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
       </div>
     );
@@ -115,19 +119,17 @@ export default function AuthorsDashboardPage() {
   if (!isWalletConnected) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-full mx-auto py-8 justify-center">
-            <h2 className="text-2xl font-semibold text-primary mb-2 text-center justify-center">
-              Authentication Required
-            </h2>
-            <p className="text-muted-foreground mb-4 text-sm">
-              Please connect your wallet to access your author dashboard.
-            </p>
-            <WalletConnection />
-          </div>
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 justify-center">
+              <WalletConnection />
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -135,92 +137,96 @@ export default function AuthorsDashboardPage() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        <div className="container max-w-full mx-auto pb-8 px-32">
-          <AuthorDashboardHeader onNewSubmission={navigateToSubmission} />
-          <AuthorStatsGrid stats={stats} />
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <AuthorDashboardHeader onNewSubmission={navigateToSubmission} />
+            <AuthorStatsGrid stats={stats} />
 
-          <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <div className="border-b border-gray-100">
-                <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none">
-                  <TabsTrigger
-                    value="overview"
-                    className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
-                  >
-                    <BarChart3Icon className="w-4 h-4" />
-                    <span>Overview</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="manuscripts"
-                    className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
-                  >
-                    <BookOpenIcon className="w-4 h-4" />
-                    <span>Manuscripts</span>
-                    {manuscripts.length > 0 && (
-                      <Badge variant="secondary" className="ml-2 text-xs">
-                        {manuscripts.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="actions"
-                    className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
-                  >
-                    <TrendingUpIcon className="w-4 h-4" />
-                    <span>Actions</span>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+            <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <div className="border-b border-gray-100">
+                  <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none">
+                    <TabsTrigger
+                      value="overview"
+                      className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
+                    >
+                      <BarChart3Icon className="w-4 h-4" />
+                      <span>Overview</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="manuscripts"
+                      className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
+                    >
+                      <BookOpenIcon className="w-4 h-4" />
+                      <span>Manuscripts</span>
+                      {manuscripts.length > 0 && (
+                        <Badge variant="secondary" className="ml-2 text-xs">
+                          {manuscripts.length}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="actions"
+                      className="flex items-center space-x-2 rounded-none border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4"
+                    >
+                      <TrendingUpIcon className="w-4 h-4" />
+                      <span>Actions</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <TabsContent value="overview" className="p-8 space-y-6">
-                {manuscripts.length > 0 ? (
-                  <RecentSubmissions manuscripts={stats.recentManuscripts} />
-                ) : (
-                  <EmptyManuscriptsState
-                    onSubmitManuscript={navigateToSubmission}
-                    variant="overview"
+                <TabsContent value="overview" className="p-8 space-y-6">
+                  {manuscripts.length > 0 ? (
+                    <RecentSubmissions manuscripts={stats.recentManuscripts} />
+                  ) : (
+                    <EmptyManuscriptsState
+                      onSubmitManuscript={navigateToSubmission}
+                      variant="overview"
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="manuscripts" className="p-8">
+                  {manuscripts.length === 0 ? (
+                    <EmptyManuscriptsState
+                      onSubmitManuscript={navigateToSubmission}
+                      variant="manuscripts"
+                    />
+                  ) : (
+                    <div className="space-y-6">
+                      {manuscripts.map((manuscript) => (
+                        <ManuscriptCard
+                          key={manuscript.id}
+                          manuscript={manuscript}
+                          onViewManuscript={handleViewManuscript}
+                          onViewPublication={handleViewPublication}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="actions" className="p-8">
+                  <QuickActionsTab
+                    onNewSubmission={navigateToSubmission}
+                    onRefreshStatus={handleRefreshStatus}
+                    onViewProfile={navigateToProfile}
                   />
-                )}
-              </TabsContent>
-
-              <TabsContent value="manuscripts" className="p-8">
-                {manuscripts.length === 0 ? (
-                  <EmptyManuscriptsState
-                    onSubmitManuscript={navigateToSubmission}
-                    variant="manuscripts"
-                  />
-                ) : (
-                  <div className="space-y-6">
-                    {manuscripts.map((manuscript) => (
-                      <ManuscriptCard
-                        key={manuscript.id}
-                        manuscript={manuscript}
-                        onViewManuscript={handleViewManuscript}
-                        onViewPublication={handleViewPublication}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="actions" className="p-8">
-                <QuickActionsTab
-                  onNewSubmission={navigateToSubmission}
-                  onRefreshStatus={handleRefreshStatus}
-                  onViewProfile={navigateToProfile}
-                />
-              </TabsContent>
-            </Tabs>
-          </Card>
-        </div>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </div>
+        </main>
       </div>
     </div>
   );

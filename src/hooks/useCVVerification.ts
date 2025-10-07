@@ -62,8 +62,6 @@ export function useCVVerification({
           title: "CV Required",
           description: "Please register your CV before submitting manuscripts.",
           variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
-          duration: 5000,
         });
         router.push("/register-cv");
         return false;
@@ -78,8 +76,6 @@ export function useCVVerification({
           title: "CV Required",
           description: "Please register your CV before submitting manuscripts.",
           variant: "destructive",
-          className: "bg-white text-red-600 border-red-500 shadow-lg",
-          duration: 5000,
         });
         router.push("/register-cv");
         return false;
@@ -92,8 +88,6 @@ export function useCVVerification({
         title: "Error",
         description: errorMsg,
         variant: "destructive",
-        className: "bg-white text-red-600 border-red-500 shadow-lg",
-        duration: 5000,
       });
       router.push("/register-cv");
       return false;

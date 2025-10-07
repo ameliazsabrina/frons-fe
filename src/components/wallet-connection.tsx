@@ -148,7 +148,7 @@ export const WalletConnection = () => {
   };
 
   if (!privyReady || !walletsReady) {
-    return <Loading variant="inline" text="Loading wallet..." size="sm" />;
+    return <Loading variant="inline" size="sm" />;
   }
 
   const handleLogin = async (e: React.MouseEvent) => {

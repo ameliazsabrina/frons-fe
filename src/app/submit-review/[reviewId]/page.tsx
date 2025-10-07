@@ -160,7 +160,6 @@ export default function SubmitReviewPage() {
       try {
         setLoading(true);
 
-        // First check if the user can review this specific manuscript
         try {
           const canReviewResponse = await axios.get(
             `${apiUrl}/reviews/reviewer/${validSolanaPublicKey}/can-review/${reviewId}`
@@ -182,10 +181,8 @@ export default function SubmitReviewPage() {
             "Could not check reviewer qualification:",
             qualificationError
           );
-          // Continue with loading - the backend will handle validation during submission
         }
 
-        // Fetch manuscript by ID
         const response = await axios.get(
           `${apiUrl}/manuscripts/pending-review?limit=100&reviewerWallet=${validSolanaPublicKey}`
         );
@@ -235,7 +232,6 @@ export default function SubmitReviewPage() {
       return;
     }
 
-    // Check if comments are required based on decision type
     const requiresComments = [
       "minor_revision",
       "major_revision",
@@ -277,17 +273,14 @@ export default function SubmitReviewPage() {
 
       console.log("📝 Submitting review data:", reviewData);
 
-      // Submit review to backend
       const response = await axios.post(`${apiUrl}/reviews/submit`, reviewData);
 
       if (response.data.success) {
         toast({
           title: "Review Submitted Successfully",
           description: `Your ${selectedDecision?.label.toLowerCase()} review has been submitted.`,
-          className: "bg-green-500 text-white border-none",
         });
 
-        // Redirect back to review dashboard after a short delay
         setTimeout(() => {
           router.push("/review-manuscript");
         }, 2000);
@@ -301,7 +294,6 @@ export default function SubmitReviewPage() {
 
       let errorMessage = "Failed to submit review. Please try again.";
 
-      // Handle specific error codes
       if (error.response?.data?.code === "REVIEWER_NOT_QUALIFIED") {
         errorMessage =
           "You need to upload your CV and be qualified as a reviewer before submitting reviews. Please visit the CV registration page first.";
@@ -333,21 +325,19 @@ export default function SubmitReviewPage() {
   if (!connected || !validSolanaPublicKey) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-full mx-auto py-8">
-            <h2 className="text-2xl font-semibold text-primary mb-2 text-center">
-              Review Submission
-            </h2>
-            <p className="text-muted-foreground mb-4 text-center text-sm">
-              Please connect your wallet to submit manuscript reviews.
-            </p>
-            <div className="flex justify-center">
-              <WalletConnection />
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 justify-center">
+              <div className="flex justify-center">
+                <WalletConnection />
+              </div>
             </div>
-          </div>
+          </main>
         </div>
         <Toaster />
       </div>
@@ -357,25 +347,29 @@ export default function SubmitReviewPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-4xl mx-auto px-4 py-8">
-            <div className="space-y-6">
-              <Skeleton className="h-8 w-64" />
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-48" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-32 w-full" />
-                </CardContent>
-              </Card>
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+              <div className="space-y-6">
+                <Skeleton className="h-8 w-64" />
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-48" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-32 w-full" />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
         <Toaster />
       </div>
@@ -385,27 +379,31 @@ export default function SubmitReviewPage() {
   if (!manuscript) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-4xl mx-auto px-4 py-8">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-primary mb-2">
-                  Manuscript Not Found
-                </h2>
-                <p className="text-muted-foreground mb-4">
-                  The manuscript you&apos;re trying to review could not be
-                  found.
-                </p>
-                <Button onClick={() => router.push("/review-manuscript")}>
-                  Return to Review Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <AlertCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-primary mb-2">
+                    Manuscript Not Found
+                  </h2>
+                  <p className="text-muted-foreground mb-4">
+                    The manuscript you&apos;re trying to review could not be
+                    found.
+                  </p>
+                  <Button onClick={() => router.push("/review-manuscript")}>
+                    Return to Review Dashboard
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
         </div>
         <Toaster />
       </div>
@@ -414,308 +412,320 @@ export default function SubmitReviewPage() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        <div className="container max-w-4xl mx-auto ">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/review-manuscript")}
-              className="mb-4 px-0 py-0"
-            >
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-2xl font-semibold text-primary">
-              Submit Manuscript Review
-            </h1>
-            <p className="text-muted-foreground">
-              Review the manuscript and provide your recommendation
-            </p>
-          </div>
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <div className="mb-6">
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/review-manuscript")}
+                className="mb-4 px-0 py-0"
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <h1 className="text-2xl font-semibold text-primary">
+                Submit Manuscript Review
+              </h1>
+              <p className="text-muted-foreground">
+                Review the manuscript and provide your recommendation
+              </p>
+            </div>
 
-          <div className="space-y-6">
-            {/* Manuscript Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Manuscript Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg text-primary">
-                    {manuscript.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    By {manuscript.author}
-                  </p>
-                </div>
+            <div className="space-y-6">
+              {/* Manuscript Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    Manuscript Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg text-primary">
+                      {manuscript.title}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      By {manuscript.author}
+                    </p>
+                  </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {manuscript.category.map((cat, index) => (
-                    <Badge key={index} variant="secondary">
-                      {cat}
-                    </Badge>
-                  ))}
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium">Abstract</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {manuscript.abstract}
-                  </p>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium">Keywords</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {manuscript.keywords.map((keyword, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {keyword}
+                  <div className="flex flex-wrap gap-2">
+                    {manuscript.category.map((cat, index) => (
+                      <Badge key={index} variant="secondary">
+                        {cat}
                       </Badge>
                     ))}
                   </div>
-                </div>
 
-                <Separator />
-
-                <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-sm font-medium">Submitted</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(manuscript.submissionDate).toLocaleDateString()}
+                    <Label className="text-sm font-medium">Abstract</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {manuscript.abstract}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      window.open(manuscript.ipfsUrls.manuscript, "_blank")
-                    }
-                    className="flex items-center gap-2"
-                  >
-                    <ExternalLinkIcon className="w-4 h-4" />
-                    View Full Paper
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Review Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Review</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmitReview} className="space-y-6">
-                  {/* Review Decision */}
                   <div>
-                    <Label className="text-base font-medium mb-4 block">
-                      Review Decision
-                    </Label>
-                    <RadioGroup
-                      value={reviewDecision}
-                      onValueChange={(value: string) =>
-                        handleDecisionChange(value as ReviewDecision)
-                      }
-                      className="space-y-3"
-                    >
-                      {reviewDecisions.map((decision) => (
-                        <div
-                          key={decision.value}
-                          className={`border rounded-lg transition-all ${
-                            reviewDecision === decision.value
-                              ? `${decision.borderColor} ${decision.bgColor}`
-                              : "border-gray-200 hover:border-gray-300"
-                          }`}
+                    <Label className="text-sm font-medium">Keywords</Label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {manuscript.keywords.map((keyword, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs"
                         >
-                          <div className="p-4 cursor-pointer">
-                            <div className="flex items-center space-x-3">
-                              <RadioGroupItem
-                                value={decision.value}
-                                id={decision.value}
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className={decision.color}>
-                                    {decision.icon}
-                                  </span>
-                                  <Label
-                                    htmlFor={decision.value}
-                                    className={`font-medium cursor-pointer ${decision.color}`}
-                                  >
-                                    {decision.label}
-                                  </Label>
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {decision.description}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Conditional textarea for specific decisions */}
-                          {reviewDecision === decision.value &&
-                            (decision.value === "minor_revision" ||
-                              decision.value === "major_revision" ||
-                              decision.value === "rejected") && (
-                              <div className="px-4 pb-4 border-t border-gray-100 mt-3 pt-3">
-                                <Label className="text-sm font-medium mb-2 block">
-                                  {decision.value === "rejected"
-                                    ? "Reasons for rejection *"
-                                    : `Specific changes required for ${decision.label.toLowerCase()} *`}
-                                </Label>
-                                <Textarea
-                                  value={reviewComments}
-                                  onChange={(e) =>
-                                    setReviewComments(e.target.value)
-                                  }
-                                  placeholder={
-                                    decision.value === "rejected"
-                                      ? "Please explain why this manuscript should be rejected..."
-                                      : decision.value === "minor_revision"
-                                      ? "Please specify the minor changes needed (e.g., typos, formatting, small clarifications)..."
-                                      : "Please detail the major revisions required (e.g., additional experiments, rewriting sections, addressing methodological issues)..."
-                                  }
-                                  className="min-h-[120px] resize-none"
-                                  required
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {decision.value === "rejected"
-                                    ? "This feedback will help the author understand the decision"
-                                    : "Be specific to help the author make the necessary improvements"}
-                                </p>
-                              </div>
-                            )}
-                        </div>
+                          {keyword}
+                        </Badge>
                       ))}
-                    </RadioGroup>
+                    </div>
                   </div>
-
-                  {/* Review Comments for Accepted decisions or Additional Comments */}
-                  {reviewDecision === "accepted" ? (
-                    <div>
-                      <Label
-                        htmlFor="review-comments"
-                        className="text-base font-medium"
-                      >
-                        Comments for Author
-                      </Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Optional: Provide positive feedback or commendations for
-                        the accepted manuscript
-                      </p>
-                      <Textarea
-                        id="review-comments"
-                        value={reviewComments}
-                        onChange={(e) => setReviewComments(e.target.value)}
-                        placeholder="This manuscript is well-written and makes a valuable contribution to the field..."
-                        className="min-h-[120px]"
-                      />
-                    </div>
-                  ) : reviewDecision &&
-                    !["minor_revision", "major_revision", "rejected"].includes(
-                      reviewDecision
-                    ) ? (
-                    <div>
-                      <Label
-                        htmlFor="review-comments"
-                        className="text-base font-medium"
-                      >
-                        Additional Comments for Author
-                      </Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Provide any additional feedback that will be shared with
-                        the author
-                      </p>
-                      <Textarea
-                        id="review-comments"
-                        value={reviewComments}
-                        onChange={(e) => setReviewComments(e.target.value)}
-                        placeholder="Please provide detailed feedback on the manuscript's strengths, weaknesses, and suggestions for improvement..."
-                        className="min-h-[120px]"
-                      />
-                    </div>
-                  ) : null}
-
-                  {/* Confidential Comments */}
-                  <div>
-                    <Label
-                      htmlFor="confidential-comments"
-                      className="text-base font-medium"
-                    >
-                      Confidential Comments for Editor
-                    </Label>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Optional comments that will only be visible to the
-                      editorial team
-                    </p>
-                    <Textarea
-                      id="confidential-comments"
-                      value={confidentialComments}
-                      onChange={(e) => setConfidentialComments(e.target.value)}
-                      placeholder="Additional comments for the editorial team only..."
-                      className="min-h-[80px]"
-                    />
-                  </div>
-
-                  {/* Summary */}
-                  {selectedDecision && (
-                    <div
-                      className={`p-4 rounded-lg ${selectedDecision.bgColor} ${selectedDecision.borderColor} border`}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={selectedDecision.color}>
-                          {selectedDecision.icon}
-                        </span>
-                        <span
-                          className={`font-medium ${selectedDecision.color}`}
-                        >
-                          Review Summary: {selectedDecision.label}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedDecision.description}
-                      </p>
-                    </div>
-                  )}
 
                   <Separator />
 
-                  {/* Submit Button */}
-                  <div className="flex justify-end space-x-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">Submitted</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(
+                          manuscript.submissionDate
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
                     <Button
-                      type="button"
                       variant="outline"
-                      onClick={() => router.push("/review-manuscript")}
-                      disabled={submitting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={
-                        submitting ||
-                        !reviewDecision ||
-                        ([
-                          "minor_revision",
-                          "major_revision",
-                          "rejected",
-                        ].includes(reviewDecision) &&
-                          !reviewComments.trim())
+                      onClick={() =>
+                        window.open(manuscript.ipfsUrls.manuscript, "_blank")
                       }
-                      className="min-w-[120px]"
+                      className="flex items-center gap-2"
                     >
-                      {submitting ? "Submitting..." : "Submit Review"}
+                      <ExternalLinkIcon className="w-4 h-4" />
+                      View Full Paper
                     </Button>
                   </div>
-                </form>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Review Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Review</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmitReview} className="space-y-6">
+                    {/* Review Decision */}
+                    <div>
+                      <Label className="text-base font-medium mb-4 block">
+                        Review Decision
+                      </Label>
+                      <RadioGroup
+                        value={reviewDecision}
+                        onValueChange={(value: string) =>
+                          handleDecisionChange(value as ReviewDecision)
+                        }
+                        className="space-y-3"
+                      >
+                        {reviewDecisions.map((decision) => (
+                          <div
+                            key={decision.value}
+                            className={`border rounded-lg transition-all ${
+                              reviewDecision === decision.value
+                                ? `${decision.borderColor} ${decision.bgColor}`
+                                : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="p-4 cursor-pointer">
+                              <div className="flex items-center space-x-3">
+                                <RadioGroupItem
+                                  value={decision.value}
+                                  id={decision.value}
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className={decision.color}>
+                                      {decision.icon}
+                                    </span>
+                                    <Label
+                                      htmlFor={decision.value}
+                                      className={`font-medium cursor-pointer ${decision.color}`}
+                                    >
+                                      {decision.label}
+                                    </Label>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {decision.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {reviewDecision === decision.value &&
+                              (decision.value === "minor_revision" ||
+                                decision.value === "major_revision" ||
+                                decision.value === "rejected") && (
+                                <div className="px-4 pb-4 border-t border-gray-100 mt-3 pt-3">
+                                  <Label className="text-sm font-medium mb-2 block">
+                                    {decision.value === "rejected"
+                                      ? "Reasons for rejection *"
+                                      : `Specific changes required for ${decision.label.toLowerCase()} *`}
+                                  </Label>
+                                  <Textarea
+                                    value={reviewComments}
+                                    onChange={(e) =>
+                                      setReviewComments(e.target.value)
+                                    }
+                                    placeholder={
+                                      decision.value === "rejected"
+                                        ? "Please explain why this manuscript should be rejected..."
+                                        : decision.value === "minor_revision"
+                                        ? "Please specify the minor changes needed (e.g., typos, formatting, small clarifications)..."
+                                        : "Please detail the major revisions required (e.g., additional experiments, rewriting sections, addressing methodological issues)..."
+                                    }
+                                    className="min-h-[120px] resize-none"
+                                    required
+                                  />
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {decision.value === "rejected"
+                                      ? "This feedback will help the author understand the decision"
+                                      : "Be specific to help the author make the necessary improvements"}
+                                  </p>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+
+                    {reviewDecision === "accepted" ? (
+                      <div>
+                        <Label
+                          htmlFor="review-comments"
+                          className="text-base font-medium"
+                        >
+                          Comments for Author
+                        </Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Optional: Provide positive feedback or commendations
+                          for the accepted manuscript
+                        </p>
+                        <Textarea
+                          id="review-comments"
+                          value={reviewComments}
+                          onChange={(e) => setReviewComments(e.target.value)}
+                          placeholder="This manuscript is well-written and makes a valuable contribution to the field..."
+                          className="min-h-[120px]"
+                        />
+                      </div>
+                    ) : reviewDecision &&
+                      ![
+                        "minor_revision",
+                        "major_revision",
+                        "rejected",
+                      ].includes(reviewDecision) ? (
+                      <div>
+                        <Label
+                          htmlFor="review-comments"
+                          className="text-base font-medium"
+                        >
+                          Additional Comments for Author
+                        </Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Provide any additional feedback that will be shared
+                          with the author
+                        </p>
+                        <Textarea
+                          id="review-comments"
+                          value={reviewComments}
+                          onChange={(e) => setReviewComments(e.target.value)}
+                          placeholder="Please provide detailed feedback on the manuscript's strengths, weaknesses, and suggestions for improvement..."
+                          className="min-h-[120px]"
+                        />
+                      </div>
+                    ) : null}
+
+                    {/* Confidential Comments */}
+                    <div>
+                      <Label
+                        htmlFor="confidential-comments"
+                        className="text-base font-medium"
+                      >
+                        Confidential Comments for Editor
+                      </Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Optional comments that will only be visible to the
+                        editorial team
+                      </p>
+                      <Textarea
+                        id="confidential-comments"
+                        value={confidentialComments}
+                        onChange={(e) =>
+                          setConfidentialComments(e.target.value)
+                        }
+                        placeholder="Additional comments for the editorial team only..."
+                        className="min-h-[80px]"
+                      />
+                    </div>
+
+                    {/* Summary */}
+                    {selectedDecision && (
+                      <div
+                        className={`p-4 rounded-lg ${selectedDecision.bgColor} ${selectedDecision.borderColor} border`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={selectedDecision.color}>
+                            {selectedDecision.icon}
+                          </span>
+                          <span
+                            className={`font-medium ${selectedDecision.color}`}
+                          >
+                            Review Summary: {selectedDecision.label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedDecision.description}
+                        </p>
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    {/* Submit Button */}
+                    <div className="flex justify-end space-x-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.push("/review-manuscript")}
+                        disabled={submitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={
+                          submitting ||
+                          !reviewDecision ||
+                          ([
+                            "minor_revision",
+                            "major_revision",
+                            "rejected",
+                          ].includes(reviewDecision) &&
+                            !reviewComments.trim())
+                        }
+                        className="min-w-[120px]"
+                      >
+                        {submitting ? "Submitting..." : "Submit Review"}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        </main>
         <Toaster />
       </div>
     </div>

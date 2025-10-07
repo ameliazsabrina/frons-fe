@@ -170,7 +170,6 @@ export default function SubmitManuscriptPage() {
         title: "Error",
         description: "Wallet connection and CV verification required",
         variant: "destructive",
-        duration: 5000,
       });
       return;
     }
@@ -187,7 +186,6 @@ export default function SubmitManuscriptPage() {
         title: "Processing Payment",
         description:
           "You're paying $50 USDC that will be saved in the escrow account. If the manuscript is rejected, the payment will be refunded",
-        className: "bg-white border-blue-500 text-blue-600  shadow-lg",
       });
 
       const paymentSignature = await processUSDCPayment();
@@ -196,7 +194,6 @@ export default function SubmitManuscriptPage() {
       toast({
         title: "Payment Successful",
         description: "Payment processed successfully. Submitting manuscript...",
-        className: "text-green-600  bg-white border-green-500 shadow-lg",
       });
 
       setSubmitProgress(50);
@@ -227,7 +224,6 @@ export default function SubmitManuscriptPage() {
       toast({
         title: "Success!",
         description: successMsg,
-        className: "bg-green-500 text-white border-none",
       });
       setSuccess(successMsg);
 
@@ -237,21 +233,19 @@ export default function SubmitManuscriptPage() {
       });
 
       toast({
-        title: "IPFS Links",
+        title: "Manuscript Links",
         description: (
           <div className="space-y-2">
-            <p>Your manuscript has been uploaded to IPFS:</p>
+            <p>Your manuscript has been uploaded onchain:</p>
             <a
               href={result.ipfsUrls.manuscript}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-100 hover:text-blue-200 underline block"
             >
               View Manuscript
             </a>
           </div>
         ),
-        className: "bg-primary text-white border-none",
       });
 
       resetForm();
@@ -311,21 +305,19 @@ export default function SubmitManuscriptPage() {
   if (!connected || !validSolanaPublicKey) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-full mx-auto py-8 justify-center">
-            <div className="text-center py-8 justify-center">
-              <h2 className="text-2xl text-primary mb-4 font-semibold">
-                Authentication Required
-              </h2>
-              <p className="text-muted-foreground mb-4 text-center text-sm  ">
-                Connect your wallet to submit manuscripts.
-              </p>
-              <WalletConnection />
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 justify-center">
+              <div className="text-center py-8 justify-center">
+                <WalletConnection />
+              </div>
             </div>
-          </div>
+          </main>
         </div>
         <Toaster />
       </div>
@@ -335,75 +327,79 @@ export default function SubmitManuscriptPage() {
   if (cvChecking || !cvVerified) {
     return (
       <div className="min-h-screen bg-white flex w-full">
-        <Sidebar>
-          <OverviewSidebar connected={connected} />
-        </Sidebar>
-        <div className="flex-1">
-          <div className="container max-w-full mx-auto pb-4 px-32">
-            <div className="space-y-6">
-              {/* Form Container Skeleton */}
-              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-                <CardContent className="p-0">
-                  {/* Tab Navigation Skeleton */}
-                  <div className="border-b border-gray-100">
-                    <div className="flex w-full justify-start bg-transparent p-0 h-auto">
-                      <div className="flex items-center space-x-2 px-6 py-4">
-                        <Skeleton className="h-4 w-28" />
-                      </div>
-                      <div className="flex items-center space-x-2 px-6 py-4">
-                        <Skeleton className="h-4 w-32" />
-                      </div>
-                      <div className="flex items-center space-x-2 px-6 py-4">
-                        <Skeleton className="h-4 w-24" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Basic Information Form Skeleton */}
-                  <div className="p-8 space-y-6">
-                    {/* Header Section */}
-                    <div className="border-b border-gray-100/50 pb-6 p-6">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <Skeleton className="h-8 w-48" />
-                          <Skeleton className="h-4 w-64 mt-1" />
+        <div className="hidden lg:block">
+          <Sidebar>
+            <OverviewSidebar connected={connected} />
+          </Sidebar>
+        </div>
+        <div className="flex-1 w-full">
+          <main className="flex-1">
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+              <div className="space-y-6">
+                {/* Form Container Skeleton */}
+                <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                  <CardContent className="p-0">
+                    {/* Tab Navigation Skeleton */}
+                    <div className="border-b border-gray-100">
+                      <div className="flex w-full justify-start bg-transparent p-0 h-auto">
+                        <div className="flex items-center space-x-2 px-6 py-4">
+                          <Skeleton className="h-4 w-28" />
+                        </div>
+                        <div className="flex items-center space-x-2 px-6 py-4">
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                        <div className="flex items-center space-x-2 px-6 py-4">
+                          <Skeleton className="h-4 w-24" />
                         </div>
                       </div>
-                      <div className="mt-6">
-                        <Skeleton className="h-px w-full" />
-                      </div>
                     </div>
 
-                    {/* Form Content */}
-                    <div className="space-y-6 px-6">
-                      {/* Title Field */}
-                      <div className="space-y-3">
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-10 w-full" />
+                    {/* Basic Information Form Skeleton */}
+                    <div className="p-8 space-y-6">
+                      {/* Header Section */}
+                      <div className="border-b border-gray-100/50 pb-6 p-6">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-64 mt-1" />
+                          </div>
+                        </div>
+                        <div className="mt-6">
+                          <Skeleton className="h-px w-full" />
+                        </div>
                       </div>
 
-                      {/* Author Field */}
-                      <div className="space-y-3">
-                        <Skeleton className="h-5 w-24" />
-                        <Skeleton className="h-10 w-full" />
+                      {/* Form Content */}
+                      <div className="space-y-6 px-6">
+                        {/* Title Field */}
+                        <div className="space-y-3">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+
+                        {/* Author Field */}
+                        <div className="space-y-3">
+                          <Skeleton className="h-5 w-24" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+
+                        {/* Category Field */}
+                        <div className="space-y-3">
+                          <Skeleton className="h-5 w-36" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
                       </div>
 
-                      {/* Category Field */}
-                      <div className="space-y-3">
-                        <Skeleton className="h-5 w-36" />
-                        <Skeleton className="h-10 w-full" />
+                      {/* Next Button */}
+                      <div className="flex justify-end pt-6">
+                        <Skeleton className="h-10 w-48" />
                       </div>
                     </div>
-
-                    {/* Next Button */}
-                    <div className="flex justify-end pt-6">
-                      <Skeleton className="h-10 w-48" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
         <Toaster />
       </div>
@@ -412,155 +408,159 @@ export default function SubmitManuscriptPage() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        <div className="container max-w-full mx-auto  pb-4 px-32">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {ipfsData && <IPFSInfoDisplay ipfsData={ipfsData} />}
 
-            {submitting && (
-              <SubmissionProgress submitProgress={submitProgress} />
-            )}
+              {submitting && (
+                <SubmissionProgress submitProgress={submitProgress} />
+              )}
 
-            <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
-              <CardContent className="p-0">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={handleTabChange}
-                  className="w-full"
-                >
-                  <div className="border-b border-gray-100">
-                    <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none">
-                      <TabsTrigger
-                        value="basic-info"
-                        className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
-                      >
-                        Basic Information
-                        {completedTabs.has("basic-info") && (
-                          <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="authors-keywords"
-                        className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
-                      >
-                        Abstract & Keywords
-                        {completedTabs.has("authors-keywords") && (
-                          <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="manuscript-file"
-                        className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
-                      >
-                        Manuscript File
-                        {completedTabs.has("manuscript-file") && (
-                          <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
-                        )}
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
-                  <TabsContent value="basic-info" className="p-8 space-y-6">
-                    <BasicInformationForm
-                      formData={formData}
-                      authors={authors}
-                      submitting={submitting}
-                      onInputChange={handleInputChange}
-                      onRemoveItem={handleRemoveItem}
-                      onCategoriesChange={handleCategoriesChange}
-                    />
-                    <div className="flex justify-end pt-6">
-                      <Button
-                        type="button"
-                        onClick={() => handleTabChange("authors-keywords")}
-                        disabled={!completedTabs.has("basic-info")}
-                        className="min-w-[120px]"
-                      >
-                        Next: Abstract & Keywords
-                      </Button>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent
-                    value="authors-keywords"
-                    className="p-8 space-y-6"
+              <Card className="shadow-xl border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm transition-all duration-300">
+                <CardContent className="p-0">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={handleTabChange}
+                    className="w-full"
                   >
-                    <AbstractKeywordsForm
-                      formData={{
-                        abstract: formData.abstract,
-                        keywords: formData.keywords,
-                      }}
-                      keywords={keywords}
-                      submitting={submitting}
-                      onInputChange={handleInputChange}
-                      onRemoveItem={handleRemoveItem}
-                    />
-                    <div className="flex justify-between pt-6">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleTabChange("basic-info")}
-                        className="min-w-[120px]"
-                      >
-                        Previous: Basic Info
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => handleTabChange("manuscript-file")}
-                        disabled={!completedTabs.has("authors-keywords")}
-                        className="min-w-[120px]"
-                      >
-                        Next: Upload File
-                      </Button>
+                    <div className="border-b border-gray-100">
+                      <TabsList className="w-full justify-start bg-transparent p-0 h-auto rounded-none">
+                        <TabsTrigger
+                          value="basic-info"
+                          className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
+                        >
+                          Basic Information
+                          {completedTabs.has("basic-info") && (
+                            <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="authors-keywords"
+                          className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
+                        >
+                          Abstract & Keywords
+                          {completedTabs.has("authors-keywords") && (
+                            <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="manuscript-file"
+                          className="flex items-center space-x-2 data-[state=active]:border-b-primary data-[state=active]:bg-transparent px-6 py-4 relative rounded-none"
+                        >
+                          Manuscript File
+                          {completedTabs.has("manuscript-file") && (
+                            <CheckCircleIcon className="w-4 h-4 text-green-600 ml-1" />
+                          )}
+                        </TabsTrigger>
+                      </TabsList>
                     </div>
-                  </TabsContent>
 
-                  <TabsContent
-                    value="manuscript-file"
-                    className="p-8 space-y-6"
-                  >
-                    <FileUploadForm
-                      selectedFile={selectedFile}
-                      submitting={submitting}
-                      onFileChange={handleFileChange}
-                      onRemoveFile={handleRemoveFile}
-                    />
-                    <div className="flex justify-between pt-6">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleTabChange("authors-keywords")}
-                        className="min-w-[120px]"
-                      >
-                        Previous: Authors & Keywords
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={
-                          submitting ||
-                          !cvVerified ||
-                          paymentProcessing ||
-                          !completedTabs.has("basic-info") ||
-                          !completedTabs.has("authors-keywords") ||
-                          !completedTabs.has("manuscript-file")
-                        }
-                      >
-                        {paymentProcessing
-                          ? "Processing..."
-                          : submitting
-                          ? "Submitting..."
-                          : "Submit Manuscript"}
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </form>
-        </div>
+                    <TabsContent value="basic-info" className="p-8 space-y-6">
+                      <BasicInformationForm
+                        formData={formData}
+                        authors={authors}
+                        submitting={submitting}
+                        onInputChange={handleInputChange}
+                        onRemoveItem={handleRemoveItem}
+                        onCategoriesChange={handleCategoriesChange}
+                      />
+                      <div className="flex justify-end pt-6">
+                        <Button
+                          type="button"
+                          onClick={() => handleTabChange("authors-keywords")}
+                          disabled={!completedTabs.has("basic-info")}
+                          className="min-w-[120px]"
+                        >
+                          Next: Abstract & Keywords
+                        </Button>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent
+                      value="authors-keywords"
+                      className="p-8 space-y-6"
+                    >
+                      <AbstractKeywordsForm
+                        formData={{
+                          abstract: formData.abstract,
+                          keywords: formData.keywords,
+                        }}
+                        keywords={keywords}
+                        submitting={submitting}
+                        onInputChange={handleInputChange}
+                        onRemoveItem={handleRemoveItem}
+                      />
+                      <div className="flex justify-between pt-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleTabChange("basic-info")}
+                          className="min-w-[120px]"
+                        >
+                          Previous: Basic Info
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => handleTabChange("manuscript-file")}
+                          disabled={!completedTabs.has("authors-keywords")}
+                          className="min-w-[120px]"
+                        >
+                          Next: Upload File
+                        </Button>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent
+                      value="manuscript-file"
+                      className="p-8 space-y-6"
+                    >
+                      <FileUploadForm
+                        selectedFile={selectedFile}
+                        submitting={submitting}
+                        onFileChange={handleFileChange}
+                        onRemoveFile={handleRemoveFile}
+                      />
+                      <div className="flex justify-between pt-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleTabChange("authors-keywords")}
+                          className="min-w-[120px]"
+                        >
+                          Previous: Authors & Keywords
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={
+                            submitting ||
+                            !cvVerified ||
+                            paymentProcessing ||
+                            !completedTabs.has("basic-info") ||
+                            !completedTabs.has("authors-keywords") ||
+                            !completedTabs.has("manuscript-file")
+                          }
+                        >
+                          {paymentProcessing
+                            ? "Processing..."
+                            : submitting
+                            ? "Submitting..."
+                            : "Submit Manuscript"}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </form>
+          </div>
+        </main>
       </div>
       <Toaster />
     </div>

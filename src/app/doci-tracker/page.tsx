@@ -277,11 +277,14 @@ export default function DocisPage() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        <div className="container max-w-full mx-auto pb-4 px-32">
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="mb-8">
             <div className="max-w-2xl mx-auto">
               <div className="relative">
@@ -532,7 +535,8 @@ export default function DocisPage() {
               </div>
             </>
           )}
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

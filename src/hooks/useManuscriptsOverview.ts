@@ -184,7 +184,7 @@ export function useManuscriptsOverview(
         } else {
           const errorMessage =
             uniqueManuscripts.length > 0
-              ? "No manuscripts meet the review requirements (3+ completed reviews, 3+ approved reviews)"
+              ? "No manuscripts found"
               : "No published manuscripts found";
 
           setManuscripts([]);

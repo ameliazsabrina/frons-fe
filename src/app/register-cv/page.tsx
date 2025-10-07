@@ -93,24 +93,14 @@ interface EditableData {
 }
 
 const UnconnectedView = () => (
-  <>
-    <div className="container max-w-4xl mx-auto px-6 py-16">
-      <div className="text-center space-y-8">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-primary">
-            Create Your Profile
-          </h1>
-          <p className="text-md text-muted-foreground max-w-2xl mx-auto">
-            Connect your wallet to register your CV and start submitting
-            manuscripts to our decentralized academic platform
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <WalletConnection />
-        </div>
+  <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 justify-center">
+    <div className="text-center space-y-8">
+      <div className="space-y-4"></div>
+      <div className="flex justify-center">
+        <WalletConnection />
       </div>
     </div>
-  </>
+  </div>
 );
 
 const ConnectedView = () => {
@@ -214,8 +204,6 @@ const ConnectedView = () => {
             title: "Profile Found",
             description:
               "You already have a profile. Redirecting to resubmit CV...",
-            className: "bg-white text-blue-600 border-blue-500 shadow-lg",
-            duration: 3000,
           });
 
           setTimeout(() => {
@@ -259,10 +247,7 @@ const ConnectedView = () => {
         description:
           "Your CV has been verified successfully. You can now submit manuscripts.",
         variant: "success",
-        className: "bg-white text-green-600 border-green-500 shadow-lg",
-        duration: 5000,
       });
-      // Don't set showProfile(true) here - let the username flow handle it
     } else if (cvStatus && !cvStatus.hasCV) {
       toast({
         title: "⚠️ CV Required",
@@ -384,8 +369,6 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to register profile. Please try again.",
           variant: "destructive",
-
-          duration: 5000,
         });
       }
     } catch (err) {
@@ -394,8 +377,6 @@ const ConnectedView = () => {
         title: "Registration Failed",
         description: "Failed to register profile. Please try again.",
         variant: "destructive",
-
-        duration: 5000,
       });
     } finally {
       setConfirmingRegistration(false);
@@ -470,7 +451,6 @@ const ConnectedView = () => {
         title: "Missing Required Fields",
         description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
-        duration: 5000,
       });
       return;
     }
@@ -481,7 +461,6 @@ const ConnectedView = () => {
         title: "Invalid Email",
         description: "Please enter a valid email address",
         variant: "destructive",
-        duration: 5000,
       });
       return;
     }
@@ -505,7 +484,6 @@ const ConnectedView = () => {
           description:
             result.message || "Failed to create profile. Please try again.",
           variant: "destructive",
-          duration: 5000,
         });
       }
     } catch (err) {
@@ -514,7 +492,6 @@ const ConnectedView = () => {
         title: "Profile Creation Failed",
         description: "Failed to create profile. Please try again.",
         variant: "destructive",
-        duration: 5000,
       });
     } finally {
     }
@@ -608,7 +585,7 @@ const ConnectedView = () => {
 
   return (
     <>
-      <div className="container max-w-6xl mx-auto px-6 py-8">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-3xl font-semibold text-primary">
@@ -2346,11 +2323,15 @@ export default function RegisterCV() {
 
   return (
     <div className="min-h-screen bg-white flex w-full">
-      <Sidebar>
-        <OverviewSidebar connected={connected} />
-      </Sidebar>
-      <div className="flex-1">
-        {!connected ? <UnconnectedView /> : <ConnectedView />}
+      <div className="hidden lg:block">
+        <Sidebar>
+          <OverviewSidebar connected={connected} />
+        </Sidebar>
+      </div>
+      <div className="flex-1 w-full">
+        <main className="flex-1">
+          {!connected ? <UnconnectedView /> : <ConnectedView />}
+        </main>
       </div>
     </div>
   );

@@ -182,12 +182,11 @@ export class ApiClient {
       ? { Authorization: `Bearer ${accessToken}` }
       : {};
     const params = new URLSearchParams({
-      status: "published",
       limit: limit.toString(),
     });
     if (category) params.append("category", category);
 
-    const response = await axios.get(`${API_BASE_URL}/manuscripts?${params}`, {
+    const response = await axios.get(`${API_BASE_URL}/manuscripts/published?${params}`, {
       headers,
     });
     return response.data.manuscripts || [];

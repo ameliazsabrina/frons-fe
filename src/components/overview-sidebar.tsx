@@ -75,8 +75,17 @@ export function OverviewSidebar({ connected }: { connected: boolean }) {
         </div>
 
         <div className="flex flex-col space-y-2">
-          {links.map((link) => (
-            <SidebarLink key={link.href} link={link} />
+          {links.map((link, index) => (
+            <div key={link.href}>
+              <SidebarLink
+                link={link}
+                className={
+                  link.label === "Overview"
+                    ? "border-b border-gray-200 pb-4 mb-2"
+                    : ""
+                }
+              />
+            </div>
           ))}
         </div>
       </div>
