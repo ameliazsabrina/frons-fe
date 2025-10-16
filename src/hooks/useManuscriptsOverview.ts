@@ -182,18 +182,7 @@ export function useManuscriptsOverview(
           );
           setManuscripts(properlyReviewedManuscripts.slice(0, 30)); // Limit to 30 for performance
         } else {
-          const errorMessage =
-            uniqueManuscripts.length > 0
-              ? "No manuscripts found"
-              : "No published manuscripts found";
-
           setManuscripts([]);
-
-          toast({
-            title: "No Manuscripts Available",
-            description: errorMessage,
-            variant: "destructive",
-          });
         }
       } catch (apiError) {
         const errorMessage =
@@ -201,12 +190,6 @@ export function useManuscriptsOverview(
         console.error("❌ Backend API error:", apiError);
         setManuscriptsError(errorMessage);
         setManuscripts([]);
-
-        toast({
-          title: "Error Loading Manuscripts",
-          description: errorMessage,
-          variant: "destructive",
-        });
       }
     } catch (err) {
       const errorMessage =

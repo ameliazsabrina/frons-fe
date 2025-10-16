@@ -24,6 +24,7 @@ import {
   formatDoiUrl,
 } from "@/utils/profileUtils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShareToContactButton } from "@/components/profile/ShareToContactButton";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -35,7 +36,6 @@ export default function PublicProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <Header />
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <Skeleton className="w-full h-48 sm:h-64 md:h-80 mb-8 rounded-2xl" />
 
@@ -94,7 +94,7 @@ export default function PublicProfilePage() {
         <Header />
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <div className="flex items-center justify-center min-h-[60vh]">
-            <Card className="max-w-md mx-auto shadow-lg border border-gray-100/80 rounded-2xl bg-white/95 backdrop-blur-sm">
+            <Card className="max-w-md mx-auto ">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
                   <div className="w-8 h-8 rounded-full bg-gray-300" />
@@ -231,6 +231,14 @@ export default function PublicProfilePage() {
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
+                </div>
+
+                {/* Share to Contact Button */}
+                <div className="mt-4 flex justify-center sm:justify-start">
+                  <ShareToContactButton
+                    profile={profile}
+                    className="w-full sm:w-auto"
+                  />
                 </div>
               </div>
             </div>

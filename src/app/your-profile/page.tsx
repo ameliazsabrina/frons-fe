@@ -77,14 +77,6 @@ export default function YourProfile() {
   useEffect(() => {
     const reloadProfile = async () => {
       await loadProfile(connected, solanaWallets || []);
-
-      if (error && !isInitialLoad) {
-        toast({
-          variant: "destructive",
-          title: "Profile Not Found",
-          description: "Please register your CV first to create your profile.",
-        });
-      }
     };
 
     reloadProfile();
@@ -266,11 +258,11 @@ export default function YourProfile() {
             <OverviewSidebar connected={connected} />
           </Sidebar>
         </div>
-        <div className="flex-1 w-full">
-          <main className="flex-1">
+        <div className="flex-1 w-full flex items-center justify-center">
+          <main className="w-full">
             <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
               <div className="text-center">
-                <div className="mb-6">
+                <div className="flex flex-col items-center justify-center">
                   <h2 className="text-2xl font-semibold text-primary mb-2">
                     Profile Not Found
                   </h2>
@@ -279,7 +271,10 @@ export default function YourProfile() {
                     uploading your CV to create your academic profile.
                   </p>
                 </div>
-                <Button onClick={() => router.push("/register-cv")}>
+                <Button
+                  onClick={() => router.push("/register-cv")}
+                  className="mt-6"
+                >
                   Register Your CV
                 </Button>
               </div>

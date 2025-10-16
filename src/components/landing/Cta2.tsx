@@ -7,7 +7,7 @@ export function Ctanew() {
         <ScrollVelocity
           texts={["Ready to Publish the Future?"]}
           velocity={50}
-          className="custom-scroll-text "
+          className="custom-scroll-text   "
         />
       </div>
     </section>

@@ -19,7 +19,7 @@ const faqData: FAQItem[] = [
   {
     question: "How much does it cost to publish on Fronsciers?",
     answer:
-      "We offer simple, transparent pricing: Student Plan at IDR 50k per manuscript, Researcher Plan at IDR 150k per manuscript, and Custom pricing for institutions. This is significantly cheaper than traditional journals that charge $3,000+ in APCs.",
+      "We offer simple, transparent pricing for both reviewers and authors which starts from $50 USD per manuscript.",
   },
   {
     question: "How does the peer review process work?",

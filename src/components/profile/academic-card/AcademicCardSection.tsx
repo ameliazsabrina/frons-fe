@@ -5,11 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { CardPreview } from "./CardPreview";
-import { ShippingAddressForm } from "./ShippingAddressForm";
 import { useAcademicCardPayment } from "@/hooks/useAcademicCardPayment";
 import { useToast } from "@/components/ui/sonner";
-import type { ShippingAddress } from "./ShippingAddressForm";
 import {
   IdCardIcon,
   QrCodeIcon,
@@ -18,6 +23,8 @@ import {
   LoaderIcon,
   CheckCircleIcon,
   ExternalLinkIcon,
+  ChevronDownIcon,
+  TruckIcon,
 } from "lucide-react";
 
 interface UserProfile {
@@ -44,6 +51,15 @@ interface UserProfile {
   wallet_address?: string;
 }
 
+interface ShippingAddress {
+  recipientName: string;
+  address: string;
+  region: string; // Province/City
+  postalCode: string;
+  phone: string;
+  country?: string;
+}
+
 interface AcademicCardSectionProps {
   userProfile: UserProfile;
   walletAddress?: string;
@@ -53,8 +69,18 @@ export function AcademicCardSection({
   userProfile,
   walletAddress,
 }: AcademicCardSectionProps) {
-  const [showShareOptions, setShowShareOptions] = useState(false);
   const [showShippingForm, setShowShippingForm] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    recipientName: "",
+    address: "",
+    region: "",
+    postalCode: "",
+    phone: "",
+    country: "Indonesia",
+  });
+  const [shippingErrors, setShippingErrors] = useState<
+    Partial<ShippingAddress>
+  >({});
   const { toast } = useToast();
   const hasCheckedStatus = useRef(false);
 
@@ -67,7 +93,6 @@ export function AcademicCardSection({
     formatCurrency,
     hasAccess,
     isPaymentPending,
-    isPaymentCompleted,
     paymentAmount,
   } = useAcademicCardPayment();
 
@@ -115,11 +140,51 @@ export function AcademicCardSection({
     }
   }, [paymentError, toast]);
 
-  const handlePurchaseCard = async (shippingAddress: ShippingAddress) => {
+  const validateShippingAddress = (
+    address: ShippingAddress
+  ): Partial<ShippingAddress> => {
+    const errors: Partial<ShippingAddress> = {};
+
+    if (!address.recipientName.trim()) {
+      errors.recipientName = "Recipient name is required";
+    }
+    if (!address.address.trim()) {
+      errors.address = "Address is required";
+    }
+    if (!address.region.trim()) {
+      errors.region = "Province/City is required";
+    }
+    if (!address.postalCode.trim()) {
+      errors.postalCode = "Postal code is required";
+    } else if (!/^\d{5}$/.test(address.postalCode)) {
+      errors.postalCode = "Postal code must be 5 digits";
+    }
+    if (!address.phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (
+      !/^(\+62|62|0)[0-9]{8,12}$/.test(address.phone.replace(/\s|-/g, ""))
+    ) {
+      errors.phone = "Please enter a valid Indonesian phone number";
+    }
+
+    return errors;
+  };
+
+  const handlePurchaseCard = async (shippingData?: ShippingAddress) => {
     try {
       if (paymentLoading || isPaymentPending) return;
 
-      const result = await initiatePayment(225000, undefined, shippingAddress);
+      // Validate shipping address if provided
+      if (shippingData) {
+        const errors = validateShippingAddress(shippingData);
+        if (Object.keys(errors).length > 0) {
+          setShippingErrors(errors);
+          toast.error("Please fix the shipping address errors");
+          return;
+        }
+      }
+
+      const result = await initiatePayment(225000, undefined, shippingData);
 
       if (result.success && result.paymentUrl) {
         window.open(result.paymentUrl, "_blank", "noopener,noreferrer");
@@ -127,7 +192,6 @@ export function AcademicCardSection({
         toast.success(
           "Payment session created! Please complete payment in the new tab."
         );
-        setShowShippingForm(false);
 
         setTimeout(() => {
           checkPaymentStatus();
@@ -138,6 +202,35 @@ export function AcademicCardSection({
     } catch (error) {
       console.error("Payment initiation error:", error);
       toast.error("Failed to initiate payment");
+    }
+  };
+
+  const handlePurchaseWithShipping = () => {
+    const errors = validateShippingAddress(shippingAddress);
+    if (Object.keys(errors).length > 0) {
+      setShippingErrors(errors);
+      toast.error("Please fix the shipping address errors");
+      return;
+    }
+
+    setShippingErrors({});
+    handlePurchaseCard(shippingAddress);
+  };
+
+  const handleShippingInputChange = (
+    field: keyof ShippingAddress,
+    value: string
+  ) => {
+    setShippingAddress((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+    // Clear error for this field when user starts typing
+    if (shippingErrors[field]) {
+      setShippingErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
     }
   };
 
@@ -241,7 +334,7 @@ export function AcademicCardSection({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Card Actions</CardTitle>
+            <CardTitle className="text-lg">Purchase the Card</CardTitle>
             <p className="text-sm text-muted-foreground">
               {hasAccess
                 ? "Export, share, or customize your academic card."
@@ -279,28 +372,176 @@ export function AcademicCardSection({
                   </div>
                 )}
 
-                {!showShippingForm ? (
-                  <Button
-                    className="w-full"
-                    onClick={() => setShowShippingForm(true)}
-                    disabled={paymentLoading || isPaymentPending}
-                    size="lg"
-                  >
-                    Purchase Card
-                  </Button>
-                ) : (
-                  <ShippingAddressForm
-                    onSubmit={handlePurchaseCard}
-                    isLoading={paymentLoading}
-                  />
-                )}
+                <Collapsible
+                  open={showShippingForm}
+                  onOpenChange={setShowShippingForm}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      className="w-full"
+                      disabled={paymentLoading || isPaymentPending}
+                      size="lg"
+                      variant="outline"
+                    >
+                      <TruckIcon className="mr-2 h-4 w-4" />
+                      {showShippingForm
+                        ? "Hide Shipping Form"
+                        : "Add Shipping Address"}
+                      <ChevronDownIcon
+                        className={`ml-2 h-4 w-4 transition-transform ${
+                          showShippingForm ? "rotate-180" : ""
+                        }`}
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
 
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>• One-time payment for lifetime access</p>
-                  <p>• Secure payment via Mayar payment gateway</p>
-                  <p>• Supports QRIS, E-Wallet, Bank Transfer, Credit Card</p>
-                  <p>• Generate unlimited exports after purchase</p>
-                </div>
+                  <CollapsibleContent className="space-y-4 mt-4">
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h3 className="font-semibold text-gray-900 mb-4">
+                        Shipping Address
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-2">
+                          <Label htmlFor="recipientName">
+                            Recipient Name *
+                          </Label>
+                          <Input
+                            id="recipientName"
+                            value={shippingAddress.recipientName}
+                            onChange={(e) =>
+                              handleShippingInputChange(
+                                "recipientName",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Full name of recipient"
+                            className={
+                              shippingErrors.recipientName
+                                ? "border-red-500"
+                                : ""
+                            }
+                          />
+                          {shippingErrors.recipientName && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {shippingErrors.recipientName}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <Label htmlFor="address">Complete Address *</Label>
+                          <Input
+                            id="address"
+                            value={shippingAddress.address}
+                            onChange={(e) =>
+                              handleShippingInputChange(
+                                "address",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Street address, building, apartment"
+                            className={
+                              shippingErrors.address ? "border-red-500" : ""
+                            }
+                          />
+                          {shippingErrors.address && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {shippingErrors.address}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="region">Province/City *</Label>
+                          <Input
+                            id="region"
+                            value={shippingAddress.region}
+                            onChange={(e) =>
+                              handleShippingInputChange(
+                                "region",
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g., DKI Jakarta"
+                            className={
+                              shippingErrors.region ? "border-red-500" : ""
+                            }
+                          />
+                          {shippingErrors.region && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {shippingErrors.region}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="postalCode">Postal Code *</Label>
+                          <Input
+                            id="postalCode"
+                            value={shippingAddress.postalCode}
+                            onChange={(e) =>
+                              handleShippingInputChange(
+                                "postalCode",
+                                e.target.value
+                              )
+                            }
+                            placeholder="12345"
+                            maxLength={5}
+                            className={
+                              shippingErrors.postalCode ? "border-red-500" : ""
+                            }
+                          />
+                          {shippingErrors.postalCode && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {shippingErrors.postalCode}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <Label htmlFor="phone">Phone Number *</Label>
+                          <Input
+                            id="phone"
+                            value={shippingAddress.phone}
+                            onChange={(e) =>
+                              handleShippingInputChange("phone", e.target.value)
+                            }
+                            placeholder="+62 812 3456 7890"
+                            className={
+                              shippingErrors.phone ? "border-red-500" : ""
+                            }
+                          />
+                          {shippingErrors.phone && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {shippingErrors.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mt-4">
+                        * All fields are required. Physical cards will be
+                        shipped within Indonesia only.
+                      </p>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={handlePurchaseWithShipping}
+                      disabled={paymentLoading || isPaymentPending}
+                      size="lg"
+                    >
+                      {paymentLoading ? (
+                        <>
+                          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                          Creating Payment...
+                        </>
+                      ) : (
+                        <>Purchase Card</>
+                      )}
+                    </Button>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             ) : (
               <div className="space-y-4">

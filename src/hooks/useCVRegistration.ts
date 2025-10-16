@@ -545,16 +545,7 @@ export function useCVRegistration(walletAddress?: string) {
               responseData?.message ===
               "No CV data found for this wallet address"
             ) {
-              toast.error("Profile Not Found", {
-                description:
-                  "No CV data found for your wallet. Please upload your CV first to create your profile.",
-                duration: 5000,
-              });
             } else {
-              toast.error("Profile Not Found", {
-                description: "The requested profile could not be found.",
-                duration: 4000,
-              });
               setError("Profile not found");
             }
           } else if (err.response?.status === 401) {

@@ -103,7 +103,7 @@ export function Header() {
         {/* Mobile Navigation */}
         <MobileNav>
           <MobileNavHeader>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center space-x-2 w-full">
               {authenticated && <ConditionalSidebarTrigger />}
               <FronciersLogo />
             </div>
@@ -119,31 +119,32 @@ export function Header() {
           >
             {authenticated &&
               navItems.map((item, idx) => (
-                <Link
-                  key={`mobile-link-${idx}`}
-                  href={item.link}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="relative text-neutral-600 dark:text-neutral-300 flex items-center gap-3 p-2"
-                >
-                  {item.name === "Overview" && (
-                    <LayoutDashboardIcon className="h-4 w-4" />
-                  )}
-                  {item.name === "Submit" && (
-                    <FileTextIcon className="h-4 w-4" />
-                  )}
-                  {item.name === "Review" && (
-                    <ClipboardCheckIcon className="h-4 w-4" />
-                  )}
-                  {item.name === "Profile" && <UserIcon className="h-4 w-4" />}
-                  {item.name === "Published" && (
-                    <BookOpenIcon className="h-4 w-4" />
-                  )}
-                  <span className="block">{item.name}</span>
-                </Link>
+                <div key={`mobile-link-${idx}`} className="w-full flex justify-center">
+                  <Link
+                    href={item.link}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="relative text-neutral-600 dark:text-neutral-300 flex items-center gap-3 p-2"
+                  >
+                    {item.name === "Overview" && (
+                      <LayoutDashboardIcon className="h-4 w-4" />
+                    )}
+                    {item.name === "Submit" && (
+                      <FileTextIcon className="h-4 w-4" />
+                    )}
+                    {item.name === "Review" && (
+                      <ClipboardCheckIcon className="h-4 w-4" />
+                    )}
+                    {item.name === "Profile" && <UserIcon className="h-4 w-4" />}
+                    {item.name === "Published" && (
+                      <BookOpenIcon className="h-4 w-4" />
+                    )}
+                    <span className="block">{item.name}</span>
+                  </Link>
+                </div>
               ))}
 
-            <div className="flex w-full flex-col gap-4 mt-4">
-              <NavbarButton
+            <div className="flex w-full flex-col items-center gap-4 mt-4">
+              {/* <NavbarButton
                 as={Link}
                 href="/register-institution"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -151,9 +152,9 @@ export function Header() {
                 className="w-full text-left"
               >
                 Register Institution
-              </NavbarButton>
+              </NavbarButton> */}
 
-              <div className="w-full">
+              <div className="w-full text-center">
                 <p className="font-medium mb-2 text-gray-900 dark:text-gray-100">
                   Connect Wallet
                 </p>

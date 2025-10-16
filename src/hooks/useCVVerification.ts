@@ -58,11 +58,7 @@ export function useCVVerification({
         return true;
       } else if (cvStatus?.success === false && cvStatus?.hasCV === false) {
         console.log("❌ No CV found, redirecting to registration");
-        toast({
-          title: "CV Required",
-          description: "Please register your CV before submitting manuscripts.",
-          variant: "destructive",
-        });
+
         router.push("/register-cv");
         return false;
       } else if (hasCV) {
@@ -72,11 +68,7 @@ export function useCVVerification({
         return true;
       } else {
         console.log("❌ CV verification failed, redirecting to registration");
-        toast({
-          title: "CV Required",
-          description: "Please register your CV before submitting manuscripts.",
-          variant: "destructive",
-        });
+
         router.push("/register-cv");
         return false;
       }
